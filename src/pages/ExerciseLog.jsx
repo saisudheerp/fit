@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react';
-import { getExercises, createWorkoutSession, logExercise } from '../lib/firebase-database';
-import { calculateExerciseCalories } from '../lib/calorieEngine';
-import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from "react";
+import {
+  getExercises,
+  createWorkoutSession,
+  logExercise,
+} from "../lib/firebase-database";
+import { calculateExerciseCalories } from "../lib/calorieEngine";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function ExerciseLog() {
   const { user, profile } = useAuth();
@@ -11,8 +15,8 @@ export default function ExerciseLog() {
   const [reps, setReps] = useState(10);
   const [weight, setWeight] = useState(0);
   const [duration, setDuration] = useState(60); // Changed to seconds for timed exercises
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterBodyPart, setFilterBodyPart] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBodyPart, setFilterBodyPart] = useState("all");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -23,52 +27,73 @@ export default function ExerciseLog() {
   // Helper function to get simple target description
   const getSimpleTarget = (exercise) => {
     const name = exercise.name.toLowerCase();
-    
+
     // Chest exercises
-    if (name.includes('incline')) return 'Upper Chest';
-    if (name.includes('decline')) return 'Lower Chest';
-    if (name.includes('chest') || name.includes('bench') || name.includes('push-up') || name.includes('fly')) return 'Middle Chest';
-    
+    if (name.includes("incline")) return "Upper Chest";
+    if (name.includes("decline")) return "Lower Chest";
+    if (
+      name.includes("chest") ||
+      name.includes("bench") ||
+      name.includes("push-up") ||
+      name.includes("fly")
+    )
+      return "Middle Chest";
+
     // Back exercises
-    if (name.includes('pull-up') || name.includes('pulldown') || name.includes('lat')) return 'Back Width';
-    if (name.includes('row') || name.includes('deadlift')) return 'Back Thickness';
-    if (name.includes('shrug')) return 'Upper Traps';
-    
+    if (
+      name.includes("pull-up") ||
+      name.includes("pulldown") ||
+      name.includes("lat")
+    )
+      return "Back Width";
+    if (name.includes("row") || name.includes("deadlift"))
+      return "Back Thickness";
+    if (name.includes("shrug")) return "Upper Traps";
+
     // Shoulder exercises
-    if (name.includes('overhead') || name.includes('military')) return 'Front Shoulders';
-    if (name.includes('lateral')) return 'Side Shoulders';
-    if (name.includes('rear') || name.includes('reverse')) return 'Rear Shoulders';
-    if (name.includes('shoulder')) return 'Full Shoulders';
-    
+    if (name.includes("overhead") || name.includes("military"))
+      return "Front Shoulders";
+    if (name.includes("lateral")) return "Side Shoulders";
+    if (name.includes("rear") || name.includes("reverse"))
+      return "Rear Shoulders";
+    if (name.includes("shoulder")) return "Full Shoulders";
+
     // Arm exercises
-    if (name.includes('curl')) return 'Biceps';
-    if (name.includes('tricep') || name.includes('extension') || name.includes('dip')) return 'Triceps';
-    
+    if (name.includes("curl")) return "Biceps";
+    if (
+      name.includes("tricep") ||
+      name.includes("extension") ||
+      name.includes("dip")
+    )
+      return "Triceps";
+
     // Leg exercises
-    if (name.includes('squat')) return 'Full Legs';
-    if (name.includes('lunge')) return 'Quads & Glutes';
-    if (name.includes('leg press')) return 'Quads';
-    if (name.includes('leg curl')) return 'Hamstrings';
-    if (name.includes('leg extension')) return 'Quads';
-    if (name.includes('calf')) return 'Calves';
-    
+    if (name.includes("squat")) return "Full Legs";
+    if (name.includes("lunge")) return "Quads & Glutes";
+    if (name.includes("leg press")) return "Quads";
+    if (name.includes("leg curl")) return "Hamstrings";
+    if (name.includes("leg extension")) return "Quads";
+    if (name.includes("calf")) return "Calves";
+
     // Core exercises
-    if (name.includes('plank')) return 'Core Stability';
-    if (name.includes('crunch') || name.includes('sit-up')) return 'Upper Abs';
-    if (name.includes('leg raise')) return 'Lower Abs';
-    
+    if (name.includes("plank")) return "Core Stability";
+    if (name.includes("crunch") || name.includes("sit-up")) return "Upper Abs";
+    if (name.includes("leg raise")) return "Lower Abs";
+
     // Cardio
-    if (name.includes('running') || name.includes('treadmill')) return 'Full Body Cardio';
-    if (name.includes('cycling')) return 'Lower Body Cardio';
-    if (name.includes('rowing')) return 'Full Body Cardio';
-    
+    if (name.includes("running") || name.includes("treadmill"))
+      return "Full Body Cardio";
+    if (name.includes("cycling")) return "Lower Body Cardio";
+    if (name.includes("rowing")) return "Full Body Cardio";
+
     // Forearms
-    if (name.includes('wrist') || name.includes('forearm')) return 'Forearms';
-    
+    if (name.includes("wrist") || name.includes("forearm")) return "Forearms";
+
     // Default fallback - capitalize body part
-    return exercise.body_part.split(' ').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return exercise.body_part
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
   };
 
   useEffect(() => {
@@ -78,8 +103,9 @@ export default function ExerciseLog() {
   // Calculate calories whenever inputs change
   useEffect(() => {
     if (selectedExercise) {
-      const isTimed = selectedExercise.type === 'timed' || selectedExercise.type === 'cardio';
-      
+      const isTimed =
+        selectedExercise.type === "timed" || selectedExercise.type === "cardio";
+
       // Calculate duration based on exercise type
       let durationInMinutes;
       if (isTimed) {
@@ -90,18 +116,21 @@ export default function ExerciseLog() {
         const repTime = (reps * 3 * sets) / 60; // Convert to minutes
         durationInMinutes = repTime;
       }
-      
-      const calc = calculateExerciseCalories({
-        type: selectedExercise.type,
-        met: selectedExercise.met,
-        volumeCoefficient: selectedExercise.volume_coefficient
-      }, {
-        bodyWeightKg: bodyWeight,
-        durationMinutes: durationInMinutes,
-        weightKg: weight,
-        reps,
-        sets
-      });
+
+      const calc = calculateExerciseCalories(
+        {
+          type: selectedExercise.type,
+          met: selectedExercise.met,
+          volumeCoefficient: selectedExercise.volume_coefficient,
+        },
+        {
+          bodyWeightKg: bodyWeight,
+          durationMinutes: durationInMinutes,
+          weightKg: weight,
+          reps,
+          sets,
+        }
+      );
       setResult(calc);
     }
   }, [selectedExercise, sets, reps, weight, duration, bodyWeight]);
@@ -112,18 +141,23 @@ export default function ExerciseLog() {
       const data = await getExercises();
       setExercises(data);
     } catch (error) {
-      console.error('Error loading exercises:', error);
-      alert('Error loading exercises. Make sure you have added exercises to your Supabase database.');
+      console.error("Error loading exercises:", error);
+      alert(
+        "Error loading exercises. Make sure you have added exercises to your Supabase database."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const bodyParts = ['all', ...new Set(exercises.map(e => e.body_part))];
+  const bodyParts = ["all", ...new Set(exercises.map((e) => e.body_part))];
 
-  const filteredExercises = exercises.filter(exercise => {
-    const matchesSearch = exercise.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterBodyPart === 'all' || exercise.body_part === filterBodyPart;
+  const filteredExercises = exercises.filter((exercise) => {
+    const matchesSearch = exercise.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesFilter =
+      filterBodyPart === "all" || exercise.body_part === filterBodyPart;
     return matchesSearch && matchesFilter;
   });
 
@@ -134,11 +168,12 @@ export default function ExerciseLog() {
     try {
       // Create session for today
       const sessionId = await createWorkoutSession(user.uid, {
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split("T")[0],
       });
 
-      const isTimed = selectedExercise.type === 'timed' || selectedExercise.type === 'cardio';
-      
+      const isTimed =
+        selectedExercise.type === "timed" || selectedExercise.type === "cardio";
+
       // Calculate duration based on exercise type
       let durationInMinutes;
       if (isTimed) {
@@ -160,90 +195,131 @@ export default function ExerciseLog() {
         durationSeconds: isTimed ? duration : 0, // Store seconds for timed exercises
         caloriesBurned: result.totalCalories,
         volume: result.volume,
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split("T")[0],
       });
 
-      alert('Exercise logged successfully!');
+      alert("Exercise logged successfully!");
       setResult(null);
       setSelectedExercise(null);
     } catch (error) {
-      console.error('Error saving exercise:', error);
-      alert('Error saving exercise: ' + error.message);
+      console.error("Error saving exercise:", error);
+      alert("Error saving exercise: " + error.message);
     } finally {
       setSaving(false);
     }
   };
 
   const inputStyle = {
-    width: '100%',
-    padding: '12px 16px',
-    backgroundColor: '#0a0a0a',
-    border: '1px solid #2a2a2a',
-    borderRadius: '8px',
-    color: '#fff',
-    fontSize: '15px',
-    fontFamily: 'Inter, sans-serif',
-    outline: 'none'
+    width: "100%",
+    padding: "12px 16px",
+    backgroundColor: "#0a0a0a",
+    border: "1px solid #2a2a2a",
+    borderRadius: "8px",
+    color: "#fff",
+    fontSize: "15px",
+    fontFamily: "Inter, sans-serif",
+    outline: "none",
   };
 
   return (
-    <div style={{ maxWidth: '1600px', margin: '0 auto', padding: '40px 24px' }}>
+    <div style={{ maxWidth: "1600px", margin: "0 auto", padding: "40px 24px" }}>
       {/* Header */}
-      <div style={{ marginBottom: '40px', animation: 'fadeIn 0.5s ease-out' }}>
-        <h2 style={{
-          fontFamily: 'Bebas Neue, Impact, sans-serif',
-          fontSize: '56px',
-          letterSpacing: '0.05em',
-          marginBottom: '8px',
-          background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD93D 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          textShadow: '0 0 40px rgba(255, 107, 53, 0.3)'
-        }}>LOG EXERCISE</h2>
-        <p style={{ color: '#999', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="material-icons" style={{ fontSize: '20px', color: '#FF6B35' }}>edit_note</span>
+      <div style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+        <h2
+          style={{
+            fontFamily: "Bebas Neue, Impact, sans-serif",
+            fontSize: "56px",
+            letterSpacing: "0.05em",
+            marginBottom: "8px",
+            background:
+              "linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FFD93D 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            textShadow: "0 0 40px rgba(255, 107, 53, 0.3)",
+          }}
+        >
+          LOG EXERCISE
+        </h2>
+        <p
+          style={{
+            color: "#999",
+            fontSize: "16px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span
+            className="material-icons"
+            style={{ fontSize: "20px", color: "#FF6B35" }}
+          >
+            edit_note
+          </span>
           Track your workout and calculate calories burned
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: selectedExercise ? '400px 1fr' : '1fr', gap: '32px', transition: 'all 0.3s' }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: selectedExercise ? "400px 1fr" : "1fr",
+          gap: "32px",
+          transition: "all 0.3s",
+        }}
+      >
         {/* Exercise Selection */}
-        <div style={{
-          background: 'linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)',
-          border: '2px solid #2a2a2a',
-          borderRadius: '20px',
-          padding: '28px',
-          transition: 'all 0.3s',
-          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
+        <div
+          style={{
+            background: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
+            border: "2px solid #2a2a2a",
+            borderRadius: "20px",
+            padding: "28px",
+            transition: "all 0.3s",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
           {/* Orange gradient overlay at top */}
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '100px',
-            background: 'linear-gradient(180deg, rgba(255, 107, 53, 0.08) 0%, transparent 100%)',
-            pointerEvents: 'none'
-          }}></div>
-          
-          <h3 style={{
-            fontSize: '20px',
-            fontWeight: 700,
-            marginBottom: '20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px',
-            color: '#fff',
-            fontFamily: 'Bebas Neue, Impact, sans-serif',
-            letterSpacing: '0.08em',
-            position: 'relative',
-            zIndex: 1
-          }}>
-            <span className="material-icons" style={{ fontSize: '24px', color: '#FF6B35', textShadow: '0 0 20px rgba(255, 107, 53, 0.6)' }}>fitness_center</span>
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "100px",
+              background:
+                "linear-gradient(180deg, rgba(255, 107, 53, 0.08) 0%, transparent 100%)",
+              pointerEvents: "none",
+            }}
+          ></div>
+
+          <h3
+            style={{
+              fontSize: "20px",
+              fontWeight: 700,
+              marginBottom: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              color: "#fff",
+              fontFamily: "Bebas Neue, Impact, sans-serif",
+              letterSpacing: "0.08em",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            <span
+              className="material-icons"
+              style={{
+                fontSize: "24px",
+                color: "#FF6B35",
+                textShadow: "0 0 20px rgba(255, 107, 53, 0.6)",
+              }}
+            >
+              fitness_center
+            </span>
             Select Exercise
           </h3>
 
@@ -254,45 +330,64 @@ export default function ExerciseLog() {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               ...inputStyle,
-              marginBottom: '16px',
-              transition: 'all 0.2s',
-              borderColor: searchTerm ? '#FF6B35' : '#2a2a2a',
-              boxShadow: searchTerm ? '0 0 20px rgba(255, 107, 53, 0.2)' : 'none',
-              position: 'relative',
-              zIndex: 1
+              marginBottom: "16px",
+              transition: "all 0.2s",
+              borderColor: searchTerm ? "#FF6B35" : "#2a2a2a",
+              boxShadow: searchTerm
+                ? "0 0 20px rgba(255, 107, 53, 0.2)"
+                : "none",
+              position: "relative",
+              zIndex: 1,
             }}
           />
 
-          <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap', position: 'relative', zIndex: 1 }}>
-            {bodyParts.map(part => (
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              marginBottom: "20px",
+              flexWrap: "wrap",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {bodyParts.map((part) => (
               <button
                 key={part}
                 onClick={() => setFilterBodyPart(part)}
                 style={{
-                  padding: '8px 14px',
-                  borderRadius: '20px',
-                  fontSize: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
+                  padding: "8px 14px",
+                  borderRadius: "20px",
+                  fontSize: "10px",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.05em",
                   fontWeight: 700,
-                  border: filterBodyPart === part ? '2px solid #FF6B35' : 'none',
-                  cursor: 'pointer',
-                  background: filterBodyPart === part ? 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)' : '#2a2a2a',
-                  color: filterBodyPart === part ? '#fff' : '#999',
-                  transition: 'all 0.2s',
-                  transform: filterBodyPart === part ? 'scale(1.05)' : 'scale(1)',
-                  boxShadow: filterBodyPart === part ? '0 4px 15px rgba(255, 107, 53, 0.4)' : 'none'
+                  border:
+                    filterBodyPart === part ? "2px solid #FF6B35" : "none",
+                  cursor: "pointer",
+                  background:
+                    filterBodyPart === part
+                      ? "linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)"
+                      : "#2a2a2a",
+                  color: filterBodyPart === part ? "#fff" : "#999",
+                  transition: "all 0.2s",
+                  transform:
+                    filterBodyPart === part ? "scale(1.05)" : "scale(1)",
+                  boxShadow:
+                    filterBodyPart === part
+                      ? "0 4px 15px rgba(255, 107, 53, 0.4)"
+                      : "none",
                 }}
                 onMouseEnter={(e) => {
                   if (filterBodyPart !== part) {
-                    e.target.style.backgroundColor = '#3a3a3a';
-                    e.target.style.color = '#ccc';
+                    e.target.style.backgroundColor = "#3a3a3a";
+                    e.target.style.color = "#ccc";
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (filterBodyPart !== part) {
-                    e.target.style.backgroundColor = '#2a2a2a';
-                    e.target.style.color = '#999';
+                    e.target.style.backgroundColor = "#2a2a2a";
+                    e.target.style.color = "#999";
                   }
                 }}
               >
@@ -301,64 +396,107 @@ export default function ExerciseLog() {
             ))}
           </div>
 
-          <div style={{ 
-            maxHeight: selectedExercise ? '400px' : '500px', 
-            overflowY: 'auto', 
-            paddingRight: '8px',
-            transition: 'max-height 0.3s'
-          }}>
+          <div
+            style={{
+              maxHeight: selectedExercise ? "400px" : "500px",
+              overflowY: "auto",
+              paddingRight: "8px",
+              transition: "max-height 0.3s",
+            }}
+          >
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                <span className="material-icons rotating" style={{ fontSize: '48px', marginBottom: '16px' }}>sync</span>
+              <div
+                style={{ textAlign: "center", padding: "40px", color: "#666" }}
+              >
+                <span
+                  className="material-icons rotating"
+                  style={{ fontSize: "48px", marginBottom: "16px" }}
+                >
+                  sync
+                </span>
                 <p>Loading exercises...</p>
               </div>
             ) : filteredExercises.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
-                <span className="material-icons" style={{ fontSize: '48px', marginBottom: '16px' }}>search_off</span>
+              <div
+                style={{ textAlign: "center", padding: "40px", color: "#666" }}
+              >
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "48px", marginBottom: "16px" }}
+                >
+                  search_off
+                </span>
                 <p>No exercises found</p>
-                <p style={{ fontSize: '12px', marginTop: '8px' }}>Try a different search term</p>
+                <p style={{ fontSize: "12px", marginTop: "8px" }}>
+                  Try a different search term
+                </p>
               </div>
             ) : (
-              filteredExercises.map(exercise => (
+              filteredExercises.map((exercise) => (
                 <button
                   key={exercise.id}
                   onClick={() => setSelectedExercise(exercise)}
                   style={{
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: '14px',
-                    marginBottom: '8px',
-                    borderRadius: '12px',
-                    border: selectedExercise?.id === exercise.id ? '2px solid #FF6B35' : '1px solid #2a2a2a',
-                    cursor: 'pointer',
-                    background: selectedExercise?.id === exercise.id ? 'linear-gradient(135deg, #FF6B3515 0%, #F7931E08 100%)' : '#0a0a0a',
-                    color: selectedExercise?.id === exercise.id ? '#FF6B35' : '#fff',
-                    transition: 'all 0.2s',
-                    boxShadow: selectedExercise?.id === exercise.id ? '0 4px 15px rgba(255, 107, 53, 0.3)' : 'none'
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "14px",
+                    marginBottom: "8px",
+                    borderRadius: "12px",
+                    border:
+                      selectedExercise?.id === exercise.id
+                        ? "2px solid #FF6B35"
+                        : "1px solid #2a2a2a",
+                    cursor: "pointer",
+                    background:
+                      selectedExercise?.id === exercise.id
+                        ? "linear-gradient(135deg, #FF6B3515 0%, #F7931E08 100%)"
+                        : "#0a0a0a",
+                    color:
+                      selectedExercise?.id === exercise.id ? "#FF6B35" : "#fff",
+                    transition: "all 0.2s",
+                    boxShadow:
+                      selectedExercise?.id === exercise.id
+                        ? "0 4px 15px rgba(255, 107, 53, 0.3)"
+                        : "none",
                   }}
                   onMouseEnter={(e) => {
                     if (selectedExercise?.id !== exercise.id) {
-                      e.currentTarget.style.background = '#1a1a1a';
-                      e.currentTarget.style.borderColor = '#3a3a3a';
+                      e.currentTarget.style.background = "#1a1a1a";
+                      e.currentTarget.style.borderColor = "#3a3a3a";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (selectedExercise?.id !== exercise.id) {
-                      e.currentTarget.style.background = '#0a0a0a';
-                      e.currentTarget.style.borderColor = '#2a2a2a';
+                      e.currentTarget.style.background = "#0a0a0a";
+                      e.currentTarget.style.borderColor = "#2a2a2a";
                     }
                   }}
                 >
-                  <div style={{ fontWeight: 600, fontSize: '15px', marginBottom: '6px' }}>{exercise.name}</div>
-                  <div style={{
-                    fontSize: '12px',
-                    color: selectedExercise?.id === exercise.id ? '#999' : '#666',
-                    display: 'flex',
-                    gap: '12px'
-                  }}>
-                    <span style={{ textTransform: 'capitalize' }}>{exercise.body_part}</span>
+                  <div
+                    style={{
+                      fontWeight: 600,
+                      fontSize: "15px",
+                      marginBottom: "6px",
+                    }}
+                  >
+                    {exercise.name}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color:
+                        selectedExercise?.id === exercise.id ? "#999" : "#666",
+                      display: "flex",
+                      gap: "12px",
+                    }}
+                  >
+                    <span style={{ textTransform: "capitalize" }}>
+                      {exercise.body_part}
+                    </span>
                     <span>•</span>
-                    <span style={{ textTransform: 'capitalize' }}>{exercise.type}</span>
+                    <span style={{ textTransform: "capitalize" }}>
+                      {exercise.type}
+                    </span>
                     <span>•</span>
                     <span>MET {exercise.met}</span>
                   </div>
@@ -371,78 +509,153 @@ export default function ExerciseLog() {
         {/* Exercise Details & Input */}
         <div>
           {selectedExercise ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', animation: 'slideIn 0.3s ease-out' }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "24px",
+                animation: "slideIn 0.3s ease-out",
+              }}
+            >
               {/* Exercise Animation & Info */}
-              <div style={{
-                background: 'radial-gradient(circle at top left, rgba(255, 107, 53, 0.08) 0%, #1a1a1a 50%)',
-                border: '2px solid rgba(255, 107, 53, 0.3)',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                padding: '28px',
-                boxShadow: '0 4px 20px rgba(255, 107, 53, 0.2)',
-                position: 'relative'
-              }}>
+              <div
+                style={{
+                  background:
+                    "radial-gradient(circle at top left, rgba(255, 107, 53, 0.08) 0%, #1a1a1a 50%)",
+                  border: "2px solid rgba(255, 107, 53, 0.3)",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  padding: "28px",
+                  boxShadow: "0 4px 20px rgba(255, 107, 53, 0.2)",
+                  position: "relative",
+                }}
+              >
                 {/* Animated gradient orb */}
-                <div style={{
-                  position: 'absolute',
-                  top: '-60px',
-                  left: '-60px',
-                  width: '150px',
-                  height: '150px',
-                  background: 'radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%)',
-                  pointerEvents: 'none',
-                  filter: 'blur(30px)',
-                  animation: 'pulse 3s ease-in-out infinite'
-                }}></div>
-                
-                  <h3 style={{ 
-                    fontSize: '24px', 
-                    fontWeight: 700, 
-                    marginBottom: '8px',
-                    color: '#fff',
-                    fontFamily: 'Bebas Neue, Impact, sans-serif',
-                    letterSpacing: '0.05em',
-                    position: 'relative',
-                    zIndex: 1
-                  }}>
-                    {selectedExercise.name}
-                  </h3>
-                  <p style={{ color: '#999', fontSize: '13px', marginBottom: '20px', textTransform: 'capitalize', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative', zIndex: 1 }}>
-                    <span className="material-icons" style={{ fontSize: '14px', color: '#FF6B35' }}>category</span>
-                    {selectedExercise.body_part} • {selectedExercise.equipment}
-                  </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', fontSize: '14px', position: 'relative', zIndex: 1 }}>
-                    <InfoItem label="Difficulty" value={selectedExercise.difficulty} />
-                    <InfoItem label="Intensity" value={`${selectedExercise.met} MET`} mono />
-                    <InfoItem label="Target" value={getSimpleTarget(selectedExercise)} />
-                  </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-60px",
+                    left: "-60px",
+                    width: "150px",
+                    height: "150px",
+                    background:
+                      "radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%)",
+                    pointerEvents: "none",
+                    filter: "blur(30px)",
+                    animation: "pulse 3s ease-in-out infinite",
+                  }}
+                ></div>
+
+                <h3
+                  style={{
+                    fontSize: "24px",
+                    fontWeight: 700,
+                    marginBottom: "8px",
+                    color: "#fff",
+                    fontFamily: "Bebas Neue, Impact, sans-serif",
+                    letterSpacing: "0.05em",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  {selectedExercise.name}
+                </h3>
+                <p
+                  style={{
+                    color: "#999",
+                    fontSize: "13px",
+                    marginBottom: "20px",
+                    textTransform: "capitalize",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  <span
+                    className="material-icons"
+                    style={{ fontSize: "14px", color: "#FF6B35" }}
+                  >
+                    category
+                  </span>
+                  {selectedExercise.body_part} • {selectedExercise.equipment}
+                </p>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "12px",
+                    fontSize: "14px",
+                    position: "relative",
+                    zIndex: 1,
+                  }}
+                >
+                  <InfoItem
+                    label="Difficulty"
+                    value={selectedExercise.difficulty}
+                  />
+                  <InfoItem
+                    label="Intensity"
+                    value={`${selectedExercise.met} MET`}
+                    mono
+                  />
+                  <InfoItem
+                    label="Target"
+                    value={getSimpleTarget(selectedExercise)}
+                  />
+                </div>
               </div>
 
               {/* Input Form */}
-              <div style={{
-                background: 'linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)',
-                border: '2px solid #2a2a2a',
-                borderRadius: '20px',
-                padding: '28px',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
-              }}>
-                <h3 style={{
-                  fontSize: '20px',
-                  fontWeight: 700,
-                  marginBottom: '24px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  fontFamily: 'Bebas Neue, Impact, sans-serif',
-                  letterSpacing: '0.08em'
-                }}>
-                  <span className="material-icons" style={{ fontSize: '24px', color: '#F7931E' }}>edit_note</span>
+              <div
+                style={{
+                  background:
+                    "linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)",
+                  border: "2px solid #2a2a2a",
+                  borderRadius: "20px",
+                  padding: "28px",
+                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: "20px",
+                    fontWeight: 700,
+                    marginBottom: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    fontFamily: "Bebas Neue, Impact, sans-serif",
+                    letterSpacing: "0.08em",
+                  }}
+                >
+                  <span
+                    className="material-icons"
+                    style={{ fontSize: "24px", color: "#F7931E" }}
+                  >
+                    edit_note
+                  </span>
                   Log Details
                 </h3>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "20px",
+                  }}
+                >
                   <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: '#ccc' }}>
+                    <label
+                      style={{
+                        display: "block",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        marginBottom: "8px",
+                        color: "#ccc",
+                      }}
+                    >
                       Body Weight (kg)
                     </label>
                     <input
@@ -451,46 +664,107 @@ export default function ExerciseLog() {
                       disabled
                       style={{
                         ...inputStyle,
-                        backgroundColor: '#0a0a0a',
-                        color: '#666',
-                        cursor: 'not-allowed'
+                        backgroundColor: "#0a0a0a",
+                        color: "#666",
+                        cursor: "not-allowed",
                       }}
                     />
-                    <p style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>From your profile</p>
+                    <p
+                      style={{
+                        fontSize: "11px",
+                        color: "#666",
+                        marginTop: "4px",
+                      }}
+                    >
+                      From your profile
+                    </p>
                   </div>
 
                   {/* Strength exercises with weights */}
-                  {selectedExercise.type === 'strength' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-                      <InputField label="Sets" value={sets} onChange={setSets} />
-                      <InputField label="Reps" value={reps} onChange={setReps} />
-                      <InputField label="Weight (kg)" value={weight} onChange={setWeight} />
+                  {selectedExercise.type === "strength" && (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr 1fr",
+                        gap: "16px",
+                      }}
+                    >
+                      <InputField
+                        label="Sets"
+                        value={sets}
+                        onChange={setSets}
+                      />
+                      <InputField
+                        label="Reps"
+                        value={reps}
+                        onChange={setReps}
+                      />
+                      <InputField
+                        label="Weight (kg)"
+                        value={weight}
+                        onChange={setWeight}
+                      />
                     </div>
                   )}
 
                   {/* Bodyweight exercises (no weight needed) */}
-                  {selectedExercise.type === 'bodyweight' && (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                      <InputField label="Sets" value={sets} onChange={setSets} />
-                      <InputField label="Reps" value={reps} onChange={setReps} />
+                  {selectedExercise.type === "bodyweight" && (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "16px",
+                      }}
+                    >
+                      <InputField
+                        label="Sets"
+                        value={sets}
+                        onChange={setSets}
+                      />
+                      <InputField
+                        label="Reps"
+                        value={reps}
+                        onChange={setReps}
+                      />
                     </div>
                   )}
 
                   {/* Timed exercises (duration only - like Plank, Dead Hang) */}
-                  {selectedExercise.type === 'timed' && (
+                  {selectedExercise.type === "timed" && (
                     <>
-                      <InputField label="Duration (seconds)" value={duration} onChange={setDuration} />
-                      <p style={{ fontSize: '13px', color: '#666', fontStyle: 'italic' }}>
-                        ⏱️ Time-based exercise - duration in seconds (calories will be calculated based on time)
+                      <InputField
+                        label="Duration (seconds)"
+                        value={duration}
+                        onChange={setDuration}
+                      />
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          color: "#666",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        ⏱️ Time-based exercise - duration in seconds (calories
+                        will be calculated based on time)
                       </p>
                     </>
                   )}
 
                   {/* Cardio exercises (duration only) */}
-                  {selectedExercise.type === 'cardio' && (
+                  {selectedExercise.type === "cardio" && (
                     <>
-                      <InputField label="Duration (seconds)" value={duration} onChange={setDuration} />
-                      <p style={{ fontSize: '13px', color: '#666', fontStyle: 'italic' }}>
+                      <InputField
+                        label="Duration (seconds)"
+                        value={duration}
+                        onChange={setDuration}
+                      />
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          color: "#666",
+                          fontStyle: "italic",
+                        }}
+                      >
                         🏃 Cardio exercise - duration in seconds
                       </p>
                     </>
@@ -500,105 +774,142 @@ export default function ExerciseLog() {
 
               {/* Results - Only show calories */}
               {result && (
-                <div style={{
-                  backgroundColor: '#1a1a1a',
-                  border: '2px solid #fff',
-                  borderRadius: '16px',
-                  padding: '32px',
-                  textAlign: 'center',
-                  animation: 'scaleIn 0.3s ease-out',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}>
+                <div
+                  style={{
+                    backgroundColor: "#1a1a1a",
+                    border: "2px solid #fff",
+                    borderRadius: "16px",
+                    padding: "32px",
+                    textAlign: "center",
+                    animation: "scaleIn 0.3s ease-out",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
                   {/* Background glow effect */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: '200px',
-                    height: '200px',
-                    background: 'radial-gradient(circle, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0) 70%)',
-                    pointerEvents: 'none'
-                  }}></div>
-                  
-                  <div style={{
-                    fontSize: '72px',
-                    fontWeight: 700,
-                    marginBottom: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '16px',
-                    position: 'relative',
-                    fontFamily: 'Bebas Neue, Impact, sans-serif',
-                    letterSpacing: '0.02em'
-                  }}>
-                    <span className="material-icons pulse" style={{ fontSize: '64px', color: '#ff6b35' }}>local_fire_department</span>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      width: "200px",
+                      height: "200px",
+                      background:
+                        "radial-gradient(circle, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0) 70%)",
+                      pointerEvents: "none",
+                    }}
+                  ></div>
+
+                  <div
+                    style={{
+                      fontSize: "72px",
+                      fontWeight: 700,
+                      marginBottom: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "16px",
+                      position: "relative",
+                      fontFamily: "Bebas Neue, Impact, sans-serif",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    <span
+                      className="material-icons pulse"
+                      style={{ fontSize: "64px", color: "#ff6b35" }}
+                    >
+                      local_fire_department
+                    </span>
                     {Math.round(result.totalCalories)}
                   </div>
-                  <div style={{ 
-                    fontSize: '16px', 
-                    color: '#666', 
-                    marginBottom: '32px', 
-                    textTransform: 'uppercase', 
-                    letterSpacing: '0.15em',
-                    fontWeight: 700
-                  }}>
+                  <div
+                    style={{
+                      fontSize: "16px",
+                      color: "#666",
+                      marginBottom: "32px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.15em",
+                      fontWeight: 700,
+                    }}
+                  >
                     Calories Burned
                   </div>
-                  <button onClick={handleSave} disabled={saving} style={{
-                    width: '100%',
-                    padding: '18px',
-                    backgroundColor: saving ? '#666' : '#fff',
-                    color: '#000',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em',
-                    cursor: saving ? 'not-allowed' : 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'all 0.2s',
-                    boxShadow: saving ? 'none' : '0 4px 12px rgba(255,255,255,0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!saving) {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 6px 16px rgba(255,255,255,0.3)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!saving) {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 12px rgba(255,255,255,0.2)';
-                    }
-                  }}>
-                    <span className="material-icons">{saving ? 'hourglass_empty' : 'save'}</span>
-                    {saving ? 'Saving...' : 'Save Calories'}
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    style={{
+                      width: "100%",
+                      padding: "18px",
+                      backgroundColor: saving ? "#666" : "#fff",
+                      color: "#000",
+                      border: "none",
+                      borderRadius: "12px",
+                      fontSize: "14px",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      cursor: saving ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "8px",
+                      transition: "all 0.2s",
+                      boxShadow: saving
+                        ? "none"
+                        : "0 4px 12px rgba(255,255,255,0.2)",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!saving) {
+                        e.target.style.transform = "translateY(-2px)";
+                        e.target.style.boxShadow =
+                          "0 6px 16px rgba(255,255,255,0.3)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!saving) {
+                        e.target.style.transform = "translateY(0)";
+                        e.target.style.boxShadow =
+                          "0 4px 12px rgba(255,255,255,0.2)";
+                      }
+                    }}
+                  >
+                    <span className="material-icons">
+                      {saving ? "hourglass_empty" : "save"}
+                    </span>
+                    {saving ? "Saving..." : "Save Calories"}
                   </button>
                 </div>
               )}
             </div>
           ) : (
-            <div style={{
-              backgroundColor: '#1a1a1a',
-              border: '1px solid #2a2a2a',
-              borderRadius: '12px',
-              padding: '80px 32px',
-              textAlign: 'center',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <span className="material-icons" style={{ fontSize: '96px', color: '#2a2a2a', marginBottom: '24px' }}>fitness_center</span>
-              <p style={{ color: '#666', fontSize: '16px' }}>Select an exercise to start logging</p>
+            <div
+              style={{
+                backgroundColor: "#1a1a1a",
+                border: "1px solid #2a2a2a",
+                borderRadius: "12px",
+                padding: "80px 32px",
+                textAlign: "center",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                className="material-icons"
+                style={{
+                  fontSize: "96px",
+                  color: "#2a2a2a",
+                  marginBottom: "24px",
+                }}
+              >
+                fitness_center
+              </span>
+              <p style={{ color: "#666", fontSize: "16px" }}>
+                Select an exercise to start logging
+              </p>
             </div>
           )}
         </div>
@@ -610,14 +921,25 @@ export default function ExerciseLog() {
 function InfoItem({ label, value, mono }) {
   return (
     <div>
-      <div style={{ color: '#666', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px', fontWeight: 600 }}>
+      <div
+        style={{
+          color: "#666",
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          marginBottom: "6px",
+          fontWeight: 600,
+        }}
+      >
         {label}
       </div>
-      <div style={{
-        fontSize: '15px',
-        textTransform: 'capitalize',
-        fontFamily: mono ? 'Roboto Mono, monospace' : 'inherit'
-      }}>
+      <div
+        style={{
+          fontSize: "15px",
+          textTransform: "capitalize",
+          fontFamily: mono ? "Roboto Mono, monospace" : "inherit",
+        }}
+      >
         {value}
       </div>
     </div>
@@ -627,7 +949,15 @@ function InfoItem({ label, value, mono }) {
 function InputField({ label, value, onChange }) {
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, marginBottom: '8px', color: '#ccc' }}>
+      <label
+        style={{
+          display: "block",
+          fontSize: "13px",
+          fontWeight: 600,
+          marginBottom: "8px",
+          color: "#ccc",
+        }}
+      >
         {label}
       </label>
       <input
@@ -635,15 +965,15 @@ function InputField({ label, value, onChange }) {
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         style={{
-          width: '100%',
-          padding: '12px 16px',
-          backgroundColor: '#0a0a0a',
-          border: '1px solid #2a2a2a',
-          borderRadius: '8px',
-          color: '#fff',
-          fontSize: '15px',
-          fontFamily: 'Roboto Mono, monospace',
-          outline: 'none'
+          width: "100%",
+          padding: "12px 16px",
+          backgroundColor: "#0a0a0a",
+          border: "1px solid #2a2a2a",
+          borderRadius: "8px",
+          color: "#fff",
+          fontSize: "15px",
+          fontFamily: "Roboto Mono, monospace",
+          outline: "none",
         }}
       />
     </div>
@@ -652,38 +982,46 @@ function InputField({ label, value, onChange }) {
 
 function ResultItem({ label, value, unit, primary }) {
   return (
-    <div style={{
-      backgroundColor: primary ? '#fff' : '#0a0a0a',
-      padding: '20px',
-      borderRadius: '10px',
-      border: primary ? 'none' : '1px solid #2a2a2a'
-    }}>
-      <div style={{
-        color: primary ? '#666' : '#666',
-        fontSize: '11px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.1em',
-        marginBottom: '8px',
-        fontWeight: 600
-      }}>
+    <div
+      style={{
+        backgroundColor: primary ? "#fff" : "#0a0a0a",
+        padding: "20px",
+        borderRadius: "10px",
+        border: primary ? "none" : "1px solid #2a2a2a",
+      }}
+    >
+      <div
+        style={{
+          color: primary ? "#666" : "#666",
+          fontSize: "11px",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+          marginBottom: "8px",
+          fontWeight: 600,
+        }}
+      >
         {label}
       </div>
-      <div style={{
-        fontFamily: 'Roboto Mono, monospace',
-        fontSize: primary ? '36px' : '28px',
-        fontWeight: 700,
-        color: primary ? '#000' : '#fff',
-        marginBottom: '4px'
-      }}>
+      <div
+        style={{
+          fontFamily: "Roboto Mono, monospace",
+          fontSize: primary ? "36px" : "28px",
+          fontWeight: 700,
+          color: primary ? "#000" : "#fff",
+          marginBottom: "4px",
+        }}
+      >
         {value}
       </div>
-      <div style={{
-        fontSize: '12px',
-        color: primary ? '#999' : '#666',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        fontWeight: 600
-      }}>
+      <div
+        style={{
+          fontSize: "12px",
+          color: primary ? "#999" : "#666",
+          textTransform: "uppercase",
+          letterSpacing: "0.05em",
+          fontWeight: 600,
+        }}
+      >
         {unit}
       </div>
     </div>

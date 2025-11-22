@@ -8,9 +8,9 @@
     "met": 3.8,
     "volumeCoefficient": 0.0012,
     "equipment": "none",
-    "primary": {"muscle": "Chest", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Chest", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders, Triceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-2",
@@ -19,11 +19,11 @@
     "difficulty": "beginner",
     "type": "bodyweight",
     "met": 3.0,
-    "volumeCoefficient": 0.0010,
+    "volumeCoefficient": 0.001,
     "equipment": "bench",
-    "primary": {"muscle": "Upper Chest", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Triceps", "difficulty": "beginner"}
+    "primary": { "muscle": "Upper Chest", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Triceps", "difficulty": "beginner" }
   },
   {
     "id": "chest-3",
@@ -34,9 +34,12 @@
     "met": 5.5,
     "volumeCoefficient": 0.0014,
     "equipment": "bench",
-    "primary": {"muscle": "Lower Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Lower Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "chest-4",
@@ -45,11 +48,14 @@
     "difficulty": "intermediate",
     "type": "bodyweight",
     "met": 6.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "parallel bars",
-    "primary": {"muscle": "Lower Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Triceps, Shoulders", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lower Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Triceps, Shoulders",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-5",
@@ -60,9 +66,12 @@
     "met": 6.0,
     "volumeCoefficient": 0.0025,
     "equipment": "barbell",
-    "primary": {"muscle": "Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-6",
@@ -73,9 +82,12 @@
     "met": 6.5,
     "volumeCoefficient": 0.0026,
     "equipment": "barbell",
-    "primary": {"muscle": "Upper Chest", "difficulty": "advanced"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Upper Chest", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-7",
@@ -86,9 +98,12 @@
     "met": 5.8,
     "volumeCoefficient": 0.0023,
     "equipment": "barbell",
-    "primary": {"muscle": "Lower Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lower Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-8",
@@ -99,9 +114,12 @@
     "met": 6.0,
     "volumeCoefficient": 0.0024,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "chest-9",
@@ -112,9 +130,12 @@
     "met": 6.5,
     "volumeCoefficient": 0.0027,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Upper Chest", "difficulty": "advanced"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Upper Chest", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-10",
@@ -125,9 +146,12 @@
     "met": 5.8,
     "volumeCoefficient": 0.0022,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Lower Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lower Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-11",
@@ -136,11 +160,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Chest", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-12",
@@ -151,9 +175,9 @@
     "met": 5.2,
     "volumeCoefficient": 0.0021,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Upper Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Upper Chest", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-13",
@@ -162,11 +186,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.5,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "dumbbell",
-    "primary": {"muscle": "Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Lats, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Chest", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Lats, Triceps", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "chest-14",
@@ -177,8 +201,8 @@
     "met": 4.5,
     "volumeCoefficient": 0.0018,
     "equipment": "cables",
-    "primary": {"muscle": "Chest", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
+    "primary": { "muscle": "Chest", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -190,9 +214,9 @@
     "met": 4.8,
     "volumeCoefficient": 0.0019,
     "equipment": "cables",
-    "primary": {"muscle": "Lower Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lower Chest", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-16",
@@ -203,9 +227,9 @@
     "met": 4.8,
     "volumeCoefficient": 0.0019,
     "equipment": "cables",
-    "primary": {"muscle": "Upper Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Upper Chest", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "chest-17",
@@ -216,8 +240,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0016,
     "equipment": "machine",
-    "primary": {"muscle": "Chest", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
+    "primary": { "muscle": "Chest", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -229,9 +253,12 @@
     "met": 5.5,
     "volumeCoefficient": 0.0022,
     "equipment": "machine",
-    "primary": {"muscle": "Chest", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Chest", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Shoulders, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-1",
@@ -242,9 +269,9 @@
     "met": 6.0,
     "volumeCoefficient": 0.0022,
     "equipment": "pull-up bar",
-    "primary": {"muscle": "Lats", "difficulty": "advanced"},
-    "secondary": {"muscle": "Biceps, Rear Delts", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Lats", "difficulty": "advanced" },
+    "secondary": { "muscle": "Biceps, Rear Delts", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "back-2",
@@ -255,9 +282,9 @@
     "met": 5.5,
     "volumeCoefficient": 0.0018,
     "equipment": "pull-up bar",
-    "primary": {"muscle": "Lats", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Biceps, Forearms", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lats", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Biceps, Forearms", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-3",
@@ -266,11 +293,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "cable machine",
-    "primary": {"muscle": "Lats", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Biceps, Rear Delts", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lats", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Biceps, Rear Delts", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-4",
@@ -281,9 +308,9 @@
     "met": 4.8,
     "volumeCoefficient": 0.0019,
     "equipment": "cable machine",
-    "primary": {"muscle": "Lats", "difficulty": "beginner"},
-    "secondary": {"muscle": "Biceps, Mid Back", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lats", "difficulty": "beginner" },
+    "secondary": { "muscle": "Biceps, Mid Back", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-5",
@@ -294,9 +321,9 @@
     "met": 6.0,
     "volumeCoefficient": 0.0025,
     "equipment": "barbell",
-    "primary": {"muscle": "Mid Back", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Lats, Biceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Mid Back", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Lats, Biceps", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "back-6",
@@ -307,9 +334,9 @@
     "met": 6.5,
     "volumeCoefficient": 0.0026,
     "equipment": "barbell",
-    "primary": {"muscle": "Back", "difficulty": "advanced"},
-    "secondary": {"muscle": "Lats, Biceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Back", "difficulty": "advanced" },
+    "secondary": { "muscle": "Lats, Biceps", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "back-7",
@@ -320,9 +347,9 @@
     "met": 6.0,
     "volumeCoefficient": 0.0024,
     "equipment": "t-bar",
-    "primary": {"muscle": "Mid Back", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Lats, Biceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Lower Back", "difficulty": "intermediate"}
+    "primary": { "muscle": "Mid Back", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Lats, Biceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Lower Back", "difficulty": "intermediate" }
   },
   {
     "id": "back-8",
@@ -333,9 +360,9 @@
     "met": 5.5,
     "volumeCoefficient": 0.0022,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Lats", "difficulty": "beginner"},
-    "secondary": {"muscle": "Mid Back, Biceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lats", "difficulty": "beginner" },
+    "secondary": { "muscle": "Mid Back, Biceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-9",
@@ -344,11 +371,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "machine",
-    "primary": {"muscle": "Mid Back", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Lats, Biceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Rear Delts", "difficulty": "beginner"}
+    "primary": { "muscle": "Mid Back", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Lats, Biceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Rear Delts", "difficulty": "beginner" }
   },
   {
     "id": "back-10",
@@ -357,11 +384,11 @@
     "difficulty": "beginner",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "cable machine",
-    "primary": {"muscle": "Back", "difficulty": "beginner"},
-    "secondary": {"muscle": "Lats, Biceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Rear Delts", "difficulty": "beginner"}
+    "primary": { "muscle": "Back", "difficulty": "beginner" },
+    "secondary": { "muscle": "Lats, Biceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Rear Delts", "difficulty": "beginner" }
   },
   {
     "id": "back-11",
@@ -370,11 +397,14 @@
     "difficulty": "advanced",
     "type": "strength",
     "met": 7.0,
-    "volumeCoefficient": 0.0030,
+    "volumeCoefficient": 0.003,
     "equipment": "barbell",
-    "primary": {"muscle": "Back", "difficulty": "advanced"},
-    "secondary": {"muscle": "Hamstrings, Glutes, Core", "difficulty": "advanced"},
-    "tertiary": {"muscle": "Forearms", "difficulty": "beginner"}
+    "primary": { "muscle": "Back", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Hamstrings, Glutes, Core",
+      "difficulty": "advanced"
+    },
+    "tertiary": { "muscle": "Forearms", "difficulty": "beginner" }
   },
   {
     "id": "back-12",
@@ -385,9 +415,12 @@
     "met": 6.5,
     "volumeCoefficient": 0.0028,
     "equipment": "barbell",
-    "primary": {"muscle": "Hamstrings", "difficulty": "advanced"},
-    "secondary": {"muscle": "Glutes, Lower Back", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Forearms", "difficulty": "beginner"}
+    "primary": { "muscle": "Hamstrings", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Glutes, Lower Back",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Forearms", "difficulty": "beginner" }
   },
   {
     "id": "back-13",
@@ -398,8 +431,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0012,
     "equipment": "hyperextension bench",
-    "primary": {"muscle": "Lower Back", "difficulty": "beginner"},
-    "secondary": {"muscle": "Glutes, Hamstrings", "difficulty": "beginner"},
+    "primary": { "muscle": "Lower Back", "difficulty": "beginner" },
+    "secondary": { "muscle": "Glutes, Hamstrings", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -411,9 +444,9 @@
     "met": 4.5,
     "volumeCoefficient": 0.0018,
     "equipment": "cable machine",
-    "primary": {"muscle": "Lats", "difficulty": "beginner"},
-    "secondary": {"muscle": "Rear Delts", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lats", "difficulty": "beginner" },
+    "secondary": { "muscle": "Rear Delts", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "back-15",
@@ -424,9 +457,9 @@
     "met": 4.5,
     "volumeCoefficient": 0.0015,
     "equipment": "bar",
-    "primary": {"muscle": "Back", "difficulty": "beginner"},
-    "secondary": {"muscle": "Biceps, Rear Delts", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Back", "difficulty": "beginner" },
+    "secondary": { "muscle": "Biceps, Rear Delts", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "shoulders-1",
@@ -437,9 +470,12 @@
     "met": 6.0,
     "volumeCoefficient": 0.0025,
     "equipment": "barbell",
-    "primary": {"muscle": "Front Delts", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Side Delts, Triceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Front Delts", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Side Delts, Triceps",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "shoulders-2",
@@ -450,9 +486,9 @@
     "met": 5.5,
     "volumeCoefficient": 0.0023,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "secondary": {"muscle": "Triceps, Upper Chest", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "secondary": { "muscle": "Triceps, Upper Chest", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "shoulders-3",
@@ -463,9 +499,9 @@
     "met": 6.5,
     "volumeCoefficient": 0.0024,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Shoulders", "difficulty": "advanced"},
-    "secondary": {"muscle": "Upper Chest, Triceps", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Shoulders", "difficulty": "advanced" },
+    "secondary": { "muscle": "Upper Chest, Triceps", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "shoulders-4",
@@ -476,8 +512,8 @@
     "met": 4.5,
     "volumeCoefficient": 0.0015,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Side Delts", "difficulty": "beginner"},
-    "secondary": {"muscle": "Upper Traps", "difficulty": "beginner"},
+    "primary": { "muscle": "Side Delts", "difficulty": "beginner" },
+    "secondary": { "muscle": "Upper Traps", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -489,8 +525,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0014,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Front Delts", "difficulty": "beginner"},
-    "secondary": {"muscle": "Upper Chest", "difficulty": "beginner"},
+    "primary": { "muscle": "Front Delts", "difficulty": "beginner" },
+    "secondary": { "muscle": "Upper Chest", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -502,8 +538,8 @@
     "met": 4.5,
     "volumeCoefficient": 0.0016,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Rear Delts", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Mid Back", "difficulty": "beginner"},
+    "primary": { "muscle": "Rear Delts", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Mid Back", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -515,8 +551,11 @@
     "met": 4.0,
     "volumeCoefficient": 0.0015,
     "equipment": "cable machine",
-    "primary": {"muscle": "Rear Delts", "difficulty": "beginner"},
-    "secondary": {"muscle": "Rotator Cuff, Upper Back", "difficulty": "beginner"},
+    "primary": { "muscle": "Rear Delts", "difficulty": "beginner" },
+    "secondary": {
+      "muscle": "Rotator Cuff, Upper Back",
+      "difficulty": "beginner"
+    },
     "tertiary": null
   },
   {
@@ -526,11 +565,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "barbell",
-    "primary": {"muscle": "Traps", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Shoulders", "difficulty": "beginner"}
+    "primary": { "muscle": "Traps", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Shoulders", "difficulty": "beginner" }
   },
   {
     "id": "shoulders-9",
@@ -541,9 +580,9 @@
     "met": 4.5,
     "volumeCoefficient": 0.0018,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Traps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Shoulders", "difficulty": "beginner"}
+    "primary": { "muscle": "Traps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Shoulders", "difficulty": "beginner" }
   },
   {
     "id": "biceps-1",
@@ -554,8 +593,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0015,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Biceps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Biceps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -567,8 +606,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0015,
     "equipment": "dumbbells",
-    "primary": {"muscle": "Brachialis/Biceps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Brachialis/Biceps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -580,9 +619,9 @@
     "met": 4.5,
     "volumeCoefficient": 0.0018,
     "equipment": "barbell",
-    "primary": {"muscle": "Biceps", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Forearms", "difficulty": "beginner"}
+    "primary": { "muscle": "Biceps", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Forearms", "difficulty": "beginner" }
   },
   {
     "id": "biceps-4",
@@ -593,7 +632,7 @@
     "met": 3.5,
     "volumeCoefficient": 0.0012,
     "equipment": "dumbbell",
-    "primary": {"muscle": "Biceps", "difficulty": "beginner"},
+    "primary": { "muscle": "Biceps", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -606,8 +645,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0016,
     "equipment": "barbell or dumbbells",
-    "primary": {"muscle": "Biceps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Biceps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -619,8 +658,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0015,
     "equipment": "cable machine",
-    "primary": {"muscle": "Biceps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Biceps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Forearms", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -632,7 +671,7 @@
     "met": 4.0,
     "volumeCoefficient": 0.0015,
     "equipment": "cable machine",
-    "primary": {"muscle": "Triceps", "difficulty": "beginner"},
+    "primary": { "muscle": "Triceps", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -643,10 +682,10 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "barbell or dumbbells",
-    "primary": {"muscle": "Triceps", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
+    "primary": { "muscle": "Triceps", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -658,9 +697,9 @@
     "met": 4.5,
     "volumeCoefficient": 0.0018,
     "equipment": "dumbbell",
-    "primary": {"muscle": "Triceps", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Core", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Shoulders", "difficulty": "beginner"}
+    "primary": { "muscle": "Triceps", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Core", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Shoulders", "difficulty": "beginner" }
   },
   {
     "id": "triceps-4",
@@ -671,9 +710,9 @@
     "met": 6.0,
     "volumeCoefficient": 0.0025,
     "equipment": "barbell",
-    "primary": {"muscle": "Triceps", "difficulty": "advanced"},
-    "secondary": {"muscle": "Chest, Shoulders", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Triceps", "difficulty": "advanced" },
+    "secondary": { "muscle": "Chest, Shoulders", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "triceps-5",
@@ -682,11 +721,11 @@
     "difficulty": "advanced",
     "type": "bodyweight",
     "met": 6.0,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "parallel bars",
-    "primary": {"muscle": "Triceps", "difficulty": "advanced"},
-    "secondary": {"muscle": "Chest, Shoulders", "difficulty": "advanced"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Triceps", "difficulty": "advanced" },
+    "secondary": { "muscle": "Chest, Shoulders", "difficulty": "advanced" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "triceps-6",
@@ -697,8 +736,8 @@
     "met": 4.0,
     "volumeCoefficient": 0.0012,
     "equipment": "bench",
-    "primary": {"muscle": "Triceps", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders, Chest", "difficulty": "beginner"},
+    "primary": { "muscle": "Triceps", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders, Chest", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -708,11 +747,14 @@
     "difficulty": "advanced",
     "type": "strength",
     "met": 7.0,
-    "volumeCoefficient": 0.0030,
+    "volumeCoefficient": 0.003,
     "equipment": "barbell",
-    "primary": {"muscle": "Quads", "difficulty": "advanced"},
-    "secondary": {"muscle": "Glutes, Hamstrings, Core", "difficulty": "advanced"},
-    "tertiary": {"muscle": "Lower Back", "difficulty": "intermediate"}
+    "primary": { "muscle": "Quads", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Glutes, Hamstrings, Core",
+      "difficulty": "advanced"
+    },
+    "tertiary": { "muscle": "Lower Back", "difficulty": "intermediate" }
   },
   {
     "id": "legs-2",
@@ -721,11 +763,11 @@
     "difficulty": "advanced",
     "type": "strength",
     "met": 7.0,
-    "volumeCoefficient": 0.0030,
+    "volumeCoefficient": 0.003,
     "equipment": "barbell",
-    "primary": {"muscle": "Quads", "difficulty": "advanced"},
-    "secondary": {"muscle": "Core, Glutes", "difficulty": "advanced"},
-    "tertiary": {"muscle": "Upper Back", "difficulty": "intermediate"}
+    "primary": { "muscle": "Quads", "difficulty": "advanced" },
+    "secondary": { "muscle": "Core, Glutes", "difficulty": "advanced" },
+    "tertiary": { "muscle": "Upper Back", "difficulty": "intermediate" }
   },
   {
     "id": "legs-3",
@@ -736,9 +778,12 @@
     "met": 5.5,
     "volumeCoefficient": 0.0018,
     "equipment": "dumbbells (optional)",
-    "primary": {"muscle": "Quads", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Glutes, Hamstrings", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Quads", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Glutes, Hamstrings",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "legs-4",
@@ -749,8 +794,11 @@
     "met": 6.0,
     "volumeCoefficient": 0.0024,
     "equipment": "machine",
-    "primary": {"muscle": "Quads", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Glutes, Hamstrings", "difficulty": "intermediate"},
+    "primary": { "muscle": "Quads", "difficulty": "intermediate" },
+    "secondary": {
+      "muscle": "Glutes, Hamstrings",
+      "difficulty": "intermediate"
+    },
     "tertiary": null
   },
   {
@@ -762,7 +810,7 @@
     "met": 3.5,
     "volumeCoefficient": 0.0012,
     "equipment": "machine or dumbbells",
-    "primary": {"muscle": "Calves", "difficulty": "beginner"},
+    "primary": { "muscle": "Calves", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -775,9 +823,9 @@
     "met": 5.5,
     "volumeCoefficient": 0.0022,
     "equipment": "barbell",
-    "primary": {"muscle": "Glutes", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Hamstrings", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Glutes", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Hamstrings", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "legs-7",
@@ -788,9 +836,12 @@
     "met": 6.5,
     "volumeCoefficient": 0.0025,
     "equipment": "dumbbells (optional)",
-    "primary": {"muscle": "Quads", "difficulty": "advanced"},
-    "secondary": {"muscle": "Glutes, Hamstrings", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Quads", "difficulty": "advanced" },
+    "secondary": {
+      "muscle": "Glutes, Hamstrings",
+      "difficulty": "intermediate"
+    },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "legs-8",
@@ -801,9 +852,9 @@
     "met": 5.0,
     "volumeCoefficient": 0.0016,
     "equipment": "dumbbells (optional)",
-    "primary": {"muscle": "Quads", "difficulty": "beginner"},
-    "secondary": {"muscle": "Glutes", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Hamstrings", "difficulty": "beginner"}
+    "primary": { "muscle": "Quads", "difficulty": "beginner" },
+    "secondary": { "muscle": "Glutes", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Hamstrings", "difficulty": "beginner" }
   },
   {
     "id": "legs-9",
@@ -814,7 +865,7 @@
     "met": 3.5,
     "volumeCoefficient": 0.0015,
     "equipment": "machine",
-    "primary": {"muscle": "Quads", "difficulty": "beginner"},
+    "primary": { "muscle": "Quads", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -827,8 +878,8 @@
     "met": 3.5,
     "volumeCoefficient": 0.0015,
     "equipment": "machine",
-    "primary": {"muscle": "Hamstrings", "difficulty": "beginner"},
-    "secondary": {"muscle": "Glutes", "difficulty": "beginner"},
+    "primary": { "muscle": "Hamstrings", "difficulty": "beginner" },
+    "secondary": { "muscle": "Glutes", "difficulty": "beginner" },
     "tertiary": null
   },
   {
@@ -840,7 +891,7 @@
     "met": 3.0,
     "volumeCoefficient": 0.0008,
     "equipment": "none",
-    "primary": {"muscle": "Upper Abs", "difficulty": "beginner"},
+    "primary": { "muscle": "Upper Abs", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -853,9 +904,9 @@
     "met": 5.0,
     "volumeCoefficient": 0.0015,
     "equipment": "none",
-    "primary": {"muscle": "Lower Abs", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Hip Flexors", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Lower Abs", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Hip Flexors", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "core-3",
@@ -864,11 +915,11 @@
     "difficulty": "beginner",
     "type": "bodyweight",
     "met": 3.5,
-    "volumeCoefficient": 0.0010,
+    "volumeCoefficient": 0.001,
     "equipment": "none",
-    "primary": {"muscle": "Core", "difficulty": "beginner"},
-    "secondary": {"muscle": "Lower Back", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Shoulders", "difficulty": "beginner"}
+    "primary": { "muscle": "Core", "difficulty": "beginner" },
+    "secondary": { "muscle": "Lower Back", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Shoulders", "difficulty": "beginner" }
   },
   {
     "id": "core-4",
@@ -879,9 +930,9 @@
     "met": 4.0,
     "volumeCoefficient": 0.0012,
     "equipment": "weight (optional)",
-    "primary": {"muscle": "Obliques", "difficulty": "beginner"},
-    "secondary": {"muscle": "Core", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Hip Flexors", "difficulty": "beginner"}
+    "primary": { "muscle": "Obliques", "difficulty": "beginner" },
+    "secondary": { "muscle": "Core", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Hip Flexors", "difficulty": "beginner" }
   },
   {
     "id": "core-5",
@@ -892,9 +943,9 @@
     "met": 6.0,
     "volumeCoefficient": 0.0012,
     "equipment": "none",
-    "primary": {"muscle": "Core", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Glutes, Legs", "difficulty": "beginner"}
+    "primary": { "muscle": "Core", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Glutes, Legs", "difficulty": "beginner" }
   },
   {
     "id": "forearms-1",
@@ -903,9 +954,9 @@
     "difficulty": "beginner",
     "type": "strength",
     "met": 3.0,
-    "volumeCoefficient": 0.0010,
+    "volumeCoefficient": 0.001,
     "equipment": "dumbbells or barbell",
-    "primary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Forearms", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -916,9 +967,9 @@
     "difficulty": "beginner",
     "type": "strength",
     "met": 3.0,
-    "volumeCoefficient": 0.0010,
+    "volumeCoefficient": 0.001,
     "equipment": "dumbbells or barbell",
-    "primary": {"muscle": "Forearms", "difficulty": "beginner"},
+    "primary": { "muscle": "Forearms", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   },
@@ -929,11 +980,11 @@
     "difficulty": "intermediate",
     "type": "strength",
     "met": 5.5,
-    "volumeCoefficient": 0.0020,
+    "volumeCoefficient": 0.002,
     "equipment": "dumbbells or kettlebells",
-    "primary": {"muscle": "Forearms", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Traps, Core", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Legs", "difficulty": "beginner"}
+    "primary": { "muscle": "Forearms", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Traps, Core", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Legs", "difficulty": "beginner" }
   },
   {
     "id": "forearms-4",
@@ -944,9 +995,9 @@
     "met": 4.0,
     "volumeCoefficient": 0.0012,
     "equipment": "pull-up bar",
-    "primary": {"muscle": "Forearms", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Lats", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Forearms", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Lats", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "cardio-1",
@@ -957,9 +1008,9 @@
     "met": 8.0,
     "volumeCoefficient": 0.0015,
     "equipment": "none",
-    "primary": {"muscle": "Legs", "difficulty": "advanced"},
-    "secondary": {"muscle": "Chest, Shoulders", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "intermediate"}
+    "primary": { "muscle": "Legs", "difficulty": "advanced" },
+    "secondary": { "muscle": "Chest, Shoulders", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "intermediate" }
   },
   {
     "id": "cardio-2",
@@ -968,11 +1019,11 @@
     "difficulty": "beginner",
     "type": "cardio",
     "met": 11.5,
-    "volumeCoefficient": 0.0000,
+    "volumeCoefficient": 0.0,
     "equipment": "jump rope",
-    "primary": {"muscle": "Calves", "difficulty": "beginner"},
-    "secondary": {"muscle": "Shoulders", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Calves", "difficulty": "beginner" },
+    "secondary": { "muscle": "Shoulders", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "cardio-3",
@@ -981,11 +1032,11 @@
     "difficulty": "intermediate",
     "type": "cardio",
     "met": 7.0,
-    "volumeCoefficient": 0.0000,
+    "volumeCoefficient": 0.0,
     "equipment": "rowing machine",
-    "primary": {"muscle": "Back", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Legs, Biceps", "difficulty": "intermediate"},
-    "tertiary": {"muscle": "Core", "difficulty": "beginner"}
+    "primary": { "muscle": "Back", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Legs, Biceps", "difficulty": "intermediate" },
+    "tertiary": { "muscle": "Core", "difficulty": "beginner" }
   },
   {
     "id": "cardio-4",
@@ -994,11 +1045,11 @@
     "difficulty": "intermediate",
     "type": "cardio",
     "met": 8.0,
-    "volumeCoefficient": 0.0000,
+    "volumeCoefficient": 0.0,
     "equipment": "none",
-    "primary": {"muscle": "Legs", "difficulty": "intermediate"},
-    "secondary": {"muscle": "Core", "difficulty": "beginner"},
-    "tertiary": {"muscle": "Glutes", "difficulty": "beginner"}
+    "primary": { "muscle": "Legs", "difficulty": "intermediate" },
+    "secondary": { "muscle": "Core", "difficulty": "beginner" },
+    "tertiary": { "muscle": "Glutes", "difficulty": "beginner" }
   },
   {
     "id": "neck-1",
@@ -1009,7 +1060,7 @@
     "met": 3.0,
     "volumeCoefficient": 0.0008,
     "equipment": "plate or harness",
-    "primary": {"muscle": "Neck", "difficulty": "beginner"},
+    "primary": { "muscle": "Neck", "difficulty": "beginner" },
     "secondary": null,
     "tertiary": null
   }

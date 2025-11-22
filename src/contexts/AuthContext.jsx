@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthChange } from '../lib/firebase-auth';
-import { getUserProfile } from '../lib/firebase-database';
+import { createContext, useContext, useEffect, useState } from "react";
+import { onAuthChange } from "../lib/firebase-auth";
+import { getUserProfile } from "../lib/firebase-database";
 
 const AuthContext = createContext({});
 
@@ -16,22 +16,22 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Listen to auth state changes
     const unsubscribe = onAuthChange(async (firebaseUser) => {
-      console.log('Auth state changed:', firebaseUser?.uid);
+      console.log("Auth state changed:", firebaseUser?.uid);
       setUser(firebaseUser);
-      
+
       if (firebaseUser) {
         try {
           const userProfile = await getUserProfile(firebaseUser.uid);
-          console.log('Profile loaded:', userProfile);
+          console.log("Profile loaded:", userProfile);
           setProfile(userProfile);
         } catch (error) {
-          console.error('Error fetching profile:', error);
+          console.error("Error fetching profile:", error);
           setProfile(null);
         }
       } else {
         setProfile(null);
       }
-      
+
       setLoading(false);
     });
 
@@ -41,12 +41,8 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     profile,
-    loading
+    loading,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

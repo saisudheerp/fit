@@ -11,6 +11,7 @@ Run the SQL schema in your Supabase SQL Editor:
 ```
 
 This creates:
+
 - ✅ Exercises table (you will populate)
 - ✅ User profiles (auto-created on signup)
 - ✅ Workout sessions & exercise logs
@@ -65,6 +66,7 @@ INSERT INTO exercises (
 ```
 
 **Or** use CSV import:
+
 1. Create a CSV file with columns: `name,body_part,difficulty,type,met,volume_coefficient,equipment`
 2. Go to Supabase → Table Editor → exercises → Insert → Import CSV
 
@@ -104,6 +106,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## API Functions Available
 
 ### Auth (`src/lib/auth.js`)
+
 - `signUp(email, password)`
 - `signIn(email, password)`
 - `signOut()`
@@ -111,6 +114,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 - `getSession()`
 
 ### Database (`src/lib/database.js`)
+
 - `getExercises()` - Fetch all exercises
 - `createWorkoutSession(userId, data)` - Create new session
 - `logExercise(sessionId, data)` - Log exercise with calories

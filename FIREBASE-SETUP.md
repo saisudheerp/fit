@@ -53,47 +53,47 @@ Click on the "Rules" tab and paste this:
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // Profiles: users can only read/write their own
     match /profiles/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    
+
     // Exercises: public read access (static data)
     match /exercises/{exerciseId} {
       allow read: if true;
       allow write: if false; // Only admins via Firebase Console
     }
-    
+
     // Exercise logs: users can only access their own
     match /exercise_logs/{logId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
                        request.resource.data.userId == request.auth.uid;
     }
-    
+
     // Workout sessions: users can only access their own
     match /workout_sessions/{sessionId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
                        request.resource.data.userId == request.auth.uid;
     }
-    
+
     // Step logs: users can only access their own
     match /step_logs/{logId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
                        request.resource.data.userId == request.auth.uid;
     }
-    
+
     // Routines: users can only access their own
     match /routines/{routineId} {
-      allow read, write: if request.auth != null && 
+      allow read, write: if request.auth != null &&
                             resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && 
+      allow create: if request.auth != null &&
                        request.resource.data.userId == request.auth.uid;
     }
   }
@@ -111,6 +111,7 @@ I'll provide a script to seed the exercises. For now, you can manually add one e
 Collection: `exercises`
 Document ID: Auto-ID
 Fields:
+
 - name: "Barbell Bench Press"
 - category: "chest"
 - muscles: (map)
@@ -130,6 +131,7 @@ Fields:
 ## Done!
 
 Firebase is much simpler than Supabase:
+
 - ✅ No RLS policy headaches
 - ✅ No email verification by default
 - ✅ Easier security rules

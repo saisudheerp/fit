@@ -11,7 +11,7 @@
  * @returns {number} Calories burned from time
  */
 export function calculateCaloriesTime(met, bodyWeightKg, durationMinutes) {
-  return (met * 3.5 * bodyWeightKg / 200) * durationMinutes;
+  return ((met * 3.5 * bodyWeightKg) / 200) * durationMinutes;
 }
 
 /**
@@ -22,7 +22,12 @@ export function calculateCaloriesTime(met, bodyWeightKg, durationMinutes) {
  * @param {number} volumeCoefficient - Exercise-specific coefficient (0.05-0.14)
  * @returns {number} Calories burned from volume
  */
-export function calculateCaloriesVolume(weightKg, reps, sets, volumeCoefficient) {
+export function calculateCaloriesVolume(
+  weightKg,
+  reps,
+  sets,
+  volumeCoefficient
+) {
   const volume = weightKg * reps * sets;
   return volume * volumeCoefficient;
 }
@@ -47,17 +52,26 @@ export function calculateStrengthCalories({
   weightKg,
   reps,
   sets,
-  volumeCoefficient
+  volumeCoefficient,
 }) {
-  const caloriesTime = calculateCaloriesTime(met, bodyWeightKg, durationMinutes);
-  const caloriesVolume = calculateCaloriesVolume(weightKg, reps, sets, volumeCoefficient);
+  const caloriesTime = calculateCaloriesTime(
+    met,
+    bodyWeightKg,
+    durationMinutes
+  );
+  const caloriesVolume = calculateCaloriesVolume(
+    weightKg,
+    reps,
+    sets,
+    volumeCoefficient
+  );
   const volume = weightKg * reps * sets;
 
   return {
     caloriesTime: Math.round(caloriesTime * 10) / 10,
     caloriesVolume: Math.round(caloriesVolume * 10) / 10,
     totalCalories: Math.round((caloriesTime + caloriesVolume) * 10) / 10,
-    volume: Math.round(volume)
+    volume: Math.round(volume),
   };
 }
 
@@ -73,15 +87,19 @@ export function calculateStrengthCalories({
 export function calculateBodyweightCalories({
   met,
   bodyWeightKg,
-  durationMinutes
+  durationMinutes,
 }) {
-  const totalCalories = calculateCaloriesTime(met, bodyWeightKg, durationMinutes);
+  const totalCalories = calculateCaloriesTime(
+    met,
+    bodyWeightKg,
+    durationMinutes
+  );
 
   return {
     caloriesTime: Math.round(totalCalories * 10) / 10,
     caloriesVolume: 0,
     totalCalories: Math.round(totalCalories * 10) / 10,
-    volume: 0
+    volume: 0,
   };
 }
 
@@ -97,15 +115,19 @@ export function calculateBodyweightCalories({
 export function calculateCardioCalories({
   met,
   bodyWeightKg,
-  durationMinutes
+  durationMinutes,
 }) {
-  const totalCalories = calculateCaloriesTime(met, bodyWeightKg, durationMinutes);
+  const totalCalories = calculateCaloriesTime(
+    met,
+    bodyWeightKg,
+    durationMinutes
+  );
 
   return {
     caloriesTime: Math.round(totalCalories * 10) / 10,
     caloriesVolume: 0,
     totalCalories: Math.round(totalCalories * 10) / 10,
-    volume: 0
+    volume: 0,
   };
 }
 
@@ -125,7 +147,7 @@ export function calculateExerciseCalories(exercise, params) {
   const { bodyWeightKg, durationMinutes, weightKg, reps, sets } = params;
 
   switch (type) {
-    case 'strength':
+    case "strength":
       return calculateStrengthCalories({
         met,
         bodyWeightKg,
@@ -133,29 +155,29 @@ export function calculateExerciseCalories(exercise, params) {
         weightKg: weightKg || 0,
         reps: reps || 0,
         sets: sets || 0,
-        volumeCoefficient
+        volumeCoefficient,
       });
 
-    case 'bodyweight':
+    case "bodyweight":
       return calculateBodyweightCalories({
         met,
         bodyWeightKg,
-        durationMinutes
+        durationMinutes,
       });
 
-    case 'cardio':
+    case "cardio":
       return calculateCardioCalories({
         met,
         bodyWeightKg,
-        durationMinutes
+        durationMinutes,
       });
 
-    case 'timed':
+    case "timed":
       // Timed exercises (like Plank, Dead Hang) use bodyweight calculation
       return calculateBodyweightCalories({
         met,
         bodyWeightKg,
-        durationMinutes
+        durationMinutes,
       });
 
     default:
@@ -163,7 +185,7 @@ export function calculateExerciseCalories(exercise, params) {
         caloriesTime: 0,
         caloriesVolume: 0,
         totalCalories: 0,
-        volume: 0
+        volume: 0,
       };
   }
 }

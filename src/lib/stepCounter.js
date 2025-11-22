@@ -10,14 +10,14 @@ class StepCounter {
     this.config = {
       sampleRate: 50, // Hz for active mode
       idleSampleRate: 10, // Hz for idle mode
-      lowBatteryThreshold: 0.10, // 10%
+      lowBatteryThreshold: 0.1, // 10%
       peakDebounceMs: 250,
       stepRegularityCount: 3,
       calibrationSteps: 20,
       persistIntervalMs: 30000, // 30 seconds
       lowPassAlpha: 0.9,
       highPassAlpha: 0.8,
-      ...config
+      ...config,
     };
 
     // State
@@ -30,7 +30,7 @@ class StepCounter {
     this.lastPeakTime = 0;
     this.isCalibrated = false;
     this.strideFactor = 1.0;
-    
+
     // User profile
     this.userHeight = 170; // cm, default
     this.userWeight = 75; // kg, default
@@ -43,26 +43,26 @@ class StepCounter {
     this.lastAccel = { x: 0, y: 0, z: 0 };
     this.filteredAccel = { x: 0, y: 0, z: 0 };
     this.gravity = { x: 0, y: 0, z: 0 };
-    
+
     // Native step counter
     this.nativeStepCounter = null;
     this.useNativeAPI = false;
     this.baselineNativeSteps = 0;
-    
+
     // Callbacks
     this.onStepDetected = null;
     this.onStatsUpdate = null;
-    
+
     // Battery monitoring
     this.batteryLevel = 1.0;
-    
+
     // Device orientation
-    this.deviceOrientation = 'unknown'; // 'pocket', 'hand', 'unknown'
+    this.deviceOrientation = "unknown"; // 'pocket', 'hand', 'unknown'
     this.orientationThreshold = 0.7;
-    
+
     // Persistence
     this.persistTimer = null;
-    this.storageKey = 'step_counter_session';
+    this.storageKey = "step_counter_session";
   }
 
   /**
@@ -72,21 +72,21 @@ class StepCounter {
     this.userHeight = userProfile.height_cm || 170;
     this.userWeight = userProfile.body_weight_kg || 75;
     this.strideLength = this.calculateStrideLength();
-    
+
     // Load persisted session
     await this.loadPersistedSession();
-    
+
     // Check for native step API
     await this.checkNativeStepAPI();
-    
+
     // Setup battery monitoring
     this.setupBatteryMonitoring();
-    
-    console.log('Step counter initialized:', {
+
+    console.log("Step counter initialized:", {
       height: this.userHeight,
       weight: this.userWeight,
       strideLength: this.strideLength,
-      useNative: this.useNativeAPI
+      useNative: this.useNativeAPI,
     });
   }
 
@@ -103,10 +103,10 @@ class StepCounter {
    */
   async checkNativeStepAPI() {
     // Check for Web APIs (experimental)
-    if ('Sensor' in window && 'GravitySensor' in window) {
-      console.log('Native sensors available');
+    if ("Sensor" in window && "GravitySensor" in window) {
+      console.log("Native sensors available");
     }
-    
+
     // For actual native API, this would interface with Cordova/Capacitor plugins
     // For web demo, we'll use sensor fusion
     this.useNativeAPI = false;
@@ -117,20 +117,20 @@ class StepCounter {
    */
   async start() {
     if (this.isActive) return;
-    
+
     this.isActive = true;
     this.startTime = Date.now();
-    
+
     if (this.useNativeAPI) {
       await this.startNativeStepCounter();
     } else {
       await this.startSensorFusion();
     }
-    
+
     // Start persistence timer
     this.startPersistence();
-    
-    console.log('Step counter started');
+
+    console.log("Step counter started");
   }
 
   /**
@@ -138,22 +138,22 @@ class StepCounter {
    */
   async stop() {
     if (!this.isActive) return;
-    
+
     this.isActive = false;
-    
+
     if (this.useNativeAPI) {
       this.stopNativeStepCounter();
     } else {
       this.stopSensorFusion();
     }
-    
+
     // Stop persistence timer
     this.stopPersistence();
-    
+
     // Save final state
     await this.persistSession();
-    
-    console.log('Step counter stopped');
+
+    console.log("Step counter stopped");
   }
 
   /**
@@ -162,7 +162,7 @@ class StepCounter {
   async startNativeStepCounter() {
     // This would use Cordova/Capacitor plugins in production
     // For web: not available
-    console.log('Native step counter not available on web');
+    console.log("Native step counter not available on web");
   }
 
   /**
@@ -178,20 +178,25 @@ class StepCounter {
   async startSensorFusion() {
     try {
       // Request sensor permissions
-      if (typeof DeviceMotionEvent !== 'undefined' && 
-          typeof DeviceMotionEvent.requestPermission === 'function') {
+      if (
+        typeof DeviceMotionEvent !== "undefined" &&
+        typeof DeviceMotionEvent.requestPermission === "function"
+      ) {
         const permission = await DeviceMotionEvent.requestPermission();
-        if (permission !== 'granted') {
-          throw new Error('Motion sensor permission denied');
+        if (permission !== "granted") {
+          throw new Error("Motion sensor permission denied");
         }
       }
 
       // Start accelerometer
-      window.addEventListener('devicemotion', this.handleDeviceMotion.bind(this));
-      
-      console.log('Sensor fusion started');
+      window.addEventListener(
+        "devicemotion",
+        this.handleDeviceMotion.bind(this)
+      );
+
+      console.log("Sensor fusion started");
     } catch (error) {
-      console.error('Failed to start sensor fusion:', error);
+      console.error("Failed to start sensor fusion:", error);
       throw error;
     }
   }
@@ -200,7 +205,10 @@ class StepCounter {
    * Stop sensor fusion
    */
   stopSensorFusion() {
-    window.removeEventListener('devicemotion', this.handleDeviceMotion.bind(this));
+    window.removeEventListener(
+      "devicemotion",
+      this.handleDeviceMotion.bind(this)
+    );
   }
 
   /**
@@ -208,45 +216,45 @@ class StepCounter {
    */
   handleDeviceMotion(event) {
     if (!this.isActive) return;
-    
+
     // Check battery level
     if (this.batteryLevel < this.config.lowBatteryThreshold) {
-      console.warn('Battery too low, stopping step counter');
+      console.warn("Battery too low, stopping step counter");
       this.stop();
       return;
     }
 
     const accel = event.accelerationIncludingGravity;
     const rotation = event.rotationRate;
-    
+
     if (!accel) return;
 
     // Apply filters
     this.applyLowPassFilter(accel);
     this.applyHighPassFilter();
-    
+
     // Update gravity estimation
     this.updateGravity(accel);
-    
+
     // Get linear acceleration (remove gravity)
     const linearAccel = {
       x: accel.x - this.gravity.x,
       y: accel.y - this.gravity.y,
-      z: accel.z - this.gravity.z
+      z: accel.z - this.gravity.z,
     };
 
     // Calculate magnitude
     const magnitude = Math.sqrt(
       linearAccel.x * linearAccel.x +
-      linearAccel.y * linearAccel.y +
-      linearAccel.z * linearAccel.z
+        linearAccel.y * linearAccel.y +
+        linearAccel.z * linearAccel.z
     );
 
     // Detect device orientation
     this.detectOrientation(accel, rotation);
-    
+
     // Dynamic threshold based on orientation
-    const threshold = this.deviceOrientation === 'pocket' ? 1.5 : 1.2;
+    const threshold = this.deviceOrientation === "pocket" ? 1.5 : 1.2;
 
     // Peak detection
     this.detectPeak(magnitude, threshold, rotation);
@@ -270,7 +278,7 @@ class StepCounter {
     this.filteredAccel.x = alpha * (this.filteredAccel.x + this.lastAccel.x);
     this.filteredAccel.y = alpha * (this.filteredAccel.y + this.lastAccel.y);
     this.filteredAccel.z = alpha * (this.filteredAccel.z + this.lastAccel.z);
-    
+
     this.lastAccel = { ...this.filteredAccel };
   }
 
@@ -289,22 +297,22 @@ class StepCounter {
    */
   detectOrientation(accel, rotation) {
     if (!rotation) {
-      this.deviceOrientation = 'unknown';
+      this.deviceOrientation = "unknown";
       return;
     }
 
     // Calculate variance of rotation
     const rotationMag = Math.sqrt(
       rotation.alpha * rotation.alpha +
-      rotation.beta * rotation.beta +
-      rotation.gamma * rotation.gamma
+        rotation.beta * rotation.beta +
+        rotation.gamma * rotation.gamma
     );
 
     // Higher rotation = likely in hand, lower = pocket
     if (rotationMag > this.orientationThreshold) {
-      this.deviceOrientation = 'hand';
+      this.deviceOrientation = "hand";
     } else {
-      this.deviceOrientation = 'pocket';
+      this.deviceOrientation = "pocket";
     }
   }
 
@@ -313,7 +321,7 @@ class StepCounter {
    */
   detectPeak(magnitude, threshold, rotation) {
     const now = Date.now();
-    
+
     // Debounce - ignore peaks within 250ms
     if (now - this.lastPeakTime < this.config.peakDebounceMs) {
       return;
@@ -346,7 +354,7 @@ class StepCounter {
    */
   validateStepRegularity(currentTime) {
     this.recentStepTimes.push(currentTime);
-    
+
     // Keep only last few steps
     if (this.recentStepTimes.length > this.config.stepRegularityCount + 1) {
       this.recentStepTimes.shift();
@@ -365,7 +373,9 @@ class StepCounter {
 
     // Calculate variance of intervals
     const mean = intervals.reduce((a, b) => a + b, 0) / intervals.length;
-    const variance = intervals.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / intervals.length;
+    const variance =
+      intervals.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      intervals.length;
     const stdDev = Math.sqrt(variance);
 
     // Accept if variance is reasonable (consistent cadence)
@@ -378,18 +388,18 @@ class StepCounter {
   registerStep(timestamp) {
     this.steps++;
     this.lastStepTime = timestamp;
-    
+
     // Update distance
     this.updateDistance();
-    
+
     // Update calories
     this.updateCalories();
-    
+
     // Callback
     if (this.onStepDetected) {
       this.onStepDetected(this.steps);
     }
-    
+
     // Update stats callback
     if (this.onStatsUpdate) {
       this.onStatsUpdate(this.getStats());
@@ -427,7 +437,7 @@ class StepCounter {
       duration: Math.floor(duration),
       cadence: Math.round(cadence),
       strideLength: this.strideLength,
-      strideFactor: this.strideFactor
+      strideFactor: this.strideFactor,
     };
   }
 
@@ -435,22 +445,22 @@ class StepCounter {
    * Start calibration process
    */
   async startCalibration() {
-    console.log('Starting calibration - walk 20 steps');
+    console.log("Starting calibration - walk 20 steps");
     this.isCalibrated = false;
     this.calibrationStartSteps = this.steps;
     this.calibrationStartTime = Date.now();
-    
+
     // If GPS available, request position
-    if ('geolocation' in navigator) {
+    if ("geolocation" in navigator) {
       try {
         const position = await navigator.geolocation.getCurrentPosition(
           (pos) => pos,
-          (err) => console.error('GPS error:', err),
+          (err) => console.error("GPS error:", err),
           { enableHighAccuracy: true }
         );
         this.calibrationStartPosition = position;
       } catch (error) {
-        console.warn('GPS not available for calibration');
+        console.warn("GPS not available for calibration");
       }
     }
   }
@@ -460,29 +470,29 @@ class StepCounter {
    */
   async completeCalibration() {
     const stepsTaken = this.steps - this.calibrationStartSteps;
-    
+
     if (stepsTaken < this.config.calibrationSteps) {
-      console.warn('Not enough steps for calibration');
+      console.warn("Not enough steps for calibration");
       return false;
     }
 
     let measuredDistance = null;
-    
+
     // Try to get GPS distance
-    if (this.calibrationStartPosition && 'geolocation' in navigator) {
+    if (this.calibrationStartPosition && "geolocation" in navigator) {
       try {
         const endPosition = await navigator.geolocation.getCurrentPosition(
           (pos) => pos,
-          (err) => console.error('GPS error:', err),
+          (err) => console.error("GPS error:", err),
           { enableHighAccuracy: true }
         );
-        
+
         measuredDistance = this.calculateGPSDistance(
           this.calibrationStartPosition,
           endPosition
         );
       } catch (error) {
-        console.warn('Could not get end GPS position');
+        console.warn("Could not get end GPS position");
       }
     }
 
@@ -490,15 +500,15 @@ class StepCounter {
       // Auto-tune stride factor
       const expectedDistance = (stepsTaken * this.strideLength) / 1000;
       this.strideFactor = measuredDistance / expectedDistance;
-      console.log('Calibration complete:', { 
+      console.log("Calibration complete:", {
         steps: stepsTaken,
         measuredDistance,
-        strideFactor: this.strideFactor 
+        strideFactor: this.strideFactor,
       });
     } else {
       // Manual calibration - assume default
       this.strideFactor = 1.0;
-      console.log('Calibration complete (no GPS)');
+      console.log("Calibration complete (no GPS)");
     }
 
     this.isCalibrated = true;
@@ -513,12 +523,14 @@ class StepCounter {
     const R = 6371; // Earth radius in km
     const dLat = this.toRadians(pos2.coords.latitude - pos1.coords.latitude);
     const dLon = this.toRadians(pos2.coords.longitude - pos1.coords.longitude);
-    
-    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(this.toRadians(pos1.coords.latitude)) *
-              Math.cos(this.toRadians(pos2.coords.latitude)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.toRadians(pos1.coords.latitude)) *
+        Math.cos(this.toRadians(pos2.coords.latitude)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in km
   }
@@ -531,15 +543,18 @@ class StepCounter {
    * Setup battery monitoring
    */
   setupBatteryMonitoring() {
-    if ('getBattery' in navigator) {
-      navigator.getBattery().then(battery => {
+    if ("getBattery" in navigator) {
+      navigator.getBattery().then((battery) => {
         this.batteryLevel = battery.level;
-        
-        battery.addEventListener('levelchange', () => {
+
+        battery.addEventListener("levelchange", () => {
           this.batteryLevel = battery.level;
-          
-          if (this.batteryLevel < this.config.lowBatteryThreshold && this.isActive) {
-            console.warn('Low battery, stopping step counter');
+
+          if (
+            this.batteryLevel < this.config.lowBatteryThreshold &&
+            this.isActive
+          ) {
+            console.warn("Low battery, stopping step counter");
             this.stop();
           }
         });
@@ -578,7 +593,7 @@ class StepCounter {
       strideFactor: this.strideFactor,
       isCalibrated: this.isCalibrated,
       timestamp: Date.now(),
-      date: new Date().toISOString().split('T')[0]
+      date: new Date().toISOString().split("T")[0],
     };
 
     localStorage.setItem(this.storageKey, JSON.stringify(session));
@@ -593,8 +608,8 @@ class StepCounter {
 
     try {
       const session = JSON.parse(stored);
-      const today = new Date().toISOString().split('T')[0];
-      
+      const today = new Date().toISOString().split("T")[0];
+
       // Only restore if from today
       if (session.date === today) {
         this.steps = session.steps || 0;
@@ -603,14 +618,14 @@ class StepCounter {
         this.startTime = session.startTime;
         this.strideFactor = session.strideFactor || 1.0;
         this.isCalibrated = session.isCalibrated || false;
-        
-        console.log('Restored session:', session);
+
+        console.log("Restored session:", session);
       } else {
         // Old session - clear it
         localStorage.removeItem(this.storageKey);
       }
     } catch (error) {
-      console.error('Failed to load persisted session:', error);
+      console.error("Failed to load persisted session:", error);
     }
   }
 

@@ -1,232 +1,870 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Seed Firestore Exercises</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
-            background: #121212;
-            color: #fff;
-        }
-        #status {
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-        button {
-            background: #fff;
-            color: #000;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #ddd;
-        }
-        button:disabled {
-            background: #666;
-            cursor: not-allowed;
-        }
-        .progress {
-            margin-top: 10px;
-            font-size: 14px;
-            color: #999;
-        }
-        .success {
-            color: #4CAF50;
-        }
-        .error {
-            color: #ff4444;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #121212;
+        color: #fff;
+      }
+      #status {
+        background: #1a1a1a;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      button {
+        background: #fff;
+        color: #000;
+        padding: 15px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #ddd;
+      }
+      button:disabled {
+        background: #666;
+        cursor: not-allowed;
+      }
+      .progress {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #999;
+      }
+      .success {
+        color: #4caf50;
+      }
+      .error {
+        color: #ff4444;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>🏋️ Seed Firestore Exercises</h1>
     <p>This will add all 79 exercises to your Firestore database.</p>
-    <p><strong>Important:</strong> Make sure you're signed in to your app first!</p>
-    
+    <p>
+      <strong>Important:</strong> Make sure you're signed in to your app first!
+    </p>
+
     <button id="seedBtn" onclick="seedExercises()">Start Seeding</button>
-    
+
     <div id="status"></div>
 
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDLmrmTUKVeBifBLdukeyKNMvAwvyjgEn4",
-            authDomain: "fitness-150ca.firebaseapp.com",
-            projectId: "fitness-150ca",
-            storageBucket: "fitness-150ca.firebasestorage.app",
-            messagingSenderId: "9441813252",
-            appId: "1:9441813252:web:26736f6072eee85bde2651"
-        };
+      const firebaseConfig = {
+        apiKey: "AIzaSyDLmrmTUKVeBifBLdukeyKNMvAwvyjgEn4",
+        authDomain: "fitness-150ca.firebaseapp.com",
+        projectId: "fitness-150ca",
+        storageBucket: "fitness-150ca.firebasestorage.app",
+        messagingSenderId: "9441813252",
+        appId: "1:9441813252:web:26736f6072eee85bde2651",
+      };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-        const exercises = [
-            // CHEST (18)
-            { name: 'Push-ups', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 3.8, volume_coefficient: 0.0012 },
-            { name: 'Incline Push-ups', category: 'chest', muscles: { primary: ['upper pectoralis'], secondary: ['anterior deltoid'] }, met_value: 3.0, volume_coefficient: 0.0010 },
-            { name: 'Decline Push-ups', category: 'chest', muscles: { primary: ['lower pectoralis'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 5.5, volume_coefficient: 0.0014 },
-            { name: 'Chest Dips', category: 'chest', muscles: { primary: ['lower pectoralis'], secondary: ['triceps', 'anterior deltoid'] }, met_value: 6.0, volume_coefficient: 0.0020 },
-            { name: 'Flat Barbell Bench Press', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 6.0, volume_coefficient: 0.0025 },
-            { name: 'Incline Barbell Bench Press', category: 'chest', muscles: { primary: ['upper pectoralis'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 6.5, volume_coefficient: 0.0026 },
-            { name: 'Decline Barbell Bench Press', category: 'chest', muscles: { primary: ['lower pectoralis'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 5.8, volume_coefficient: 0.0023 },
-            { name: 'Dumbbell Bench Press', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 6.0, volume_coefficient: 0.0024 },
-            { name: 'Incline Dumbbell Press', category: 'chest', muscles: { primary: ['upper pectoralis'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 6.5, volume_coefficient: 0.0027 },
-            { name: 'Decline Dumbbell Press', category: 'chest', muscles: { primary: ['lower pectoralis'], secondary: ['triceps'] }, met_value: 5.8, volume_coefficient: 0.0022 },
-            { name: 'Dumbbell Fly', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid'] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Incline Dumbbell Fly', category: 'chest', muscles: { primary: ['upper pectoralis'], secondary: ['anterior deltoid'] }, met_value: 5.2, volume_coefficient: 0.0021 },
-            { name: 'Dumbbell Pullover', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['latissimus dorsi', 'triceps'] }, met_value: 5.5, volume_coefficient: 0.0020 },
-            { name: 'Cable Fly (Mid)', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid'] }, met_value: 4.5, volume_coefficient: 0.0018 },
-            { name: 'Cable Fly (High to Low)', category: 'chest', muscles: { primary: ['lower pectoralis'], secondary: ['anterior deltoid'] }, met_value: 4.8, volume_coefficient: 0.0019 },
-            { name: 'Cable Fly (Low to High)', category: 'chest', muscles: { primary: ['upper pectoralis'], secondary: ['anterior deltoid'] }, met_value: 4.8, volume_coefficient: 0.0019 },
-            { name: 'Pec Deck Machine', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid'] }, met_value: 4.0, volume_coefficient: 0.0016 },
-            { name: 'Chest Press Machine', category: 'chest', muscles: { primary: ['pectoralis major'], secondary: ['anterior deltoid', 'triceps'] }, met_value: 5.5, volume_coefficient: 0.0022 },
+      const exercises = [
+        // CHEST (18)
+        {
+          name: "Push-ups",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 3.8,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Incline Push-ups",
+          category: "chest",
+          muscles: {
+            primary: ["upper pectoralis"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 3.0,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Decline Push-ups",
+          category: "chest",
+          muscles: {
+            primary: ["lower pectoralis"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0014,
+        },
+        {
+          name: "Chest Dips",
+          category: "chest",
+          muscles: {
+            primary: ["lower pectoralis"],
+            secondary: ["triceps", "anterior deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Flat Barbell Bench Press",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0025,
+        },
+        {
+          name: "Incline Barbell Bench Press",
+          category: "chest",
+          muscles: {
+            primary: ["upper pectoralis"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0026,
+        },
+        {
+          name: "Decline Barbell Bench Press",
+          category: "chest",
+          muscles: {
+            primary: ["lower pectoralis"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 5.8,
+          volume_coefficient: 0.0023,
+        },
+        {
+          name: "Dumbbell Bench Press",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0024,
+        },
+        {
+          name: "Incline Dumbbell Press",
+          category: "chest",
+          muscles: {
+            primary: ["upper pectoralis"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0027,
+        },
+        {
+          name: "Decline Dumbbell Press",
+          category: "chest",
+          muscles: { primary: ["lower pectoralis"], secondary: ["triceps"] },
+          met_value: 5.8,
+          volume_coefficient: 0.0022,
+        },
+        {
+          name: "Dumbbell Fly",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Incline Dumbbell Fly",
+          category: "chest",
+          muscles: {
+            primary: ["upper pectoralis"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 5.2,
+          volume_coefficient: 0.0021,
+        },
+        {
+          name: "Dumbbell Pullover",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["latissimus dorsi", "triceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Cable Fly (Mid)",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Cable Fly (High to Low)",
+          category: "chest",
+          muscles: {
+            primary: ["lower pectoralis"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 4.8,
+          volume_coefficient: 0.0019,
+        },
+        {
+          name: "Cable Fly (Low to High)",
+          category: "chest",
+          muscles: {
+            primary: ["upper pectoralis"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 4.8,
+          volume_coefficient: 0.0019,
+        },
+        {
+          name: "Pec Deck Machine",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0016,
+        },
+        {
+          name: "Chest Press Machine",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid", "triceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0022,
+        },
 
-            // BACK (15)
-            { name: 'Pull-ups', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['biceps', 'rear deltoid'] }, met_value: 6.0, volume_coefficient: 0.0022 },
-            { name: 'Chin-ups', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['biceps'] }, met_value: 5.5, volume_coefficient: 0.0018 },
-            { name: 'Lat Pulldown (Wide Grip)', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['biceps', 'rear deltoid'] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Lat Pulldown (Close Grip)', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['biceps', 'rhomboids'] }, met_value: 4.8, volume_coefficient: 0.0019 },
-            { name: 'Barbell Bent-Over Row', category: 'back', muscles: { primary: ['rhomboids', 'latissimus dorsi'], secondary: ['biceps'] }, met_value: 6.0, volume_coefficient: 0.0025 },
-            { name: 'Pendlay Row', category: 'back', muscles: { primary: ['rhomboids', 'latissimus dorsi'], secondary: ['biceps'] }, met_value: 6.5, volume_coefficient: 0.0026 },
-            { name: 'T-Bar Row', category: 'back', muscles: { primary: ['rhomboids', 'latissimus dorsi'], secondary: ['biceps'] }, met_value: 6.0, volume_coefficient: 0.0024 },
-            { name: 'Dumbbell Row', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['rhomboids', 'biceps'] }, met_value: 5.5, volume_coefficient: 0.0022 },
-            { name: 'Chest-Supported Row', category: 'back', muscles: { primary: ['rhomboids'], secondary: ['latissimus dorsi', 'biceps'] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Seated Cable Row', category: 'back', muscles: { primary: ['rhomboids', 'latissimus dorsi'], secondary: ['biceps'] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Deadlift', category: 'back', muscles: { primary: ['erector spinae'], secondary: ['hamstrings', 'glutes'] }, met_value: 7.0, volume_coefficient: 0.0030 },
-            { name: 'Romanian Deadlift', category: 'back', muscles: { primary: ['hamstrings'], secondary: ['erector spinae', 'glutes'] }, met_value: 6.5, volume_coefficient: 0.0028 },
-            { name: 'Hyperextensions', category: 'back', muscles: { primary: ['erector spinae'], secondary: ['glutes', 'hamstrings'] }, met_value: 4.0, volume_coefficient: 0.0012 },
-            { name: 'Straight Arm Pulldown', category: 'back', muscles: { primary: ['latissimus dorsi'], secondary: ['rear deltoid'] }, met_value: 4.5, volume_coefficient: 0.0018 },
-            { name: 'Inverted Row', category: 'back', muscles: { primary: ['rhomboids', 'latissimus dorsi'], secondary: ['biceps'] }, met_value: 4.5, volume_coefficient: 0.0015 },
+        // BACK (15)
+        {
+          name: "Pull-ups",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["biceps", "rear deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0022,
+        },
+        {
+          name: "Chin-ups",
+          category: "back",
+          muscles: { primary: ["latissimus dorsi"], secondary: ["biceps"] },
+          met_value: 5.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Lat Pulldown (Wide Grip)",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["biceps", "rear deltoid"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Lat Pulldown (Close Grip)",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["biceps", "rhomboids"],
+          },
+          met_value: 4.8,
+          volume_coefficient: 0.0019,
+        },
+        {
+          name: "Barbell Bent-Over Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids", "latissimus dorsi"],
+            secondary: ["biceps"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0025,
+        },
+        {
+          name: "Pendlay Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids", "latissimus dorsi"],
+            secondary: ["biceps"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0026,
+        },
+        {
+          name: "T-Bar Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids", "latissimus dorsi"],
+            secondary: ["biceps"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0024,
+        },
+        {
+          name: "Dumbbell Row",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["rhomboids", "biceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0022,
+        },
+        {
+          name: "Chest-Supported Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids"],
+            secondary: ["latissimus dorsi", "biceps"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Seated Cable Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids", "latissimus dorsi"],
+            secondary: ["biceps"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Deadlift",
+          category: "back",
+          muscles: {
+            primary: ["erector spinae"],
+            secondary: ["hamstrings", "glutes"],
+          },
+          met_value: 7.0,
+          volume_coefficient: 0.003,
+        },
+        {
+          name: "Romanian Deadlift",
+          category: "back",
+          muscles: {
+            primary: ["hamstrings"],
+            secondary: ["erector spinae", "glutes"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0028,
+        },
+        {
+          name: "Hyperextensions",
+          category: "back",
+          muscles: {
+            primary: ["erector spinae"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Straight Arm Pulldown",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["rear deltoid"],
+          },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Inverted Row",
+          category: "back",
+          muscles: {
+            primary: ["rhomboids", "latissimus dorsi"],
+            secondary: ["biceps"],
+          },
+          met_value: 4.5,
+          volume_coefficient: 0.0015,
+        },
 
-            // SHOULDERS (9)
-            { name: 'Overhead Barbell Press', category: 'shoulders', muscles: { primary: ['anterior deltoid'], secondary: ['lateral deltoid', 'triceps'] }, met_value: 6.0, volume_coefficient: 0.0025 },
-            { name: 'Dumbbell Shoulder Press', category: 'shoulders', muscles: { primary: ['anterior deltoid'], secondary: ['lateral deltoid', 'triceps'] }, met_value: 5.5, volume_coefficient: 0.0023 },
-            { name: 'Arnold Press', category: 'shoulders', muscles: { primary: ['anterior deltoid'], secondary: ['lateral deltoid', 'triceps'] }, met_value: 6.5, volume_coefficient: 0.0024 },
-            { name: 'Lateral Raises', category: 'shoulders', muscles: { primary: ['lateral deltoid'], secondary: ['trapezius'] }, met_value: 4.5, volume_coefficient: 0.0015 },
-            { name: 'Front Raise', category: 'shoulders', muscles: { primary: ['anterior deltoid'], secondary: ['pectoralis major'] }, met_value: 4.0, volume_coefficient: 0.0014 },
-            { name: 'Rear Delt Fly', category: 'shoulders', muscles: { primary: ['posterior deltoid'], secondary: ['rhomboids'] }, met_value: 4.5, volume_coefficient: 0.0016 },
-            { name: 'Cable Face Pull', category: 'shoulders', muscles: { primary: ['posterior deltoid'], secondary: ['rotator cuff', 'rhomboids'] }, met_value: 4.0, volume_coefficient: 0.0015 },
-            { name: 'Barbell Shrugs', category: 'shoulders', muscles: { primary: ['trapezius'], secondary: [] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Dumbbell Shrugs', category: 'shoulders', muscles: { primary: ['trapezius'], secondary: [] }, met_value: 4.5, volume_coefficient: 0.0018 },
+        // SHOULDERS (9)
+        {
+          name: "Overhead Barbell Press",
+          category: "shoulders",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["lateral deltoid", "triceps"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0025,
+        },
+        {
+          name: "Dumbbell Shoulder Press",
+          category: "shoulders",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["lateral deltoid", "triceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0023,
+        },
+        {
+          name: "Arnold Press",
+          category: "shoulders",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["lateral deltoid", "triceps"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0024,
+        },
+        {
+          name: "Lateral Raises",
+          category: "shoulders",
+          muscles: { primary: ["lateral deltoid"], secondary: ["trapezius"] },
+          met_value: 4.5,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Front Raise",
+          category: "shoulders",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["pectoralis major"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0014,
+        },
+        {
+          name: "Rear Delt Fly",
+          category: "shoulders",
+          muscles: { primary: ["posterior deltoid"], secondary: ["rhomboids"] },
+          met_value: 4.5,
+          volume_coefficient: 0.0016,
+        },
+        {
+          name: "Cable Face Pull",
+          category: "shoulders",
+          muscles: {
+            primary: ["posterior deltoid"],
+            secondary: ["rotator cuff", "rhomboids"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Barbell Shrugs",
+          category: "shoulders",
+          muscles: { primary: ["trapezius"], secondary: [] },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Dumbbell Shrugs",
+          category: "shoulders",
+          muscles: { primary: ["trapezius"], secondary: [] },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
 
-            // BICEPS (6)
-            { name: 'Dumbbell Curl', category: 'biceps', muscles: { primary: ['biceps brachii'], secondary: ['brachialis'] }, met_value: 4.0, volume_coefficient: 0.0015 },
-            { name: 'Hammer Curl', category: 'biceps', muscles: { primary: ['brachialis'], secondary: ['biceps brachii'] }, met_value: 4.0, volume_coefficient: 0.0015 },
-            { name: 'Barbell Curl', category: 'biceps', muscles: { primary: ['biceps brachii'], secondary: [] }, met_value: 4.5, volume_coefficient: 0.0018 },
-            { name: 'Concentration Curl', category: 'biceps', muscles: { primary: ['biceps brachii'], secondary: [] }, met_value: 3.5, volume_coefficient: 0.0012 },
-            { name: 'Preacher Curl', category: 'biceps', muscles: { primary: ['biceps brachii'], secondary: ['brachialis'] }, met_value: 4.0, volume_coefficient: 0.0016 },
-            { name: 'Cable Curl', category: 'biceps', muscles: { primary: ['biceps brachii'], secondary: ['brachialis'] }, met_value: 4.0, volume_coefficient: 0.0015 },
+        // BICEPS (6)
+        {
+          name: "Dumbbell Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: ["brachialis"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Hammer Curl",
+          category: "biceps",
+          muscles: { primary: ["brachialis"], secondary: ["biceps brachii"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Barbell Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: [] },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Concentration Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: [] },
+          met_value: 3.5,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Preacher Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: ["brachialis"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0016,
+        },
+        {
+          name: "Cable Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: ["brachialis"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
 
-            // TRICEPS (6)
-            { name: 'Tricep Pushdown', category: 'triceps', muscles: { primary: ['triceps'], secondary: [] }, met_value: 4.0, volume_coefficient: 0.0015 },
-            { name: 'Skull Crushers', category: 'triceps', muscles: { primary: ['triceps'], secondary: ['anterior deltoid'] }, met_value: 5.0, volume_coefficient: 0.0020 },
-            { name: 'Overhead Tricep Extension', category: 'triceps', muscles: { primary: ['triceps'], secondary: [] }, met_value: 4.5, volume_coefficient: 0.0018 },
-            { name: 'Close Grip Bench Press', category: 'triceps', muscles: { primary: ['triceps'], secondary: ['pectoralis major', 'anterior deltoid'] }, met_value: 6.0, volume_coefficient: 0.0025 },
-            { name: 'Dips', category: 'triceps', muscles: { primary: ['triceps'], secondary: ['pectoralis major', 'anterior deltoid'] }, met_value: 6.0, volume_coefficient: 0.0020 },
-            { name: 'Bench Dips', category: 'triceps', muscles: { primary: ['triceps'], secondary: ['anterior deltoid', 'pectoralis major'] }, met_value: 4.0, volume_coefficient: 0.0012 },
+        // TRICEPS (6)
+        {
+          name: "Tricep Pushdown",
+          category: "triceps",
+          muscles: { primary: ["triceps"], secondary: [] },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Skull Crushers",
+          category: "triceps",
+          muscles: { primary: ["triceps"], secondary: ["anterior deltoid"] },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Overhead Tricep Extension",
+          category: "triceps",
+          muscles: { primary: ["triceps"], secondary: [] },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Close Grip Bench Press",
+          category: "triceps",
+          muscles: {
+            primary: ["triceps"],
+            secondary: ["pectoralis major", "anterior deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0025,
+        },
+        {
+          name: "Dips",
+          category: "triceps",
+          muscles: {
+            primary: ["triceps"],
+            secondary: ["pectoralis major", "anterior deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Bench Dips",
+          category: "triceps",
+          muscles: {
+            primary: ["triceps"],
+            secondary: ["anterior deltoid", "pectoralis major"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0012,
+        },
 
-            // LEGS (10)
-            { name: 'Back Squat', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes', 'hamstrings'] }, met_value: 7.0, volume_coefficient: 0.0030 },
-            { name: 'Front Squat', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes'] }, met_value: 7.0, volume_coefficient: 0.0030 },
-            { name: 'Lunges', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes', 'hamstrings'] }, met_value: 5.5, volume_coefficient: 0.0018 },
-            { name: 'Leg Press', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes', 'hamstrings'] }, met_value: 6.0, volume_coefficient: 0.0024 },
-            { name: 'Calf Raises', category: 'legs', muscles: { primary: ['gastrocnemius'], secondary: ['soleus'] }, met_value: 3.5, volume_coefficient: 0.0012 },
-            { name: 'Hip Thrust', category: 'legs', muscles: { primary: ['glutes'], secondary: ['hamstrings'] }, met_value: 5.5, volume_coefficient: 0.0022 },
-            { name: 'Bulgarian Split Squat', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes', 'hamstrings'] }, met_value: 6.5, volume_coefficient: 0.0025 },
-            { name: 'Step-ups', category: 'legs', muscles: { primary: ['quadriceps'], secondary: ['glutes'] }, met_value: 5.0, volume_coefficient: 0.0016 },
-            { name: 'Leg Extension', category: 'legs', muscles: { primary: ['quadriceps'], secondary: [] }, met_value: 3.5, volume_coefficient: 0.0015 },
-            { name: 'Leg Curl (Seated/Lying)', category: 'legs', muscles: { primary: ['hamstrings'], secondary: ['glutes'] }, met_value: 3.5, volume_coefficient: 0.0015 },
+        // LEGS (10)
+        {
+          name: "Back Squat",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 7.0,
+          volume_coefficient: 0.003,
+        },
+        {
+          name: "Front Squat",
+          category: "legs",
+          muscles: { primary: ["quadriceps"], secondary: ["glutes"] },
+          met_value: 7.0,
+          volume_coefficient: 0.003,
+        },
+        {
+          name: "Lunges",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Leg Press",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0024,
+        },
+        {
+          name: "Calf Raises",
+          category: "legs",
+          muscles: { primary: ["gastrocnemius"], secondary: ["soleus"] },
+          met_value: 3.5,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Hip Thrust",
+          category: "legs",
+          muscles: { primary: ["glutes"], secondary: ["hamstrings"] },
+          met_value: 5.5,
+          volume_coefficient: 0.0022,
+        },
+        {
+          name: "Bulgarian Split Squat",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0025,
+        },
+        {
+          name: "Step-ups",
+          category: "legs",
+          muscles: { primary: ["quadriceps"], secondary: ["glutes"] },
+          met_value: 5.0,
+          volume_coefficient: 0.0016,
+        },
+        {
+          name: "Leg Extension",
+          category: "legs",
+          muscles: { primary: ["quadriceps"], secondary: [] },
+          met_value: 3.5,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Leg Curl (Seated/Lying)",
+          category: "legs",
+          muscles: { primary: ["hamstrings"], secondary: ["glutes"] },
+          met_value: 3.5,
+          volume_coefficient: 0.0015,
+        },
 
-            // CORE (5)
-            { name: 'Crunch', category: 'core', muscles: { primary: ['rectus abdominis'], secondary: [] }, met_value: 3.0, volume_coefficient: 0.0008 },
-            { name: 'Leg Raise', category: 'core', muscles: { primary: ['rectus abdominis'], secondary: ['hip flexors'] }, met_value: 5.0, volume_coefficient: 0.0015 },
-            { name: 'Plank', category: 'core', muscles: { primary: ['rectus abdominis'], secondary: ['erector spinae'] }, met_value: 3.5, volume_coefficient: 0.0010 },
-            { name: 'Russian Twist', category: 'core', muscles: { primary: ['obliques'], secondary: ['rectus abdominis'] }, met_value: 4.0, volume_coefficient: 0.0012 },
-            { name: 'Mountain Climbers', category: 'core', muscles: { primary: ['rectus abdominis'], secondary: ['anterior deltoid'] }, met_value: 6.0, volume_coefficient: 0.0012 },
+        // CORE (5)
+        {
+          name: "Crunch",
+          category: "core",
+          muscles: { primary: ["rectus abdominis"], secondary: [] },
+          met_value: 3.0,
+          volume_coefficient: 0.0008,
+        },
+        {
+          name: "Leg Raise",
+          category: "core",
+          muscles: {
+            primary: ["rectus abdominis"],
+            secondary: ["hip flexors"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Plank",
+          category: "core",
+          muscles: {
+            primary: ["rectus abdominis"],
+            secondary: ["erector spinae"],
+          },
+          met_value: 3.5,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Russian Twist",
+          category: "core",
+          muscles: { primary: ["obliques"], secondary: ["rectus abdominis"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Mountain Climbers",
+          category: "core",
+          muscles: {
+            primary: ["rectus abdominis"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0012,
+        },
 
-            // FOREARMS (4)
-            { name: 'Wrist Curls', category: 'forearms', muscles: { primary: ['wrist flexors'], secondary: [] }, met_value: 3.0, volume_coefficient: 0.0010 },
-            { name: 'Reverse Wrist Curls', category: 'forearms', muscles: { primary: ['wrist extensors'], secondary: [] }, met_value: 3.0, volume_coefficient: 0.0010 },
-            { name: 'Farmer Carry', category: 'forearms', muscles: { primary: ['grip muscles'], secondary: ['trapezius'] }, met_value: 5.5, volume_coefficient: 0.0020 },
-            { name: 'Dead Hang', category: 'forearms', muscles: { primary: ['grip muscles'], secondary: ['latissimus dorsi'] }, met_value: 4.0, volume_coefficient: 0.0012 },
+        // FOREARMS (4)
+        {
+          name: "Wrist Curls",
+          category: "forearms",
+          muscles: { primary: ["wrist flexors"], secondary: [] },
+          met_value: 3.0,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Reverse Wrist Curls",
+          category: "forearms",
+          muscles: { primary: ["wrist extensors"], secondary: [] },
+          met_value: 3.0,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Farmer Carry",
+          category: "forearms",
+          muscles: { primary: ["grip muscles"], secondary: ["trapezius"] },
+          met_value: 5.5,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Dead Hang",
+          category: "forearms",
+          muscles: {
+            primary: ["grip muscles"],
+            secondary: ["latissimus dorsi"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0012,
+        },
 
-            // CARDIO (5)
-            { name: 'Burpees', category: 'cardio', muscles: { primary: ['full body'], secondary: [] }, met_value: 8.0, volume_coefficient: 0.0015 },
-            { name: 'Jump Rope', category: 'cardio', muscles: { primary: ['gastrocnemius'], secondary: ['anterior deltoid'] }, met_value: 11.5, volume_coefficient: 0.0000 },
-            { name: 'Rowing Machine', category: 'cardio', muscles: { primary: ['latissimus dorsi'], secondary: ['quadriceps', 'biceps'] }, met_value: 7.0, volume_coefficient: 0.0000 },
-            { name: 'Running', category: 'cardio', muscles: { primary: ['quadriceps'], secondary: ['hamstrings', 'glutes'] }, met_value: 8.0, volume_coefficient: 0.0000 },
-            { name: 'Cycling', category: 'cardio', muscles: { primary: ['quadriceps'], secondary: ['hamstrings', 'glutes'] }, met_value: 6.8, volume_coefficient: 0.0000 },
+        // CARDIO (5)
+        {
+          name: "Burpees",
+          category: "cardio",
+          muscles: { primary: ["full body"], secondary: [] },
+          met_value: 8.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Jump Rope",
+          category: "cardio",
+          muscles: {
+            primary: ["gastrocnemius"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 11.5,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Rowing Machine",
+          category: "cardio",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["quadriceps", "biceps"],
+          },
+          met_value: 7.0,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Running",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["hamstrings", "glutes"],
+          },
+          met_value: 8.0,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Cycling",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["hamstrings", "glutes"],
+          },
+          met_value: 6.8,
+          volume_coefficient: 0.0,
+        },
 
-            // NECK (1)
-            { name: 'Neck Flexion', category: 'neck', muscles: { primary: ['neck flexors'], secondary: [] }, met_value: 3.0, volume_coefficient: 0.0008 }
-        ];
+        // NECK (1)
+        {
+          name: "Neck Flexion",
+          category: "neck",
+          muscles: { primary: ["neck flexors"], secondary: [] },
+          met_value: 3.0,
+          volume_coefficient: 0.0008,
+        },
+      ];
 
-        window.seedExercises = async function() {
-            const btn = document.getElementById('seedBtn');
-            const statusDiv = document.getElementById('status');
-            
-            btn.disabled = true;
-            statusDiv.innerHTML = '<p>Starting seed process...</p>';
+      window.seedExercises = async function () {
+        const btn = document.getElementById("seedBtn");
+        const statusDiv = document.getElementById("status");
 
+        btn.disabled = true;
+        statusDiv.innerHTML = "<p>Starting seed process...</p>";
+
+        try {
+          // Check if exercises already exist
+          const existingExercises = await getDocs(collection(db, "exercises"));
+          if (!existingExercises.empty) {
+            const confirmOverwrite = confirm(
+              `Found ${existingExercises.size} existing exercises. Do you want to add these exercises anyway? (This will create duplicates)`
+            );
+            if (!confirmOverwrite) {
+              statusDiv.innerHTML = '<p class="error">❌ Seeding cancelled</p>';
+              btn.disabled = false;
+              return;
+            }
+          }
+
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (let i = 0; i < exercises.length; i++) {
+            const exercise = exercises[i];
             try {
-                // Check if exercises already exist
-                const existingExercises = await getDocs(collection(db, 'exercises'));
-                if (!existingExercises.empty) {
-                    const confirmOverwrite = confirm(`Found ${existingExercises.size} existing exercises. Do you want to add these exercises anyway? (This will create duplicates)`);
-                    if (!confirmOverwrite) {
-                        statusDiv.innerHTML = '<p class="error">❌ Seeding cancelled</p>';
-                        btn.disabled = false;
-                        return;
-                    }
-                }
-
-                let successCount = 0;
-                let errorCount = 0;
-                
-                for (let i = 0; i < exercises.length; i++) {
-                    const exercise = exercises[i];
-                    try {
-                        await addDoc(collection(db, 'exercises'), exercise);
-                        successCount++;
-                        statusDiv.innerHTML = `
-                            <p class="progress">Progress: ${i + 1}/${exercises.length}</p>
+              await addDoc(collection(db, "exercises"), exercise);
+              successCount++;
+              statusDiv.innerHTML = `
+                            <p class="progress">Progress: ${i + 1}/${
+                exercises.length
+              }</p>
                             <p class="success">✓ Added: ${exercise.name}</p>
                             <p>Success: ${successCount} | Errors: ${errorCount}</p>
                         `;
-                    } catch (error) {
-                        errorCount++;
-                        console.error(`Error adding ${exercise.name}:`, error);
-                        statusDiv.innerHTML += `<p class="error">✗ Failed: ${exercise.name} - ${error.message}</p>`;
-                    }
-                }
-                
-                statusDiv.innerHTML += `
+            } catch (error) {
+              errorCount++;
+              console.error(`Error adding ${exercise.name}:`, error);
+              statusDiv.innerHTML += `<p class="error">✗ Failed: ${exercise.name} - ${error.message}</p>`;
+            }
+          }
+
+          statusDiv.innerHTML += `
                     <hr>
                     <h2 class="success">✅ Seeding Complete!</h2>
                     <p><strong>Successfully added:</strong> ${successCount} exercises</p>
                     <p><strong>Errors:</strong> ${errorCount}</p>
                 `;
-            } catch (error) {
-                statusDiv.innerHTML += `<p class="error">❌ Fatal error: ${error.message}</p>`;
-                console.error('Seeding error:', error);
-            } finally {
-                btn.disabled = false;
-            }
-        };
+        } catch (error) {
+          statusDiv.innerHTML += `<p class="error">❌ Fatal error: ${error.message}</p>`;
+          console.error("Seeding error:", error);
+        } finally {
+          btn.disabled = false;
+        }
+      };
     </script>
-</body>
+  </body>
 </html>

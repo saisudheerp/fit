@@ -1,98 +1,143 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>Supabase Connection Test</title>
     <style>
-        body {
-            font-family: monospace;
-            padding: 20px;
-            background: #121212;
-            color: #fff;
-        }
-        .test { margin: 10px 0; padding: 10px; background: #1a1a1a; border-radius: 4px; }
-        .success { color: #4ade80; }
-        .error { color: #ff6b6b; }
-        .pending { color: #fbbf24; }
+      body {
+        font-family: monospace;
+        padding: 20px;
+        background: #121212;
+        color: #fff;
+      }
+      .test {
+        margin: 10px 0;
+        padding: 10px;
+        background: #1a1a1a;
+        border-radius: 4px;
+      }
+      .success {
+        color: #4ade80;
+      }
+      .error {
+        color: #ff6b6b;
+      }
+      .pending {
+        color: #fbbf24;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Supabase Connection Diagnostics</h1>
     <div id="results"></div>
 
     <script type="module">
-        const results = document.getElementById('results');
-        const URL = 'https://czfbrgywwngszjzgjyib.supabase.co';
-        const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6ZmJyZ3l3d25nc3pqemdqeWliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MDM3NTYsImV4cCI6MjA3OTI3OTc1Nn0.nV51TZ5r-aBSWQw_4r_I1K2zjdjbZdRfXrOk7p1Pef4';
+      const results = document.getElementById("results");
+      const URL = "https://czfbrgywwngszjzgjyib.supabase.co";
+      const KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6ZmJyZ3l3d25nc3pqemdqeWliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM3MDM3NTYsImV4cCI6MjA3OTI3OTc1Nn0.nV51TZ5r-aBSWQw_4r_I1K2zjdjbZdRfXrOk7p1Pef4";
 
-        function addResult(test, status, message) {
-            const div = document.createElement('div');
-            div.className = `test ${status}`;
-            div.innerHTML = `<strong>${test}:</strong> ${message}`;
-            results.appendChild(div);
+      function addResult(test, status, message) {
+        const div = document.createElement("div");
+        div.className = `test ${status}`;
+        div.innerHTML = `<strong>${test}:</strong> ${message}`;
+        results.appendChild(div);
+      }
+
+      // Test 1: Basic HTTP request to Supabase REST API
+      addResult("Test 1", "pending", "Testing basic HTTP connection...");
+      try {
+        const response = await fetch(`${URL}/rest/v1/`, {
+          headers: {
+            apikey: KEY,
+            Authorization: `Bearer ${KEY}`,
+          },
+        });
+
+        if (response.ok) {
+          addResult(
+            "Test 1",
+            "success",
+            `✓ Supabase REST API responding (${response.status})`
+          );
+        } else {
+          addResult(
+            "Test 1",
+            "error",
+            `✗ HTTP ${response.status}: ${await response.text()}`
+          );
         }
+      } catch (err) {
+        addResult("Test 1", "error", `✗ Network error: ${err.message}`);
+      }
 
-        // Test 1: Basic HTTP request to Supabase REST API
-        addResult('Test 1', 'pending', 'Testing basic HTTP connection...');
-        try {
-            const response = await fetch(`${URL}/rest/v1/`, {
-                headers: {
-                    'apikey': KEY,
-                    'Authorization': `Bearer ${KEY}`
-                }
-            });
-            
-            if (response.ok) {
-                addResult('Test 1', 'success', `✓ Supabase REST API responding (${response.status})`);
-            } else {
-                addResult('Test 1', 'error', `✗ HTTP ${response.status}: ${await response.text()}`);
-            }
-        } catch (err) {
-            addResult('Test 1', 'error', `✗ Network error: ${err.message}`);
+      // Test 2: Query exercises table
+      addResult("Test 2", "pending", "Testing exercises table query...");
+      try {
+        const response = await fetch(
+          `${URL}/rest/v1/exercises?select=id&limit=1`,
+          {
+            headers: {
+              apikey: KEY,
+              Authorization: `Bearer ${KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          addResult(
+            "Test 2",
+            "success",
+            `✓ Exercises table accessible (${data.length} rows returned)`
+          );
+        } else {
+          const error = await response.text();
+          addResult("Test 2", "error", `✗ HTTP ${response.status}: ${error}`);
         }
+      } catch (err) {
+        addResult("Test 2", "error", `✗ Query failed: ${err.message}`);
+      }
 
-        // Test 2: Query exercises table
-        addResult('Test 2', 'pending', 'Testing exercises table query...');
-        try {
-            const response = await fetch(`${URL}/rest/v1/exercises?select=id&limit=1`, {
-                headers: {
-                    'apikey': KEY,
-                    'Authorization': `Bearer ${KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                addResult('Test 2', 'success', `✓ Exercises table accessible (${data.length} rows returned)`);
-            } else {
-                const error = await response.text();
-                addResult('Test 2', 'error', `✗ HTTP ${response.status}: ${error}`);
-            }
-        } catch (err) {
-            addResult('Test 2', 'error', `✗ Query failed: ${err.message}`);
+      // Test 3: Load Supabase JS client
+      addResult("Test 3", "pending", "Testing Supabase JS client...");
+      try {
+        const { createClient } = await import(
+          "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
+        );
+        const supabase = createClient(URL, KEY);
+
+        const { data, error } = await supabase
+          .from("exercises")
+          .select("id")
+          .limit(1);
+
+        if (error) {
+          addResult(
+            "Test 3",
+            "error",
+            `✗ Supabase client error: ${error.message}`
+          );
+        } else {
+          addResult(
+            "Test 3",
+            "success",
+            `✓ Supabase JS client working (${data.length} rows)`
+          );
         }
+      } catch (err) {
+        addResult(
+          "Test 3",
+          "error",
+          `✗ Client initialization failed: ${err.message}`
+        );
+      }
 
-        // Test 3: Load Supabase JS client
-        addResult('Test 3', 'pending', 'Testing Supabase JS client...');
-        try {
-            const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-            const supabase = createClient(URL, KEY);
-            
-            const { data, error } = await supabase
-                .from('exercises')
-                .select('id')
-                .limit(1);
-            
-            if (error) {
-                addResult('Test 3', 'error', `✗ Supabase client error: ${error.message}`);
-            } else {
-                addResult('Test 3', 'success', `✓ Supabase JS client working (${data.length} rows)`);
-            }
-        } catch (err) {
-            addResult('Test 3', 'error', `✗ Client initialization failed: ${err.message}`);
-        }
-
-        addResult('Summary', 'pending', 'All tests complete. Check results above.');
+      addResult(
+        "Summary",
+        "pending",
+        "All tests complete. Check results above."
+      );
     </script>
-</body>
+  </body>
 </html>

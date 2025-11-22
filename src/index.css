@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
-@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Roboto+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap");
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 @import "tailwindcss";
 
 * {
@@ -14,24 +14,24 @@
   --color-bg-secondary: #1a1a1a;
   --color-bg-tertiary: #222222;
   --color-bg-elevated: #2a2a2a;
-  
+
   --color-text-primary: #ffffff;
   --color-text-secondary: #b3b3b3;
   --color-text-tertiary: #808080;
   --color-text-disabled: #4d4d4d;
-  
+
   --color-border: #333333;
   --color-border-light: #404040;
   --color-border-focus: #ffffff;
-  
+
   --color-accent: #ffffff;
   --color-accent-hover: #e6e6e6;
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
-  
+
   /* Spacing */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
@@ -39,11 +39,12 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 3rem;
-  
+
   /* Typography */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-mono: 'Roboto Mono', 'Courier New', monospace;
-  --font-display: 'Bebas Neue', 'Impact', sans-serif;
+  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  --font-mono: "Roboto Mono", "Courier New", monospace;
+  --font-display: "Bebas Neue", "Impact", sans-serif;
 }
 
 body {
@@ -56,7 +57,12 @@ body {
   overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -156,7 +162,7 @@ textarea::placeholder {
 
 /* Material Icons */
 .material-icons {
-  font-family: 'Material Icons';
+  font-family: "Material Icons";
   font-weight: normal;
   font-style: normal;
   font-size: 24px;
@@ -170,7 +176,7 @@ textarea::placeholder {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'liga';
+  font-feature-settings: "liga";
 }
 
 /* Utility classes */
@@ -262,7 +268,8 @@ textarea::placeholder {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

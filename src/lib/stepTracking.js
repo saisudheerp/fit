@@ -6,115 +6,115 @@
 
 /**
  * SENSOR FUSION PSEUDOCODE FOR ANDROID/iOS
- * 
+ *
  * ===== ANDROID IMPLEMENTATION =====
- * 
+ *
  * Sensors Required:
  * - TYPE_ACCELEROMETER
  * - TYPE_GYROSCOPE
  * - TYPE_LINEAR_ACCELERATION (derived from accel - gravity)
  * - TYPE_STEP_COUNTER (hardware step counter if available)
  * - TYPE_GRAVITY
- * 
+ *
  * Algorithm Flow:
- * 
+ *
  * 1. Initialize Sensors
  *    sensorManager = getSystemService(SENSOR_SERVICE)
  *    accelerometer = sensorManager.getDefaultSensor(TYPE_ACCELEROMETER)
  *    gyroscope = sensorManager.getDefaultSensor(TYPE_GYROSCOPE)
  *    linearAccel = sensorManager.getDefaultSensor(TYPE_LINEAR_ACCELERATION)
  *    stepCounter = sensorManager.getDefaultSensor(TYPE_STEP_COUNTER)
- * 
+ *
  * 2. Sensor Event Handling
  *    onSensorChanged(event):
  *      if event.sensor == TYPE_ACCELEROMETER:
  *        rawAccel = event.values
  *        filteredAccel = lowPassFilter(rawAccel, alpha=0.8)
- *        
+ *
  *      if event.sensor == TYPE_LINEAR_ACCELERATION:
  *        linearAccel = event.values
  *        magnitude = sqrt(x² + y² + z²)
- *        
+ *
  *        if magnitude > STEP_THRESHOLD (e.g., 1.5 m/s²):
  *          potentialStep = true
- *          
+ *
  *      if event.sensor == TYPE_GYROSCOPE:
  *        gyroData = event.values
  *        angularVelocity = sqrt(x² + y² + z²)
- *        
+ *
  *        // Validate step with gyro (detect leg swing)
  *        if potentialStep AND angularVelocity > GYRO_THRESHOLD (e.g., 0.5 rad/s):
  *          validateStep()
- *          
+ *
  *      if event.sensor == TYPE_STEP_COUNTER:
  *        hardwareSteps = event.values[0]
- * 
+ *
  * 3. Step Validation (Peak Detection)
  *    validateStep():
  *      currentTime = System.currentTimeMillis()
- *      
+ *
  *      // Debounce - prevent double counting
  *      if (currentTime - lastStepTime) < MIN_STEP_INTERVAL (e.g., 200ms):
  *        return
- *        
+ *
  *      // Check stride regularity
  *      timeSinceLastStep = currentTime - lastStepTime
  *      if timeSinceLastStep > 2000ms: // Too long, reset cadence
  *        resetCadence()
- *        
+ *
  *      // Confirm step
  *      stepCount++
  *      lastStepTime = currentTime
- *      
+ *
  *      // Blend with hardware step counter
  *      if hardwareSteps available:
  *        stepCount = (0.7 * stepCount) + (0.3 * hardwareSteps)
- * 
+ *
  * 4. Low-Pass Filter (Noise Reduction)
  *    lowPassFilter(input, previousOutput, alpha):
  *      output = alpha * previousOutput + (1 - alpha) * input
  *      return output
- * 
+ *
  * 5. High-Pass Filter (Remove Gravity/Drift)
  *    highPassFilter(input, previousInput, previousOutput, alpha):
  *      output = alpha * (previousOutput + input - previousInput)
  *      return output
- * 
- * 
+ *
+ *
  * ===== iOS IMPLEMENTATION (CoreMotion) =====
- * 
+ *
  * Import CoreMotion framework
- * 
+ *
  * 1. Initialize Motion Manager
  *    motionManager = CMMotionManager()
  *    pedometer = CMPedometer()
- *    
+ *
  *    if motionManager.isAccelerometerAvailable:
  *      motionManager.accelerometerUpdateInterval = 0.1 // 10Hz
- *      
+ *
  *    if motionManager.isGyroAvailable:
  *      motionManager.gyroUpdateInterval = 0.1
- * 
+ *
  * 2. Start Updates
  *    motionManager.startAccelerometerUpdates(to: queue) { (data, error) ->
  *      accelX = data.acceleration.x
  *      accelY = data.acceleration.y
  *      accelZ = data.acceleration.z
- *      
+ *
  *      magnitude = sqrt(accelX² + accelY² + accelZ²)
  *      filteredMagnitude = lowPassFilter(magnitude)
- *      
+ *
  *      if filteredMagnitude > STEP_THRESHOLD:
  *        detectPeak()
  *    }
- *    
+ *
  *    motionManager.startGyroUpdates(to: queue) { (data, error) ->
  *      gyroValidation = sqrt(data.rotationRate.x² + y² + z²)
- *      
+ *
  *      if gyroValidation > GYRO_THRESHOLD:
  *        confirmStepWithGyro()
  *    }
- *    
+ *
  *    // Use CMPedometer for hardware-backed step counting
  *    if CMPedometer.isStepCountingAvailable():
  *      pedometer.startUpdates(from: Date()) { (data, error) ->
@@ -122,7 +122,7 @@
  *        // Blend with custom algorithm
  *        finalSteps = blendStepCounts(customSteps, hardwareSteps)
  *      }
- * 
+ *
  * 3. Peak Detection Algorithm
  *    detectPeak():
  *      if magnitude > previousMagnitude AND magnitude > nextMagnitude:
@@ -130,23 +130,23 @@
  *        if (currentTime - lastPeakTime) > MIN_PEAK_INTERVAL:
  *          registerStep()
  *          lastPeakTime = currentTime
- * 
+ *
  * 4. Stride Regularity Check
  *    registerStep():
  *      intervalBetweenSteps = currentTime - lastStepTime
- *      
+ *
  *      if abs(intervalBetweenSteps - averageStepInterval) < REGULARITY_THRESHOLD:
  *        confidenceScore += 1
  *      else:
  *        confidenceScore -= 1
- *        
+ *
  *      if confidenceScore > MIN_CONFIDENCE:
  *        stepCount++
  *        updateAverageInterval(intervalBetweenSteps)
- * 
- * 
+ *
+ *
  * ===== CROSS-PLATFORM CONFIGURATION =====
- * 
+ *
  * Constants:
  * STEP_THRESHOLD = 1.2 - 1.8 m/s² (acceleration magnitude)
  * GYRO_THRESHOLD = 0.4 - 0.8 rad/s (rotation rate)
@@ -164,7 +164,7 @@
  * @returns {number} Stride length in meters
  */
 export function calculateStrideLength(heightCm) {
-  return heightCm * 0.415 / 100; // Convert to meters
+  return (heightCm * 0.415) / 100; // Convert to meters
 }
 
 /**
@@ -201,7 +201,7 @@ export function getStrideFactor(activityType) {
     running: 1.3,
     uphill: 1.5,
     stairs: 1.8,
-    downhill: 0.8
+    downhill: 0.8,
   };
   return factors[activityType] || 1.0;
 }
@@ -219,7 +219,7 @@ export function calculateStepMetrics({
   steps,
   heightCm,
   bodyWeightKg,
-  activityType = 'walking'
+  activityType = "walking",
 }) {
   const strideLength = calculateStrideLength(heightCm);
   const distance = calculateDistance(steps, strideLength);
@@ -231,7 +231,7 @@ export function calculateStepMetrics({
     strideLength: Math.round(strideLength * 100) / 100,
     distance: Math.round(distance * 100) / 100,
     calories,
-    activityType
+    activityType,
   };
 }
 
@@ -255,6 +255,11 @@ export function lowPassFilter(current, previous, alpha = 0.8) {
  * @param {number} alpha - Filter coefficient
  * @returns {number} Filtered value
  */
-export function highPassFilter(current, previousInput, previousOutput, alpha = 0.9) {
+export function highPassFilter(
+  current,
+  previousInput,
+  previousOutput,
+  alpha = 0.9
+) {
   return alpha * (previousOutput + current - previousInput);
 }

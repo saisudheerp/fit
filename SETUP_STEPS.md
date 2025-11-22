@@ -9,14 +9,17 @@ Your app is currently stuck on "Loading..." because the Supabase database hasn't
 ## Step 1: Run the SQL Schema in Supabase ⚡
 
 1. **Open Supabase Dashboard**
+
    - Go to: https://supabase.com/dashboard
    - Select your project: `czfbrgywwngszjzgjyib`
 
 2. **Open SQL Editor**
+
    - Click "SQL Editor" in the left sidebar
    - Click "New Query"
 
 3. **Run the Schema**
+
    - Open `supabase-schema.sql` from your project
    - Copy the **ENTIRE FILE** (all 361 lines)
    - Paste into the SQL Editor
@@ -38,6 +41,7 @@ Your app is currently stuck on "Loading..." because the Supabase database hasn't
 ## Step 2: Enable Email Authentication 📧
 
 1. **Go to Authentication Settings**
+
    - Dashboard → Authentication → Providers
 
 2. **Enable Email Provider**
@@ -52,15 +56,18 @@ Your app is currently stuck on "Loading..." because the Supabase database hasn't
 1. **Refresh your browser** (http://localhost:5174)
 
 2. **Sign Up**
+
    - You should now see the Auth page (not stuck on loading)
    - Create an account with email/password
 
 3. **Complete Profile**
+
    - Go to Settings
    - Add your name, weight, height, etc.
    - Click "Save Settings"
 
 4. **Check Dashboard**
+
    - Return to Dashboard
    - See "WELCOME, [YOUR NAME]"
 
@@ -78,6 +85,7 @@ Your app is currently stuck on "Loading..." because the Supabase database hasn't
 ### Still Stuck on "Loading..."?
 
 **Check Browser Console (F12):**
+
 - Look for errors mentioning Supabase
 - Common issues:
   - ❌ "relation 'profiles' does not exist" → Run SQL schema
