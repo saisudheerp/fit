@@ -325,7 +325,7 @@ export default function ExerciseLog() {
 
           <input
             type="text"
-            placeholder="🔍 Search exercises..."
+            placeholder="Search exercises..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -765,7 +765,7 @@ export default function ExerciseLog() {
                           fontStyle: "italic",
                         }}
                       >
-                        🏃 Cardio exercise - duration in seconds
+                        Cardio exercise - duration in seconds
                       </p>
                     </>
                   )}

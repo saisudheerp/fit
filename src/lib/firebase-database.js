@@ -351,6 +351,47 @@ export async function getUserStats(userId) {
   };
 }
 
+export async function getWeeklyStats(userId) {
+  const today = new Date();
+  const weekAgo = new Date(today);
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  
+  const startDate = weekAgo.toISOString().split("T")[0];
+  const endDate = today.toISOString().split("T")[0];
+  
+  const exerciseLogs = await getExerciseLogs(userId, startDate, endDate);
+  
+  // Group by date
+  const dailyStats = {};
+  
+  exerciseLogs.forEach(log => {
+    const date = log.date;
+    if (!dailyStats[date]) {
+      dailyStats[date] = { calories: 0, workouts: 0 };
+    }
+    dailyStats[date].calories += log.caloriesBurned || 0;
+    dailyStats[date].workouts += 1;
+  });
+  
+  // Fill in missing days with zeros
+  const stats = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split("T")[0];
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+    
+    stats.push({
+      date: dateStr,
+      day: dayName,
+      calories: dailyStats[dateStr]?.calories || 0,
+      workouts: dailyStats[dateStr]?.workouts || 0
+    });
+  }
+  
+  return stats;
+}
+
 // ============================================
 // ROUTINES
 // ============================================

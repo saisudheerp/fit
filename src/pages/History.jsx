@@ -48,7 +48,8 @@ export default function History() {
           HISTORY
         </h2>
         <p style={{ color: "#999", fontSize: "16px", fontWeight: 500 }}>
-          📊 Your workout history and progress
+          <span className="material-icons" style={{ fontSize: "20px", color: "#FFD93D" }}>bar_chart</span>
+          Your workout history and progress
         </p>
       </div>
 

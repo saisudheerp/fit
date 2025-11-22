@@ -1,6 +1,6 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { getUserStats, getRecentLogs } from "../lib/firebase-database";
+import { getUserStats, getRecentLogs, getWeeklyStats } from "../lib/firebase-database";
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
@@ -10,6 +10,7 @@ export default function Dashboard() {
     workoutsToday: 0,
   });
   const [recentLogs, setRecentLogs] = useState([]);
+  const [weeklyStats, setWeeklyStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,14 +22,17 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       console.log("Loading dashboard data for user:", user.uid);
-      const [statsData, logs] = await Promise.all([
+      const [statsData, logs, weekly] = await Promise.all([
         getUserStats(user.uid),
         getRecentLogs(user.uid, 1),
+        getWeeklyStats(user.uid),
       ]);
       console.log("Dashboard stats:", statsData);
       console.log("Recent logs:", logs);
+      console.log("Weekly stats:", weekly);
       setStats(statsData);
       setRecentLogs(logs);
+      setWeeklyStats(weekly);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
@@ -45,15 +49,6 @@ export default function Dashboard() {
       gradient: "linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)",
       color: "#FF6B6B",
       glow: "rgba(255, 107, 107, 0.3)",
-    },
-    {
-      icon: "directions_walk",
-      label: "Steps",
-      value: stats.totalSteps.toFixed(0),
-      unit: "steps",
-      gradient: "linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)",
-      color: "#4ECDC4",
-      glow: "rgba(78, 205, 196, 0.3)",
     },
     {
       icon: "timeline",
@@ -226,20 +221,73 @@ export default function Dashboard() {
         }}
       >
         <Panel title="Weekly Overview" icon="bar_chart">
-          <div
-            style={{ textAlign: "center", padding: "60px 20px", color: "#666" }}
-          >
-            <span
-              className="material-icons"
-              style={{ fontSize: "64px", marginBottom: "16px", opacity: 0.3 }}
-            >
-              insights
-            </span>
-            <p>No activity data yet</p>
-            <p style={{ fontSize: "14px", marginTop: "8px" }}>
-              Start logging exercises to see your progress
-            </p>
-          </div>
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "#666" }}>
+              <span className="material-icons rotating" style={{ fontSize: "48px", marginBottom: "16px" }}>sync</span>
+              <p>Loading...</p>
+            </div>
+          ) : weeklyStats.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 20px", color: "#666" }}>
+              <span className="material-icons" style={{ fontSize: "64px", marginBottom: "16px", opacity: 0.3 }}>insights</span>
+              <p>No activity data yet</p>
+              <p style={{ fontSize: "14px", marginTop: "8px" }}>Start logging exercises to see your progress</p>
+            </div>
+          ) : (
+            <div style={{ padding: "10px 0" }}>
+              {/* Chart */}
+              <div style={{ display: "flex", alignItems: "end", gap: "8px", height: "180px", marginBottom: "20px" }}>
+                {weeklyStats.map((stat, idx) => {
+                  const maxCalories = Math.max(...weeklyStats.map(s => s.calories), 1);
+                  const height = (stat.calories / maxCalories) * 100;
+                  return (
+                    <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                      <div style={{ fontSize: "11px", color: "#667eea", fontWeight: 700, fontFamily: "Roboto Mono" }}>
+                        {stat.calories > 0 ? Math.round(stat.calories) : ""}
+                      </div>
+                      <div style={{
+                        width: "100%",
+                        height: `${height}%`,
+                        minHeight: stat.calories > 0 ? "8px" : "0px",
+                        background: stat.calories > 0 ? "linear-gradient(180deg, #667eea 0%, #764ba2 100%)" : "#2a2a2a",
+                        borderRadius: "6px 6px 0 0",
+                        transition: "all 0.3s ease",
+                        cursor: "pointer",
+                        boxShadow: stat.calories > 0 ? "0 4px 12px rgba(102, 126, 234, 0.3)" : "none"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (stat.calories > 0) {
+                          e.currentTarget.style.opacity = "0.8";
+                          e.currentTarget.style.transform = "translateY(-4px)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.opacity = "1";
+                        e.currentTarget.style.transform = "translateY(0)";
+                      }}
+                      ></div>
+                      <div style={{ fontSize: "11px", color: "#666", fontWeight: 700 }}>{stat.day}</div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Summary */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", paddingTop: "12px", borderTop: "1px solid #2a2a2a" }}>
+                <div style={{ textAlign: "center", padding: "12px", background: "rgba(102, 126, 234, 0.1)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#667eea", fontFamily: "Bebas Neue" }}>
+                    {Math.round(weeklyStats.reduce((sum, s) => sum + s.calories, 0))}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}>Total Calories</div>
+                </div>
+                <div style={{ textAlign: "center", padding: "12px", background: "rgba(245, 87, 108, 0.1)", borderRadius: "8px" }}>
+                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#f5576c", fontFamily: "Bebas Neue" }}>
+                    {weeklyStats.reduce((sum, s) => sum + s.workouts, 0)}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}>Total Workouts</div>
+                </div>
+              </div>
+            </div>
+          )}
         </Panel>
 
         <Panel title="Recent Activity" icon="history">

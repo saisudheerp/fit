@@ -61,8 +61,9 @@ export default function Settings() {
         >
           SETTINGS
         </h2>
-        <p style={{ color: "#666", fontSize: "16px", fontWeight: 500 }}>
-          ⚙️ Configure your profile and preferences
+        <p style={{ color: "#666", fontSize: "16px", fontWeight: 500, display: "flex", alignItems: "center", gap: "8px" }}>
+          <span className="material-icons" style={{ fontSize: "20px", color: "#667eea" }}>settings</span>
+          Configure your profile and preferences
         </p>
       </div>
 
@@ -381,7 +382,7 @@ export default function Settings() {
                 calculate
               </span>
             </div>
-            Calculated Metrics
+            Health Metrics
           </h3>
 
           <div
@@ -389,6 +390,7 @@ export default function Settings() {
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "20px",
+              marginBottom: "24px"
             }}
           >
             <div
@@ -430,17 +432,34 @@ export default function Settings() {
 
             <div
               style={{
-                background:
-                  "linear-gradient(135deg, #f093fb20 0%, #f5576c20 100%)",
+                background: (() => {
+                  const bmi = bodyWeight / (height / 100) ** 2;
+                  if (bmi < 18.5) return "linear-gradient(135deg, #FFC13D20 0%, #FFD93D20 100%)";
+                  if (bmi < 25) return "linear-gradient(135deg, #A8E6CF20 0%, #88D8B020 100%)";
+                  if (bmi < 30) return "linear-gradient(135deg, #FF8E5320 0%, #FFA07A20 100%)";
+                  return "linear-gradient(135deg, #FF6B6B20 0%, #EE5A5A20 100%)";
+                })(),
                 padding: "24px",
                 borderRadius: "12px",
-                border: "2px solid #f093fb40",
+                border: (() => {
+                  const bmi = bodyWeight / (height / 100) ** 2;
+                  if (bmi < 18.5) return "2px solid #FFC13D40";
+                  if (bmi < 25) return "2px solid #A8E6CF40";
+                  if (bmi < 30) return "2px solid #FF8E5340";
+                  return "2px solid #FF6B6B40";
+                })(),
                 textAlign: "center",
               }}
             >
               <div
                 style={{
-                  color: "#f093fb",
+                  color: (() => {
+                    const bmi = bodyWeight / (height / 100) ** 2;
+                    if (bmi < 18.5) return "#FFC13D";
+                    if (bmi < 25) return "#A8E6CF";
+                    if (bmi < 30) return "#FF8E53";
+                    return "#FF6B6B";
+                  })(),
                   fontSize: "11px",
                   fontWeight: 700,
                   letterSpacing: "0.1em",
@@ -461,7 +480,78 @@ export default function Settings() {
                 {(bodyWeight / (height / 100) ** 2).toFixed(1)}
               </div>
               <div style={{ fontSize: "12px", color: "#999", fontWeight: 600 }}>
-                kg/m²
+                {(() => {
+                  const bmi = bodyWeight / (height / 100) ** 2;
+                  if (bmi < 18.5) return "Underweight";
+                  if (bmi < 25) return "Normal Weight";
+                  if (bmi < 30) return "Overweight";
+                  return "Obese";
+                })()}
+              </div>
+            </div>
+          </div>
+
+          {/* BMI Health Advice */}
+          <div
+            style={{
+              background: (() => {
+                const bmi = bodyWeight / (height / 100) ** 2;
+                if (bmi < 18.5) return "rgba(255, 193, 61, 0.1)";
+                if (bmi < 25) return "rgba(168, 230, 207, 0.1)";
+                if (bmi < 30) return "rgba(255, 142, 83, 0.1)";
+                return "rgba(255, 107, 107, 0.1)";
+              })(),
+              border: `2px solid ${(() => {
+                const bmi = bodyWeight / (height / 100) ** 2;
+                if (bmi < 18.5) return "#FFC13D";
+                if (bmi < 25) return "#A8E6CF";
+                if (bmi < 30) return "#FF8E53";
+                return "#FF6B6B";
+              })()}`,
+              borderRadius: "12px",
+              padding: "20px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "start", gap: "12px" }}>
+              <span className="material-icons" style={{ 
+                color: (() => {
+                  const bmi = bodyWeight / (height / 100) ** 2;
+                  if (bmi < 18.5) return "#FFC13D";
+                  if (bmi < 25) return "#A8E6CF";
+                  if (bmi < 30) return "#FF8E53";
+                  return "#FF6B6B";
+                })(),
+                fontSize: "24px"
+              }}>
+                {(() => {
+                  const bmi = bodyWeight / (height / 100) ** 2;
+                  if (bmi < 18.5) return "warning";
+                  if (bmi < 25) return "check_circle";
+                  if (bmi < 30) return "info";
+                  return "local_fire_department";
+                })()}
+              </span>
+              <div>
+                <div style={{ 
+                  color: "#fff", 
+                  fontSize: "14px", 
+                  fontWeight: 700, 
+                  marginBottom: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px"
+                }}>
+                  Health Recommendation
+                </div>
+                <div style={{ fontSize: "14px", color: "#999", lineHeight: "1.6" }}>
+                  {(() => {
+                    const bmi = bodyWeight / (height / 100) ** 2;
+                    if (bmi < 18.5) return "You may need to gain weight. Aim for 10,000+ steps daily with strength training. Consult a nutritionist for a healthy weight gain plan.";
+                    if (bmi < 25) return "Great! Maintain your healthy weight with 7,500-10,000 steps daily and regular exercise. Keep up the good work!";
+                    if (bmi < 30) return "Consider increasing activity to 10,000-12,000 steps daily. Combine walking with strength training and a balanced diet for gradual weight loss.";
+                    return "Focus on gradual increase in activity. Start with 5,000 steps and work up to 12,000+. Consult a healthcare provider for personalized guidance.";
+                  })()}
+                </div>
               </div>
             </div>
           </div>

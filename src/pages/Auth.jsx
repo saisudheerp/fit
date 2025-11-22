@@ -183,8 +183,8 @@ export default function Auth() {
           </h1>
           <p style={{ color: "#999", fontSize: "15px", fontWeight: 500 }}>
             {isSignUp
-              ? "🎯 Create your fitness journey"
-              : "👋 Welcome back, champion"}
+              ? "Create your fitness journey"
+              : "Welcome back, champion"}
           </p>
         </div>
 

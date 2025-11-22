@@ -1266,7 +1266,8 @@ function RoutineModal({ routine, exercises, onClose, onSave, bodyWeight }) {
                     color: "#666",
                   }}
                 >
-                  <span>🔥 {Math.round(totalCalories)} cal</span>
+                  <span className="material-icons" style={{ fontSize: "16px", color: "#FF6B6B" }}>local_fire_department</span>
+                  <span>{Math.round(totalCalories)} cal</span>
                   <span>⏱️ {totalDuration} min</span>
                 </div>
               </div>
@@ -2003,8 +2004,10 @@ function ViewRoutineModal({
                   color: "#666",
                 }}
               >
-                <span>📍 {routine.type}</span>
-                <span>💪 {routine.split}</span>
+                <span className="material-icons" style={{ fontSize: "16px", color: "#4ECDC4" }}>place</span>
+                <span>{routine.type}</span>
+                <span className="material-icons" style={{ fontSize: "16px", color: "#A8E6CF" }}>fitness_center</span>
+                <span>{routine.split}</span>
               </div>
             </div>
             <button
@@ -3554,7 +3557,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
                       } else {
                         adjustReps(1);
                       }
-                      showToastMessage("Progression applied! 💪");
+                      showToastMessage("Progression applied!");
                     }}
                     style={{
                       background:

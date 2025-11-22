@@ -12,7 +12,6 @@ export default function Layout({ children }) {
     { path: "/", label: "Dashboard", icon: "dashboard" },
     { path: "/log", label: "Log", icon: "fitness_center" },
     { path: "/routines", label: "Routines", icon: "event_note" },
-    { path: "/steps", label: "Steps", icon: "directions_walk" },
     { path: "/history", label: "History", icon: "history" },
     { path: "/settings", label: "Settings", icon: "settings" },
   ];

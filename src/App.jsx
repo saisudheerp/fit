@@ -6,7 +6,6 @@ import ExerciseLog from "./pages/ExerciseLog";
 import Routines from "./pages/Routines";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
-import StepTracker from "./pages/StepTracker";
 import Auth from "./pages/Auth";
 import ProfileSetup from "./pages/ProfileSetup";
 
@@ -102,16 +101,6 @@ function App() {
               <ProtectedRoute>
                 <Layout>
                   <History />
-                </Layout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/steps"
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StepTracker />
                 </Layout>
               </ProtectedRoute>
             }
