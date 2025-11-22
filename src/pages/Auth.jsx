@@ -90,6 +90,24 @@ export default function Auth() {
         overflow: "hidden",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .auth-card {
+            padding: 32px 24px !important;
+          }
+          .auth-title {
+            font-size: 40px !important;
+          }
+          .auth-form input {
+            font-size: 16px !important;
+            padding: 14px 16px !important;
+          }
+          .auth-form button {
+            font-size: 15px !important;
+            padding: 14px !important;
+          }
+        }
+      `}</style>
       {/* Animated background elements */}
       <div
         style={{
@@ -119,7 +137,7 @@ export default function Auth() {
       ></div>
 
       <div
-        className="scale-in"
+        className="scale-in auth-card"
         style={{
           width: "100%",
           maxWidth: "440px",

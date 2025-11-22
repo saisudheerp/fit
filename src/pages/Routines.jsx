@@ -381,7 +381,34 @@ export default function Routines() {
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px" }}>
-      <div style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .routines-header h2 {
+            font-size: 36px !important;
+          }
+          .routines-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .routine-card {
+            padding: 16px !important;
+          }
+          .exercise-item {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+          }
+          .workout-controls {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .workout-controls button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
+      <div className="routines-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",

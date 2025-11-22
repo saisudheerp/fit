@@ -31,7 +31,25 @@ export default function History() {
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px" }}>
-      <div style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .history-header h2 {
+            font-size: 36px !important;
+          }
+          .history-table {
+            overflow-x: auto !important;
+          }
+          .history-table table {
+            font-size: 13px !important;
+          }
+          .history-table th,
+          .history-table td {
+            padding: 10px 8px !important;
+          }
+        }
+      `}</style>
+
+      <div className="history-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",

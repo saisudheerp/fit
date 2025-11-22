@@ -223,8 +223,37 @@ export default function ExerciseLog() {
 
   return (
     <div style={{ maxWidth: "1600px", margin: "0 auto", padding: "40px 24px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .exercise-log-header h2 {
+            font-size: 36px !important;
+          }
+          .exercise-log-grid {
+            grid-template-columns: 1fr !important;
+            gap: 20px !important;
+          }
+          .exercise-search {
+            position: relative !important;
+          }
+          .exercise-list {
+            max-height: 400px !important;
+          }
+          .input-grid {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+          }
+          .button-group {
+            flex-direction: column !important;
+            gap: 12px !important;
+          }
+          .button-group button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
       {/* Header */}
-      <div style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <div className="exercise-log-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -261,6 +290,7 @@ export default function ExerciseLog() {
       </div>
 
       <div
+        className="exercise-log-grid"
         style={{
           display: "grid",
           gridTemplateColumns: selectedExercise ? "400px 1fr" : "1fr",

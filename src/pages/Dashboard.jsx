@@ -63,8 +63,29 @@ export default function Dashboard() {
 
   return (
     <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .dashboard-header h2 {
+            font-size: 36px !important;
+          }
+          .dashboard-stats {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .dashboard-panels {
+            grid-template-columns: 1fr !important;
+          }
+          .stat-card {
+            padding: 20px !important;
+          }
+          .stat-value {
+            font-size: 40px !important;
+          }
+        }
+      `}</style>
+
       {/* Header */}
-      <div style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
+      <div className="dashboard-header" style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -105,6 +126,7 @@ export default function Dashboard() {
 
       {/* Stats Grid */}
       <div
+        className="dashboard-stats"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
@@ -115,7 +137,7 @@ export default function Dashboard() {
         {statsCards.map((stat, idx) => (
           <div
             key={idx}
-            className="scale-in"
+            className="scale-in stat-card"
             style={{
               background: `radial-gradient(circle at top right, ${stat.color}08 0%, #0a0a0a 50%)`,
               border: `2px solid ${stat.color}30`,
@@ -184,6 +206,7 @@ export default function Dashboard() {
             </div>
 
             <div
+              className="stat-value"
               style={{
                 fontFamily: "Bebas Neue, Impact, sans-serif",
                 fontSize: "52px",
@@ -214,6 +237,7 @@ export default function Dashboard() {
 
       {/* Activity Panels */}
       <div
+        className="dashboard-panels"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",

@@ -36,6 +36,21 @@ export default function Layout({ children }) {
         backgroundColor: "#121212",
       }}
     >
+      <style>{`
+        .desktop-nav { display: flex; }
+        .desktop-signout { display: flex; }
+        .mobile-menu-btn { display: none; }
+        
+        @media (max-width: 768px) {
+          .desktop-nav { display: none; }
+          .desktop-signout { display: none; }
+          .mobile-menu-btn { display: block; }
+          .header-logo h1 { font-size: 24px !important; }
+          .header-logo .material-icons { font-size: 24px !important; }
+          .footer-links { flex-direction: column; align-items: flex-start; }
+        }
+      `}</style>
+
       {/* Header */}
       <header
         style={{
@@ -60,6 +75,7 @@ export default function Layout({ children }) {
         >
           <Link
             to="/"
+            className="header-logo"
             style={{
               display: "flex",
               alignItems: "center",
@@ -106,8 +122,8 @@ export default function Layout({ children }) {
 
           {/* Desktop Nav */}
           <nav
+            className="desktop-nav"
             style={{
-              display: window.innerWidth >= 768 ? "flex" : "none",
               gap: "8px",
               alignItems: "center",
               backgroundColor: "#0a0a0a",
@@ -169,8 +185,8 @@ export default function Layout({ children }) {
           {/* Sign Out Button Desktop */}
           <button
             onClick={handleSignOut}
+            className="desktop-signout"
             style={{
-              display: window.innerWidth >= 768 ? "flex" : "none",
               alignItems: "center",
               gap: "8px",
               padding: "12px 24px",
@@ -211,8 +227,8 @@ export default function Layout({ children }) {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
+            className="mobile-menu-btn"
             style={{
-              display: window.innerWidth < 768 ? "block" : "none",
               padding: "8px",
               background: "transparent",
               border: "none",
@@ -246,8 +262,10 @@ export default function Layout({ children }) {
                   gap: "12px",
                   padding: "14px 18px",
                   borderRadius: "8px",
-                  backgroundColor: isActive(item.path) ? "#fff" : "transparent",
-                  color: isActive(item.path) ? "#000" : "#999",
+                  backgroundColor: isActive(item.path)
+                    ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                    : "#1a1a1a",
+                  color: isActive(item.path) ? "#fff" : "#999",
                   textDecoration: "none",
                   fontSize: "14px",
                   fontWeight: 600,
@@ -259,6 +277,31 @@ export default function Layout({ children }) {
                 <span>{item.label}</span>
               </Link>
             ))}
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                handleSignOut();
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                padding: "14px 18px",
+                borderRadius: "8px",
+                backgroundColor: "#1a1a1a",
+                color: "#f5576c",
+                border: "none",
+                fontSize: "14px",
+                fontWeight: 600,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                marginTop: "8px",
+              }}
+            >
+              <span className="material-icons">logout</span>
+              <span>Sign Out</span>
+            </button>
           </nav>
         )}
       </header>
@@ -276,6 +319,7 @@ export default function Layout({ children }) {
         }}
       >
         <div
+          className="footer-links"
           style={{
             maxWidth: "1400px",
             margin: "0 auto",
@@ -301,7 +345,7 @@ export default function Layout({ children }) {
             </span>
             <span>FitTrack © 2025</span>
           </div>
-          <div style={{ display: "flex", gap: "24px" }}>
+          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
             <a
               href="#"
               style={{

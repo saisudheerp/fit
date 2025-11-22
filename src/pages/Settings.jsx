@@ -46,7 +46,25 @@ export default function Settings() {
 
   return (
     <div style={{ maxWidth: "900px", margin: "0 auto", padding: "40px 24px" }}>
-      <div style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .settings-header h2 {
+            font-size: 36px !important;
+          }
+          .settings-form-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .settings-section {
+            padding: 20px !important;
+          }
+          .bmi-display {
+            font-size: 40px !important;
+          }
+        }
+      `}</style>
+
+      <div className="settings-header" style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",

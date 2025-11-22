@@ -75,6 +75,29 @@ export default function ProfileSetup() {
         overflow: "hidden",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .profile-setup-card {
+            padding: 32px 24px !important;
+          }
+          .profile-setup-title {
+            font-size: 40px !important;
+          }
+          .profile-setup-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          .profile-setup-form input,
+          .profile-setup-form select {
+            font-size: 16px !important;
+            padding: 14px 16px !important;
+          }
+          .profile-setup-form button {
+            font-size: 15px !important;
+            padding: 14px !important;
+          }
+        }
+      `}</style>
       {/* Animated background elements */}
       <div
         style={{
