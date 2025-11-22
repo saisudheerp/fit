@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useLocation } from "react-router-dom";
 import {
   getRoutines,
   createRoutine,
@@ -14,11 +15,13 @@ import {
   deleteWorkoutProgress,
   subscribeToWorkoutProgress,
   deleteAllOldWorkoutProgress,
+  getWorkoutSessions,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 
 export default function Routines() {
   const { user, profile } = useAuth();
+  const location = useLocation();
   const [routines, setRoutines] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +32,7 @@ export default function Routines() {
   const [editingRoutine, setEditingRoutine] = useState(null);
   const [activeWorkout, setActiveWorkout] = useState(null);
   const [savedWorkout, setSavedWorkout] = useState(null);
+  const [completedWorkouts, setCompletedWorkouts] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -141,6 +145,53 @@ export default function Routines() {
       checkForSavedWorkout();
     }
   }, [routines]);
+
+  // Handle resume workout from dashboard
+  useEffect(() => {
+    if (location.state?.resumeWorkout && routines.length > 0) {
+      const workoutData = location.state.resumeWorkout;
+      const matchingRoutine = routines.find(r => r.name === workoutData.routineName);
+      
+      if (matchingRoutine && workoutData.routine) {
+        // Resume the workout with saved progress
+        setActiveWorkout({
+          routine: workoutData.routine,
+          currentExerciseIndex: workoutData.currentExerciseIndex || 0,
+          currentSet: workoutData.currentSet || 1,
+          completedSets: workoutData.completedSets || [],
+          exerciseStates: workoutData.exerciseStates || {},
+          skippedSets: workoutData.skippedSets || [],
+          sessionId: workoutData.sessionId,
+          startTime: new Date(),
+          isResume: true,
+        });
+      }
+      
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, routines]);
+
+  // Load completed workouts for today
+  useEffect(() => {
+    const loadCompletedWorkouts = async () => {
+      if (!user) return;
+      
+      try {
+        const sessions = await getWorkoutSessions(user.uid);
+        const today = new Date().toISOString().split("T")[0];
+        const todaySessions = sessions.filter(s => s.date === today);
+        
+        // Get unique routine names
+        const uniqueRoutines = [...new Set(todaySessions.map(s => s.routineName))];
+        setCompletedWorkouts(uniqueRoutines);
+      } catch (error) {
+        console.error("Error loading completed workouts:", error);
+      }
+    };
+    
+    loadCompletedWorkouts();
+  }, [user]);
 
   const loadData = async () => {
     try {
@@ -405,6 +456,34 @@ export default function Routines() {
           .workout-controls button {
             width: 100% !important;
           }
+          /* Fix Active Workout Modal - Sets/Reps/Weight overflow */
+          .workout-stats-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+          }
+          .workout-stat-item {
+            padding: 12px 8px !important;
+          }
+          .workout-stat-value {
+            font-size: 36px !important;
+          }
+          .workout-live-stats {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 6px !important;
+          }
+          /* Fix Predefined Routines Modal cards */
+          .predefined-routines-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+            padding: 16px !important;
+          }
+          .predefined-routine-card {
+            min-width: unset !important;
+          }
+          /* Modal padding adjustments */
+          .modal-content-padding {
+            padding: 16px !important;
+          }
         }
       `}</style>
 
@@ -454,22 +533,22 @@ export default function Routines() {
         <ActionButton
           icon="add_circle"
           label="Create Custom"
-          gradient="linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)"
-          glow="rgba(255, 107, 107, 0.4)"
+          gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+          glow="rgba(102, 126, 234, 0.4)"
           onClick={() => setShowCreateModal(true)}
         />
         <ActionButton
           icon="auto_awesome"
           label="Predefined Routines"
-          gradient="linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)"
-          glow="rgba(78, 205, 196, 0.4)"
+          gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+          glow="rgba(245, 87, 108, 0.4)"
           onClick={() => setShowPredefinedModal(true)}
         />
         <ActionButton
           icon="delete_sweep"
           label="Delete All"
-          gradient="linear-gradient(135deg, #ff4444 0%, #cc0000 100%)"
-          glow="rgba(255, 68, 68, 0.4)"
+          gradient="linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)"
+          glow="rgba(255, 107, 107, 0.4)"
           onClick={handleDeleteAllRoutines}
         />
       </div>
@@ -598,6 +677,59 @@ export default function Routines() {
             </div>
           </div>
         )}
+
+      {/* Completed Workouts Today */}
+      {completedWorkouts.length > 0 && (
+        <div style={{ marginBottom: "48px" }}>
+          <h3
+            style={{
+              fontSize: "28px",
+              fontWeight: 700,
+              marginBottom: "20px",
+              color: "#4ECDC4",
+              fontFamily: "Bebas Neue, Impact, sans-serif",
+              letterSpacing: "0.05em",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+            }}
+          >
+            <span className="material-icons" style={{ fontSize: "32px" }}>
+              check_circle
+            </span>
+            COMPLETED TODAY
+          </h3>
+          <div style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "12px"
+          }}>
+            {completedWorkouts.map((routineName, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: "12px 20px",
+                  background: "linear-gradient(135deg, #4ECDC420 0%, #44A08D20 100%)",
+                  border: "2px solid #4ECDC4",
+                  borderRadius: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  color: "#4ECDC4",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  letterSpacing: "0.05em"
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "20px" }}>
+                  fitness_center
+                </span>
+                {routineName}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* My Routines Section */}
       <div>
@@ -3097,6 +3229,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
 
           {/* Live Stats */}
           <div
+            className="workout-live-stats"
             style={{
               display: "grid",
               gridTemplateColumns: "1fr 1fr 1fr",
@@ -3253,6 +3386,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             </p>
 
             <div
+              className="workout-stats-grid"
               style={{
                 display: "grid",
                 gridTemplateColumns: isTimed ? "1fr 1fr" : "1fr 1fr 1fr",
@@ -3260,8 +3394,9 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
                 marginBottom: "24px",
               }}
             >
-              <div style={{ textAlign: "center" }}>
+              <div className="workout-stat-item" style={{ textAlign: "center" }}>
                 <div
+                  className="workout-stat-value"
                   style={{
                     fontSize: "48px",
                     fontWeight: 700,
@@ -3521,90 +3656,6 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
                 </>
               )}
             </div>
-
-            {/* Auto-suggest button */}
-            {currentSet > 1 && !isTimed && (
-              <div
-                style={{
-                  background:
-                    "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)",
-                  border: "1px solid #667eea30",
-                  borderRadius: "12px",
-                  padding: "12px",
-                  marginBottom: "12px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                    }}
-                  >
-                    <span
-                      className="material-icons"
-                      style={{ fontSize: "20px", color: "#667eea" }}
-                    >
-                      auto_awesome
-                    </span>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: "12px",
-                          color: "#999",
-                          marginBottom: "2px",
-                        }}
-                      >
-                        Suggested progression
-                      </div>
-                      <div
-                        style={{
-                          fontSize: "14px",
-                          color: "#fff",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {currentState.weight > 0
-                          ? `${currentState.weight + 2.5}kg`
-                          : `${currentState.reps + 1} reps`}
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (currentState.weight > 0) {
-                        adjustWeight(2.5);
-                      } else {
-                        adjustReps(1);
-                      }
-                      showToastMessage("Progression applied!");
-                    }}
-                    style={{
-                      background:
-                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                      border: "none",
-                      color: "#fff",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      padding: "8px 16px",
-                      borderRadius: "8px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    Apply
-                  </button>
-                </div>
-              </div>
-            )}
 
             <div
               style={{
@@ -4205,6 +4256,7 @@ function PredefinedRoutinesModal({ exercises, onClose, onSelectRoutine }) {
 
         {/* Routines Grid */}
         <div
+          className="modal-content-padding"
           style={{
             flex: 1,
             overflowY: "auto",
@@ -4212,6 +4264,7 @@ function PredefinedRoutinesModal({ exercises, onClose, onSelectRoutine }) {
           }}
         >
           <div
+            className="predefined-routines-grid"
             style={{
               display: "grid",
               gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
@@ -4223,6 +4276,7 @@ function PredefinedRoutinesModal({ exercises, onClose, onSelectRoutine }) {
               return (
                 <div
                   key={index}
+                  className="predefined-routine-card"
                   style={{
                     background: isExpanded ? "#2a2a2a" : "#242424",
                     borderRadius: "20px",

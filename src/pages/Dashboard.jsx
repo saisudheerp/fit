@@ -1,6 +1,7 @@
 import { useAuth } from "../contexts/AuthContext";
 import { useState, useEffect } from "react";
-import { getUserStats, getRecentLogs, getWeeklyStats } from "../lib/firebase-database";
+import { getUserStats, getRecentLogs, getWeeklyStats, getAllWorkoutProgress, getRoutines } from "../lib/firebase-database";
+import { Link } from "react-router-dom";
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
@@ -11,6 +12,7 @@ export default function Dashboard() {
   });
   const [recentLogs, setRecentLogs] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState([]);
+  const [workoutInProgress, setWorkoutInProgress] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,17 +24,46 @@ export default function Dashboard() {
   const loadData = async () => {
     try {
       console.log("Loading dashboard data for user:", user.uid);
-      const [statsData, logs, weekly] = await Promise.all([
+      const [statsData, logs, weekly, workoutProgress, routines] = await Promise.all([
         getUserStats(user.uid),
         getRecentLogs(user.uid, 1),
         getWeeklyStats(user.uid),
+        getAllWorkoutProgress(user.uid),
+        getRoutines(user.uid),
       ]);
       console.log("Dashboard stats:", statsData);
       console.log("Recent logs:", logs);
       console.log("Weekly stats:", weekly);
+      console.log("Workout progress:", workoutProgress);
+      console.log("Routines:", routines);
+      
       setStats(statsData);
       setRecentLogs(logs);
       setWeeklyStats(weekly);
+      
+      // Match workout progress with actual routine data
+      if (workoutProgress.length > 0 && routines.length > 0) {
+        // Sort by lastUpdated to get the most recent
+        const sortedProgress = workoutProgress.sort((a, b) => {
+          const timeA = a.lastUpdated?.seconds || 0;
+          const timeB = b.lastUpdated?.seconds || 0;
+          return timeB - timeA; // Most recent first
+        });
+        
+        const progressData = sortedProgress[0];
+        const matchingRoutine = routines.find(r => r.name === progressData.routineName);
+        
+        if (matchingRoutine) {
+          setWorkoutInProgress({
+            ...progressData,
+            routine: matchingRoutine
+          });
+        } else {
+          setWorkoutInProgress(progressData);
+        }
+      } else {
+        setWorkoutInProgress(null);
+      }
     } catch (error) {
       console.error("Error loading dashboard data:", error);
     } finally {
@@ -261,8 +292,11 @@ export default function Dashboard() {
               {/* Chart */}
               <div style={{ display: "flex", alignItems: "end", gap: "8px", height: "180px", marginBottom: "20px" }}>
                 {weeklyStats.map((stat, idx) => {
-                  const maxCalories = Math.max(...weeklyStats.map(s => s.calories), 1);
-                  const height = (stat.calories / maxCalories) * 100;
+                  const maxCalories = Math.max(...weeklyStats.map(s => s.calories), 100); // Minimum scale of 100
+                  const heightPercent = (stat.calories / maxCalories) * 100;
+                  const minHeightPx = stat.calories > 0 ? 20 : 0; // Minimum 20px for visibility
+                  const calculatedHeight = Math.max(minHeightPx, (heightPercent / 100) * 180);
+                  
                   return (
                     <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
                       <div style={{ fontSize: "11px", color: "#667eea", fontWeight: 700, fontFamily: "Roboto Mono" }}>
@@ -270,8 +304,7 @@ export default function Dashboard() {
                       </div>
                       <div style={{
                         width: "100%",
-                        height: `${height}%`,
-                        minHeight: stat.calories > 0 ? "8px" : "0px",
+                        height: `${calculatedHeight}px`,
                         background: stat.calories > 0 ? "linear-gradient(180deg, #667eea 0%, #764ba2 100%)" : "#2a2a2a",
                         borderRadius: "6px 6px 0 0",
                         transition: "all 0.3s ease",
@@ -314,12 +347,127 @@ export default function Dashboard() {
           )}
         </Panel>
 
-        <Panel title="Recent Activity" icon="history">
+        <Panel title="Activity & Progress" icon="fitness_center">
+          {/* Workout in Progress Section */}
+          {workoutInProgress && (
+            <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #2a2a2a" }}>
+              <div style={{
+                background: "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)",
+                border: "2px solid #667eea30",
+                borderRadius: "12px",
+                padding: "16px",
+                marginBottom: "12px"
+              }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span className="material-icons" style={{ color: "#667eea", fontSize: "20px" }}>play_circle</span>
+                    <h4 style={{
+                      fontSize: "16px",
+                      fontFamily: "Bebas Neue",
+                      color: "#667eea",
+                      letterSpacing: "0.05em",
+                      margin: 0
+                    }}>
+                      {workoutInProgress.routineName}
+                    </h4>
+                  </div>
+                  {workoutInProgress.routine?.exercises?.length && (
+                    <div style={{
+                      padding: "4px 12px",
+                      background: "#667eea",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 700,
+                      color: "#fff",
+                      fontFamily: "Roboto Mono"
+                    }}>
+                      {Math.round(((workoutInProgress.currentExerciseIndex || 0) / workoutInProgress.routine.exercises.length) * 100)}%
+                    </div>
+                  )}
+                </div>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
+                    <div style={{
+                      fontSize: "20px",
+                      fontFamily: "Bebas Neue",
+                      color: "#667eea",
+                      lineHeight: "1"
+                    }}>
+                      {(workoutInProgress.currentExerciseIndex || 0) + 1}
+                      {workoutInProgress.routine?.exercises?.length && `/${workoutInProgress.routine.exercises.length}`}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                      Exercises
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
+                    <div style={{
+                      fontSize: "20px",
+                      fontFamily: "Bebas Neue",
+                      color: "#f5576c",
+                      lineHeight: "1"
+                    }}>
+                      {workoutInProgress.currentSet || 1}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                      Current Set
+                    </div>
+                  </div>
+                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
+                    <div style={{
+                      fontSize: "20px",
+                      fontFamily: "Bebas Neue",
+                      color: "#4ECDC4",
+                      lineHeight: "1"
+                    }}>
+                      {workoutInProgress.completedSets?.length || 0}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                      Sets Done
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Link 
+                to="/routines"
+                state={{ resumeWorkout: workoutInProgress }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  padding: "10px 16px",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  color: "#fff",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  transition: "all 0.2s"
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "16px" }}>play_arrow</span>
+                Continue Workout
+              </Link>
+            </div>
+          )}
+
+          {/* Recent Activity Section */}
           {loading ? (
             <div
               style={{
                 textAlign: "center",
-                padding: "60px 20px",
+                padding: "40px 20px",
                 color: "#666",
               }}
             >
@@ -335,37 +483,36 @@ export default function Dashboard() {
             <div
               style={{
                 textAlign: "center",
-                padding: "60px 20px",
+                padding: "40px 20px",
                 color: "#666",
               }}
             >
               <span
                 className="material-icons pulse"
-                style={{ fontSize: "64px", marginBottom: "16px", opacity: 0.3 }}
+                style={{ fontSize: "48px", marginBottom: "16px", opacity: 0.3 }}
               >
-                fitness_center
+                history
               </span>
               <p
-                style={{ fontSize: "16px", marginBottom: "8px", color: "#999" }}
+                style={{ fontSize: "14px", marginBottom: "8px", color: "#999" }}
               >
                 No recent workouts
               </p>
-              <p style={{ fontSize: "13px", marginBottom: "24px" }}>
+              <p style={{ fontSize: "12px", marginBottom: "20px" }}>
                 Start tracking your exercises
               </p>
-              <a
-                href="/log"
+              <Link
+                to="/log"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   gap: "8px",
-                  marginTop: "8px",
-                  padding: "14px 28px",
+                  padding: "12px 24px",
                   background:
                     "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "#fff",
                   textDecoration: "none",
-                  borderRadius: "12px",
+                  borderRadius: "8px",
                   fontSize: "12px",
                   fontWeight: 700,
                   textTransform: "uppercase",
@@ -384,16 +531,27 @@ export default function Dashboard() {
                     "0 4px 12px rgba(102, 126, 234, 0.4)";
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "18px" }}>
+                <span className="material-icons" style={{ fontSize: "16px" }}>
                   add_circle
                 </span>
                 Log Exercise
-              </a>
+              </Link>
             </div>
           ) : (
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-            >
+            <div>
+              <div style={{ 
+                fontSize: "12px", 
+                color: "#999", 
+                marginBottom: "12px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                fontWeight: 700
+              }}>
+                <span className="material-icons" style={{ fontSize: "16px" }}>history</span>
+                Recent Activity
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {recentLogs.map((log, idx) => (
                 <div
                   key={idx}
@@ -465,6 +623,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           )}
         </Panel>
@@ -477,6 +636,7 @@ function Panel({ title, icon, children }) {
   const iconColors = {
     bar_chart: "#667eea",
     history: "#FFB6B9",
+    fitness_center: "#4ECDC4",
   };
   const iconColor = iconColors[icon] || "#FFD93D";
 

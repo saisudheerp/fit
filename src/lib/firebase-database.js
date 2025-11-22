@@ -353,40 +353,45 @@ export async function getUserStats(userId) {
 
 export async function getWeeklyStats(userId) {
   const today = new Date();
-  const weekAgo = new Date(today);
-  weekAgo.setDate(weekAgo.getDate() - 7);
   
-  const startDate = weekAgo.toISOString().split("T")[0];
-  const endDate = today.toISOString().split("T")[0];
-  
-  const exerciseLogs = await getExerciseLogs(userId, startDate, endDate);
-  
-  // Group by date
-  const dailyStats = {};
-  
-  exerciseLogs.forEach(log => {
-    const date = log.date;
-    if (!dailyStats[date]) {
-      dailyStats[date] = { calories: 0, workouts: 0 };
-    }
-    dailyStats[date].calories += log.caloriesBurned || 0;
-    dailyStats[date].workouts += 1;
-  });
-  
-  // Fill in missing days with zeros
+  // Get data for each of the last 7 days starting from Monday
   const stats = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - i);
+  
+  // Find the most recent Monday
+  const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; // If Sunday, go back 6 days, else go back to Monday
+  
+  const monday = new Date(today);
+  monday.setDate(monday.getDate() - daysToMonday);
+  
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+    date.setDate(date.getDate() + i);
     const dateStr = date.toISOString().split("T")[0];
     const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
     
-    stats.push({
-      date: dateStr,
-      day: dayName,
-      calories: dailyStats[dateStr]?.calories || 0,
-      workouts: dailyStats[dateStr]?.workouts || 0
-    });
+    try {
+      // Get exercise logs for this specific date
+      const logs = await getExerciseLogs(userId, dateStr);
+      
+      const calories = logs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0);
+      const workouts = logs.length;
+      
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        calories: Math.round(calories),
+        workouts: workouts
+      });
+    } catch (error) {
+      console.error(`Error fetching stats for ${dateStr}:`, error);
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        calories: 0,
+        workouts: 0
+      });
+    }
   }
   
   return stats;
