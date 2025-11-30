@@ -376,6 +376,87 @@ textarea::placeholder {
     --spacing-xl: 1.5rem;
     --spacing-2xl: 2rem;
   }
+
+  /* Grid adjustments - make all grids single column on mobile */
+  div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Padding adjustments for containers */
+  div[style*="padding: 40px"] {
+    padding: 20px 16px !important;
+  }
+
+  div[style*="padding: 32px"] {
+    padding: 20px !important;
+  }
+
+  div[style*="padding: 24px"] {
+    padding: 16px !important;
+  }
+
+  /* Font size adjustments for large text */
+  div[style*="font-size: 64px"],
+  h2[style*="font-size: 64px"] {
+    font-size: 36px !important;
+  }
+
+  div[style*="font-size: 48px"],
+  h2[style*="font-size: 48px"] {
+    font-size: 32px !important;
+  }
+
+  div[style*="font-size: 36px"],
+  h3[style*="font-size: 36px"] {
+    font-size: 24px !important;
+  }
+
+  div[style*="font-size: 32px"],
+  h3[style*="font-size: 32px"] {
+    font-size: 22px !important;
+  }
+
+  div[style*="font-size: 28px"],
+  h3[style*="font-size: 28px"] {
+    font-size: 20px !important;
+  }
+
+  /* Gap adjustments */
+  div[style*="gap: 24px"] {
+    gap: 12px !important;
+  }
+
+  div[style*="gap: 32px"] {
+    gap: 16px !important;
+  }
+
+  /* Margin adjustments */
+  div[style*="marginBottom: 48px"] {
+    margin-bottom: 32px !important;
+  }
+
+  /* Max width adjustments */
+  div[style*="maxWidth: 1400px"],
+  div[style*="maxWidth: 1200px"] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Workout modal adjustments */
+  div[style*="maxWidth: 700px"] {
+    max-width: 100% !important;
+    margin: 0 16px !important;
+  }
+
+  /* Flex direction changes */
+  div[style*="display: flex"][style*="gap"] {
+    flex-wrap: wrap !important;
+  }
+
+  /* Button groups */
+  button[style*="flex: 1"] {
+    min-width: 100% !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -391,5 +472,31 @@ textarea::placeholder {
   .btn {
     padding: 0.5rem 1rem;
     font-size: 0.75rem;
+  }
+
+  div[style*="font-size: 64px"],
+  h2[style*="font-size: 64px"] {
+    font-size: 28px !important;
+  }
+
+  div[style*="font-size: 48px"],
+  h2[style*="font-size: 48px"] {
+    font-size: 24px !important;
+  }
+
+  div[style*="padding: 20px"] {
+    padding: 12px !important;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* 2 columns for grids on tablet */
+  div[style*="grid-template-columns"][style*="minmax(300px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  div[style*="grid-template-columns"][style*="minmax(340px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }

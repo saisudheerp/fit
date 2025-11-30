@@ -190,7 +190,12 @@ export default function ProfileSetup() {
             COMPLETE PROFILE
           </h1>
           <p style={{ color: "#999", fontSize: "15px", fontWeight: 500 }}>
-            <span className="material-icons" style={{ fontSize: "20px", color: "#667eea" }}>info</span>
+            <span
+              className="material-icons"
+              style={{ fontSize: "20px", color: "#667eea" }}
+            >
+              info
+            </span>
             We need some info to calculate accurate calories
           </p>
         </div>

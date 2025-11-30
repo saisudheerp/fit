@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { getWorkoutSessions, getExerciseLogs } from "../lib/firebase-database";
 
 export default function History() {
   const { user } = useAuth();
+  const toast = useToast();
   const [sessions, setSessions] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +51,10 @@ export default function History() {
         }
       `}</style>
 
-      <div className="history-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <div
+        className="history-header"
+        style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}
+      >
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -66,7 +71,12 @@ export default function History() {
           HISTORY
         </h2>
         <p style={{ color: "#999", fontSize: "16px", fontWeight: 500 }}>
-          <span className="material-icons" style={{ fontSize: "20px", color: "#FFD93D" }}>bar_chart</span>
+          <span
+            className="material-icons"
+            style={{ fontSize: "20px", color: "#FFD93D" }}
+          >
+            bar_chart
+          </span>
           Your workout history and progress
         </p>
       </div>

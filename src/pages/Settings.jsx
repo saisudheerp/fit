@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { updateProfile } from "../lib/firebase-database";
+import { useToast } from "../contexts/ToastContext";
+import { updateProfile, getAllPRs } from "../lib/firebase-database";
 import { signOut } from "../lib/firebase-auth";
 import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const { user, profile } = useAuth();
+  const toast = useToast();
   const [name, setName] = useState("");
   const [bodyWeight, setBodyWeight] = useState(75);
   const [height, setHeight] = useState(175);
@@ -13,6 +15,8 @@ export default function Settings() {
   const [gender, setGender] = useState("male");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [personalRecords, setPersonalRecords] = useState([]);
+  const [loadingPRs, setLoadingPRs] = useState(true);
 
   useEffect(() => {
     if (profile) {
@@ -23,6 +27,23 @@ export default function Settings() {
       setGender(profile.gender || "male");
     }
   }, [profile]);
+
+  useEffect(() => {
+    if (user) {
+      loadPRs();
+    }
+  }, [user]);
+
+  const loadPRs = async () => {
+    try {
+      const prs = await getAllPRs(user.uid);
+      setPersonalRecords(prs);
+    } catch (error) {
+      console.error("Error loading PRs:", error);
+    } finally {
+      setLoadingPRs(false);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -35,10 +56,9 @@ export default function Settings() {
         age: age,
         gender: gender,
       });
-      setMessage("Settings saved successfully!");
-      setTimeout(() => setMessage(""), 3000);
+      toast.success("Settings saved successfully!");
     } catch (error) {
-      setMessage("Error saving settings: " + error.message);
+      toast.error("Failed to save settings: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -64,7 +84,10 @@ export default function Settings() {
         }
       `}</style>
 
-      <div className="settings-header" style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
+      <div
+        className="settings-header"
+        style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}
+      >
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -79,8 +102,22 @@ export default function Settings() {
         >
           SETTINGS
         </h2>
-        <p style={{ color: "#666", fontSize: "16px", fontWeight: 500, display: "flex", alignItems: "center", gap: "8px" }}>
-          <span className="material-icons" style={{ fontSize: "20px", color: "#667eea" }}>settings</span>
+        <p
+          style={{
+            color: "#666",
+            fontSize: "16px",
+            fontWeight: 500,
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span
+            className="material-icons"
+            style={{ fontSize: "20px", color: "#667eea" }}
+          >
+            settings
+          </span>
           Configure your profile and preferences
         </p>
       </div>
@@ -408,7 +445,7 @@ export default function Settings() {
               display: "grid",
               gridTemplateColumns: "1fr 1fr",
               gap: "20px",
-              marginBottom: "24px"
+              marginBottom: "24px",
             }}
           >
             <div
@@ -452,9 +489,12 @@ export default function Settings() {
               style={{
                 background: (() => {
                   const bmi = bodyWeight / (height / 100) ** 2;
-                  if (bmi < 18.5) return "linear-gradient(135deg, #FFC13D20 0%, #FFD93D20 100%)";
-                  if (bmi < 25) return "linear-gradient(135deg, #A8E6CF20 0%, #88D8B020 100%)";
-                  if (bmi < 30) return "linear-gradient(135deg, #FF8E5320 0%, #FFA07A20 100%)";
+                  if (bmi < 18.5)
+                    return "linear-gradient(135deg, #FFC13D20 0%, #FFD93D20 100%)";
+                  if (bmi < 25)
+                    return "linear-gradient(135deg, #A8E6CF20 0%, #88D8B020 100%)";
+                  if (bmi < 30)
+                    return "linear-gradient(135deg, #FF8E5320 0%, #FFA07A20 100%)";
                   return "linear-gradient(135deg, #FF6B6B20 0%, #EE5A5A20 100%)";
                 })(),
                 padding: "24px",
@@ -531,16 +571,19 @@ export default function Settings() {
             }}
           >
             <div style={{ display: "flex", alignItems: "start", gap: "12px" }}>
-              <span className="material-icons" style={{ 
-                color: (() => {
-                  const bmi = bodyWeight / (height / 100) ** 2;
-                  if (bmi < 18.5) return "#FFC13D";
-                  if (bmi < 25) return "#A8E6CF";
-                  if (bmi < 30) return "#FF8E53";
-                  return "#FF6B6B";
-                })(),
-                fontSize: "24px"
-              }}>
+              <span
+                className="material-icons"
+                style={{
+                  color: (() => {
+                    const bmi = bodyWeight / (height / 100) ** 2;
+                    if (bmi < 18.5) return "#FFC13D";
+                    if (bmi < 25) return "#A8E6CF";
+                    if (bmi < 30) return "#FF8E53";
+                    return "#FF6B6B";
+                  })(),
+                  fontSize: "24px",
+                }}
+              >
                 {(() => {
                   const bmi = bodyWeight / (height / 100) ** 2;
                   if (bmi < 18.5) return "warning";
@@ -550,29 +593,240 @@ export default function Settings() {
                 })()}
               </span>
               <div>
-                <div style={{ 
-                  color: "#fff", 
-                  fontSize: "14px", 
-                  fontWeight: 700, 
-                  marginBottom: "8px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px"
-                }}>
+                <div
+                  style={{
+                    color: "#fff",
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    marginBottom: "8px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
                   Health Recommendation
                 </div>
-                <div style={{ fontSize: "14px", color: "#999", lineHeight: "1.6" }}>
+                <div
+                  style={{ fontSize: "14px", color: "#999", lineHeight: "1.6" }}
+                >
                   {(() => {
                     const bmi = bodyWeight / (height / 100) ** 2;
-                    if (bmi < 18.5) return "You may need to gain weight. Aim for 10,000+ steps daily with strength training. Consult a nutritionist for a healthy weight gain plan.";
-                    if (bmi < 25) return "Great! Maintain your healthy weight with 7,500-10,000 steps daily and regular exercise. Keep up the good work!";
-                    if (bmi < 30) return "Consider increasing activity to 10,000-12,000 steps daily. Combine walking with strength training and a balanced diet for gradual weight loss.";
+                    if (bmi < 18.5)
+                      return "You may need to gain weight. Aim for 10,000+ steps daily with strength training. Consult a nutritionist for a healthy weight gain plan.";
+                    if (bmi < 25)
+                      return "Great! Maintain your healthy weight with 7,500-10,000 steps daily and regular exercise. Keep up the good work!";
+                    if (bmi < 30)
+                      return "Consider increasing activity to 10,000-12,000 steps daily. Combine walking with strength training and a balanced diet for gradual weight loss.";
                     return "Focus on gradual increase in activity. Start with 5,000 steps and work up to 12,000+. Consult a healthcare provider for personalized guidance.";
                   })()}
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Personal Records */}
+        <div
+          className="settings-section"
+          style={{
+            background: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
+            border: "2px solid #2a2a2a",
+            borderRadius: "20px",
+            padding: "32px",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "22px",
+              fontWeight: 700,
+              marginBottom: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              color: "#fff",
+              fontFamily: "Bebas Neue",
+              letterSpacing: "0.08em",
+            }}
+          >
+            <span
+              className="material-icons"
+              style={{ fontSize: "28px", color: "#FFD93D" }}
+            >
+              emoji_events
+            </span>
+            Personal Records
+          </h3>
+
+          {loadingPRs ? (
+            <div
+              style={{ textAlign: "center", padding: "40px", color: "#666" }}
+            >
+              <span
+                className="material-icons rotating"
+                style={{ fontSize: "48px" }}
+              >
+                sync
+              </span>
+              <p style={{ marginTop: "16px" }}>Loading PRs...</p>
+            </div>
+          ) : personalRecords.length === 0 ? (
+            <div
+              style={{ textAlign: "center", padding: "40px", color: "#666" }}
+            >
+              <span
+                className="material-icons"
+                style={{ fontSize: "64px", opacity: 0.3 }}
+              >
+                emoji_events
+              </span>
+              <p style={{ marginTop: "16px", fontSize: "14px" }}>
+                No personal records yet. Start logging exercises to track your
+                PRs!
+              </p>
+            </div>
+          ) : (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+            >
+              {personalRecords.map((pr, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: "#0a0a0a",
+                    border: "2px solid #2a2a2a",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    transition: "all 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "#FFD93D50";
+                    e.currentTarget.style.transform = "translateX(4px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "#2a2a2a";
+                    e.currentTarget.style.transform = "translateX(0)";
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <span
+                        className="material-icons"
+                        style={{ fontSize: "24px", color: "#FFD93D" }}
+                      >
+                        fitness_center
+                      </span>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: "16px",
+                            fontWeight: 700,
+                            color: "#fff",
+                            marginBottom: "4px",
+                          }}
+                        >
+                          {pr.exerciseName}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#999" }}>
+                          Last updated:{" "}
+                          {pr.updatedAt?.toDate
+                            ? pr.updatedAt.toDate().toLocaleDateString()
+                            : "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#121212",
+                        borderRadius: "8px",
+                        padding: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: 700,
+                          color: "#4ECDC4",
+                          fontFamily: "Bebas Neue",
+                        }}
+                      >
+                        {pr.maxWeight}kg
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#999" }}>
+                        Max Weight
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: "#121212",
+                        borderRadius: "8px",
+                        padding: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: 700,
+                          color: "#667eea",
+                          fontFamily: "Bebas Neue",
+                        }}
+                      >
+                        {pr.maxReps}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#999" }}>
+                        Max Reps
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        background: "#121212",
+                        borderRadius: "8px",
+                        padding: "12px",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "20px",
+                          fontWeight: 700,
+                          color: "#FF6B6B",
+                          fontFamily: "Bebas Neue",
+                        }}
+                      >
+                        {pr.maxVolume}
+                      </div>
+                      <div style={{ fontSize: "11px", color: "#999" }}>
+                        Max Volume
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Actions */}

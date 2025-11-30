@@ -1,10 +1,23 @@
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 import { useState, useEffect } from "react";
-import { getUserStats, getRecentLogs, getWeeklyStats, getAllWorkoutProgress, getRoutines } from "../lib/firebase-database";
+import {
+  getUserStats,
+  getRecentLogs,
+  getWeeklyStats,
+  getAllWorkoutProgress,
+  getRoutines,
+  getWeeklyMuscleData,
+  getMonthlyMuscleData,
+  getActiveProgram,
+  getCurrentDayRoutine,
+} from "../lib/firebase-database";
 import { Link } from "react-router-dom";
+import MuscleHeatmap from "../components/MuscleHeatmap";
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
+  const toast = useToast();
   const [stats, setStats] = useState({
     totalCalories: 0,
     totalSteps: 0,
@@ -12,62 +25,182 @@ export default function Dashboard() {
   });
   const [recentLogs, setRecentLogs] = useState([]);
   const [weeklyStats, setWeeklyStats] = useState([]);
+  const [weeklyMuscleData, setWeeklyMuscleData] = useState([]);
+  const [monthlyMuscleData, setMonthlyMuscleData] = useState([]);
+  const [selectedMonthOffset, setSelectedMonthOffset] = useState(0);
   const [workoutInProgress, setWorkoutInProgress] = useState(null);
+  const [activeProgram, setActiveProgram] = useState(null);
+  const [currentDayRoutine, setCurrentDayRoutine] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Load cached data immediately on mount
   useEffect(() => {
     if (user) {
-      loadData();
+      const hasCache = loadCachedData();
+      if (hasCache) {
+        // If we have cache, load data in background without showing loading
+        loadData(true);
+      } else {
+        // First time - show loading
+        loadData(false);
+      }
     }
   }, [user]);
 
-  const loadData = async () => {
+  const loadCachedData = () => {
     try {
-      console.log("Loading dashboard data for user:", user.uid);
-      const [statsData, logs, weekly, workoutProgress, routines] = await Promise.all([
-        getUserStats(user.uid),
-        getRecentLogs(user.uid, 1),
-        getWeeklyStats(user.uid),
-        getAllWorkoutProgress(user.uid),
-        getRoutines(user.uid),
-      ]);
-      console.log("Dashboard stats:", statsData);
-      console.log("Recent logs:", logs);
-      console.log("Weekly stats:", weekly);
-      console.log("Workout progress:", workoutProgress);
-      console.log("Routines:", routines);
-      
+      const cacheKey = `dashboard_${user.uid}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const data = JSON.parse(cached);
+        const cacheAge = Date.now() - (data.timestamp || 0);
+
+        // Use cache if less than 5 minutes old for instant display
+        if (cacheAge < 5 * 60 * 1000) {
+          setStats(data.stats || stats);
+          setRecentLogs(data.recentLogs || []);
+          setWeeklyStats(data.weeklyStats || []);
+          setWeeklyMuscleData(data.weeklyMuscleData || []);
+          setMonthlyMuscleData(data.monthlyMuscleData || []);
+          setWorkoutInProgress(data.workoutInProgress || null);
+          setActiveProgram(data.activeProgram || null);
+          setCurrentDayRoutine(data.currentDayRoutine || null);
+          setLoading(false);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const loadData = async (silent = false) => {
+    try {
+      if (!silent) {
+        setLoading(true);
+      }
+
+      const [statsData, logs, weekly, muscleData, workoutProgress, routines, activeProg] =
+        await Promise.all([
+          getUserStats(user.uid),
+          getRecentLogs(user.uid, 1),
+          getWeeklyStats(user.uid),
+          getWeeklyMuscleData(user.uid),
+          getAllWorkoutProgress(user.uid),
+          getRoutines(user.uid),
+          getActiveProgram(user.uid),
+        ]);
+
       setStats(statsData);
       setRecentLogs(logs);
       setWeeklyStats(weekly);
-      
-      // Match workout progress with actual routine data
-      if (workoutProgress.length > 0 && routines.length > 0) {
-        // Sort by lastUpdated to get the most recent
+      setWeeklyMuscleData(muscleData);
+      setActiveProgram(activeProg);
+      setLoading(false);
+
+      // Load current day routine if active program exists
+      let dayRoutine = null;
+      if (activeProg) {
+        dayRoutine = await getCurrentDayRoutine(user.uid);
+        setCurrentDayRoutine(dayRoutine);
+      }
+
+      let progressData = null;
+      if (workoutProgress.length > 0) {
         const sortedProgress = workoutProgress.sort((a, b) => {
           const timeA = a.lastUpdated?.seconds || 0;
           const timeB = b.lastUpdated?.seconds || 0;
-          return timeB - timeA; // Most recent first
+          return timeB - timeA;
         });
+
+        const latestProgress = sortedProgress[0];
         
-        const progressData = sortedProgress[0];
-        const matchingRoutine = routines.find(r => r.name === progressData.routineName);
-        
+        // Try to match with regular routines first
+        let matchingRoutine = routines.find(
+          (r) => r.name === latestProgress.routineName
+        );
+
+        // If no match and we have an active program, check if it's the current day routine
+        if (!matchingRoutine && dayRoutine && latestProgress.routineName === dayRoutine.name) {
+          matchingRoutine = {
+            name: dayRoutine.name,
+            exercises: dayRoutine.exercises,
+            muscleGroups: dayRoutine.muscleGroups,
+            isProgramDay: true,
+          };
+        }
+
+        // Only set workout in progress if we found a matching routine
         if (matchingRoutine) {
-          setWorkoutInProgress({
-            ...progressData,
-            routine: matchingRoutine
-          });
-        } else {
+          progressData = {
+            ...latestProgress,
+            routine: matchingRoutine,
+          };
           setWorkoutInProgress(progressData);
+        } else {
+          setWorkoutInProgress(null);
         }
       } else {
         setWorkoutInProgress(null);
       }
+
+      // Load monthly data in background
+      getMonthlyMuscleData(user.uid, selectedMonthOffset)
+        .then((monthlyData) => {
+          setMonthlyMuscleData(monthlyData);
+
+          // Cache monthly data separately for quick month switching
+          const monthCacheKey = `monthly_muscle_${user.uid}_${selectedMonthOffset}`;
+          localStorage.setItem(monthCacheKey, JSON.stringify(monthlyData));
+
+          // Cache all data for next visit
+          const cacheKey = `dashboard_${user.uid}`;
+          const cacheData = {
+            stats: statsData,
+            recentLogs: logs,
+            weeklyStats: weekly,
+            weeklyMuscleData: muscleData,
+            monthlyMuscleData: monthlyData,
+            workoutInProgress: progressData,
+            activeProgram: activeProg,
+            currentDayRoutine: dayRoutine,
+            timestamp: Date.now(),
+          };
+          localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+        })
+        .catch((err) => {
+          console.error("Error loading monthly data:", err);
+        });
     } catch (error) {
       console.error("Error loading dashboard data:", error);
-    } finally {
+      toast.error("Failed to load dashboard data");
       setLoading(false);
+    }
+  };
+
+  const handleMonthChange = async (offset) => {
+    setSelectedMonthOffset(offset);
+
+    // Try to load from cache first for instant display
+    const cacheKey = `monthly_muscle_${user.uid}_${offset}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const cachedData = JSON.parse(cached);
+        setMonthlyMuscleData(cachedData);
+      } catch (error) {
+        console.error("Error loading cached monthly data:", error);
+      }
+    }
+
+    // Fetch fresh data in background and update cache
+    try {
+      const monthlyData = await getMonthlyMuscleData(user.uid, offset);
+      setMonthlyMuscleData(monthlyData);
+      localStorage.setItem(cacheKey, JSON.stringify(monthlyData));
+    } catch (error) {
+      console.error("Error loading monthly muscle data:", error);
     }
   };
 
@@ -116,7 +249,10 @@ export default function Dashboard() {
       `}</style>
 
       {/* Header */}
-      <div className="dashboard-header" style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}>
+      <div
+        className="dashboard-header"
+        style={{ marginBottom: "48px", animation: "fadeIn 0.5s ease-out" }}
+      >
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -277,70 +413,186 @@ export default function Dashboard() {
       >
         <Panel title="Weekly Overview" icon="bar_chart">
           {loading ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "#666" }}>
-              <span className="material-icons rotating" style={{ fontSize: "48px", marginBottom: "16px" }}>sync</span>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "60px 20px",
+                color: "#666",
+              }}
+            >
+              <span
+                className="material-icons rotating"
+                style={{ fontSize: "48px", marginBottom: "16px" }}
+              >
+                sync
+              </span>
               <p>Loading...</p>
             </div>
           ) : weeklyStats.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 20px", color: "#666" }}>
-              <span className="material-icons" style={{ fontSize: "64px", marginBottom: "16px", opacity: 0.3 }}>insights</span>
+            <div
+              style={{
+                textAlign: "center",
+                padding: "60px 20px",
+                color: "#666",
+              }}
+            >
+              <span
+                className="material-icons"
+                style={{ fontSize: "64px", marginBottom: "16px", opacity: 0.3 }}
+              >
+                insights
+              </span>
               <p>No activity data yet</p>
-              <p style={{ fontSize: "14px", marginTop: "8px" }}>Start logging exercises to see your progress</p>
+              <p style={{ fontSize: "14px", marginTop: "8px" }}>
+                Start logging exercises to see your progress
+              </p>
             </div>
           ) : (
             <div style={{ padding: "10px 0" }}>
               {/* Chart */}
-              <div style={{ display: "flex", alignItems: "end", gap: "8px", height: "180px", marginBottom: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "end",
+                  gap: "8px",
+                  height: "180px",
+                  marginBottom: "20px",
+                }}
+              >
                 {weeklyStats.map((stat, idx) => {
-                  const maxCalories = Math.max(...weeklyStats.map(s => s.calories), 100); // Minimum scale of 100
+                  const maxCalories = Math.max(
+                    ...weeklyStats.map((s) => s.calories),
+                    100
+                  ); // Minimum scale of 100
                   const heightPercent = (stat.calories / maxCalories) * 100;
                   const minHeightPx = stat.calories > 0 ? 20 : 0; // Minimum 20px for visibility
-                  const calculatedHeight = Math.max(minHeightPx, (heightPercent / 100) * 180);
-                  
+                  const calculatedHeight = Math.max(
+                    minHeightPx,
+                    (heightPercent / 100) * 180
+                  );
+
                   return (
-                    <div key={idx} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                      <div style={{ fontSize: "11px", color: "#667eea", fontWeight: 700, fontFamily: "Roboto Mono" }}>
+                    <div
+                      key={idx}
+                      style={{
+                        flex: 1,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        gap: "8px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#667eea",
+                          fontWeight: 700,
+                          fontFamily: "Roboto Mono",
+                        }}
+                      >
                         {stat.calories > 0 ? Math.round(stat.calories) : ""}
                       </div>
-                      <div style={{
-                        width: "100%",
-                        height: `${calculatedHeight}px`,
-                        background: stat.calories > 0 ? "linear-gradient(180deg, #667eea 0%, #764ba2 100%)" : "#2a2a2a",
-                        borderRadius: "6px 6px 0 0",
-                        transition: "all 0.3s ease",
-                        cursor: "pointer",
-                        boxShadow: stat.calories > 0 ? "0 4px 12px rgba(102, 126, 234, 0.3)" : "none"
-                      }}
-                      onMouseEnter={(e) => {
-                        if (stat.calories > 0) {
-                          e.currentTarget.style.opacity = "0.8";
-                          e.currentTarget.style.transform = "translateY(-4px)";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.opacity = "1";
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }}
+                      <div
+                        style={{
+                          width: "100%",
+                          height: `${calculatedHeight}px`,
+                          background:
+                            stat.calories > 0
+                              ? "linear-gradient(180deg, #667eea 0%, #764ba2 100%)"
+                              : "#2a2a2a",
+                          borderRadius: "6px 6px 0 0",
+                          transition: "all 0.3s ease",
+                          cursor: "pointer",
+                          boxShadow:
+                            stat.calories > 0
+                              ? "0 4px 12px rgba(102, 126, 234, 0.3)"
+                              : "none",
+                        }}
+                        onMouseEnter={(e) => {
+                          if (stat.calories > 0) {
+                            e.currentTarget.style.opacity = "0.8";
+                            e.currentTarget.style.transform =
+                              "translateY(-4px)";
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = "1";
+                          e.currentTarget.style.transform = "translateY(0)";
+                        }}
                       ></div>
-                      <div style={{ fontSize: "11px", color: "#666", fontWeight: 700 }}>{stat.day}</div>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: "#666",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {stat.day}
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              
+
               {/* Summary */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", paddingTop: "12px", borderTop: "1px solid #2a2a2a" }}>
-                <div style={{ textAlign: "center", padding: "12px", background: "rgba(102, 126, 234, 0.1)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#667eea", fontFamily: "Bebas Neue" }}>
-                    {Math.round(weeklyStats.reduce((sum, s) => sum + s.calories, 0))}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "12px",
+                  paddingTop: "12px",
+                  borderTop: "1px solid #2a2a2a",
+                }}
+              >
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "12px",
+                    background: "rgba(102, 126, 234, 0.1)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: 700,
+                      color: "#667eea",
+                      fontFamily: "Bebas Neue",
+                    }}
+                  >
+                    {Math.round(
+                      weeklyStats.reduce((sum, s) => sum + s.calories, 0)
+                    )}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}>Total Calories</div>
+                  <div
+                    style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}
+                  >
+                    Total Calories
+                  </div>
                 </div>
-                <div style={{ textAlign: "center", padding: "12px", background: "rgba(245, 87, 108, 0.1)", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "24px", fontWeight: 700, color: "#f5576c", fontFamily: "Bebas Neue" }}>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "12px",
+                    background: "rgba(245, 87, 108, 0.1)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "24px",
+                      fontWeight: 700,
+                      color: "#f5576c",
+                      fontFamily: "Bebas Neue",
+                    }}
+                  >
                     {weeklyStats.reduce((sum, s) => sum + s.workouts, 0)}
                   </div>
-                  <div style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}>Total Workouts</div>
+                  <div
+                    style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}
+                  >
+                    Total Workouts
+                  </div>
                 </div>
               </div>
             </div>
@@ -348,87 +600,172 @@ export default function Dashboard() {
         </Panel>
 
         <Panel title="Activity & Progress" icon="fitness_center">
-          {/* Workout in Progress Section */}
-          {workoutInProgress && (
-            <div style={{ marginBottom: "20px", paddingBottom: "20px", borderBottom: "1px solid #2a2a2a" }}>
-              <div style={{
-                background: "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)",
-                border: "2px solid #667eea30",
-                borderRadius: "12px",
-                padding: "16px",
-                marginBottom: "12px"
-              }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span className="material-icons" style={{ color: "#667eea", fontSize: "20px" }}>play_circle</span>
-                    <h4 style={{
-                      fontSize: "16px",
-                      fontFamily: "Bebas Neue",
-                      color: "#667eea",
-                      letterSpacing: "0.05em",
-                      margin: 0
-                    }}>
+          {/* Workout in Progress Section - Priority Display */}
+          {workoutInProgress ? (
+            <div
+              style={{
+                marginBottom: "20px",
+                paddingBottom: "20px",
+                borderBottom: "1px solid #2a2a2a",
+              }}
+            >
+              <div
+                style={{
+                  background:
+                    "linear-gradient(135deg, #667eea15 0%, #764ba215 100%)",
+                  border: "2px solid #667eea30",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <span
+                      className="material-icons"
+                      style={{ color: "#667eea", fontSize: "20px" }}
+                    >
+                      play_circle
+                    </span>
+                    <h4
+                      style={{
+                        fontSize: "16px",
+                        fontFamily: "Bebas Neue",
+                        color: "#667eea",
+                        letterSpacing: "0.05em",
+                        margin: 0,
+                      }}
+                    >
                       {workoutInProgress.routineName}
                     </h4>
                   </div>
                   {workoutInProgress.routine?.exercises?.length && (
-                    <div style={{
-                      padding: "4px 12px",
-                      background: "#667eea",
-                      borderRadius: "12px",
-                      fontSize: "12px",
-                      fontWeight: 700,
-                      color: "#fff",
-                      fontFamily: "Roboto Mono"
-                    }}>
-                      {Math.round(((workoutInProgress.currentExerciseIndex || 0) / workoutInProgress.routine.exercises.length) * 100)}%
+                    <div
+                      style={{
+                        padding: "4px 12px",
+                        background: "#667eea",
+                        borderRadius: "12px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "#fff",
+                        fontFamily: "Roboto Mono",
+                      }}
+                    >
+                      {Math.round(
+                        ((workoutInProgress.currentExerciseIndex || 0) /
+                          workoutInProgress.routine.exercises.length) *
+                          100
+                      )}
+                      %
                     </div>
                   )}
                 </div>
                 <div style={{ display: "flex", gap: "12px" }}>
-                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
-                    <div style={{
-                      fontSize: "20px",
-                      fontFamily: "Bebas Neue",
-                      color: "#667eea",
-                      lineHeight: "1"
-                    }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      padding: "8px",
+                      background: "#0a0a0a",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        fontFamily: "Bebas Neue",
+                        color: "#667eea",
+                        lineHeight: "1",
+                      }}
+                    >
                       {(workoutInProgress.currentExerciseIndex || 0) + 1}
-                      {workoutInProgress.routine?.exercises?.length && `/${workoutInProgress.routine.exercises.length}`}
+                      {workoutInProgress.routine?.exercises?.length &&
+                        `/${workoutInProgress.routine.exercises.length}`}
                     </div>
-                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#999",
+                        marginTop: "4px",
+                      }}
+                    >
                       Exercises
                     </div>
                   </div>
-                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
-                    <div style={{
-                      fontSize: "20px",
-                      fontFamily: "Bebas Neue",
-                      color: "#f5576c",
-                      lineHeight: "1"
-                    }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      padding: "8px",
+                      background: "#0a0a0a",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        fontFamily: "Bebas Neue",
+                        color: "#f5576c",
+                        lineHeight: "1",
+                      }}
+                    >
                       {workoutInProgress.currentSet || 1}
                     </div>
-                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#999",
+                        marginTop: "4px",
+                      }}
+                    >
                       Current Set
                     </div>
                   </div>
-                  <div style={{ flex: 1, textAlign: "center", padding: "8px", background: "#0a0a0a", borderRadius: "8px" }}>
-                    <div style={{
-                      fontSize: "20px",
-                      fontFamily: "Bebas Neue",
-                      color: "#4ECDC4",
-                      lineHeight: "1"
-                    }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      padding: "8px",
+                      background: "#0a0a0a",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        fontFamily: "Bebas Neue",
+                        color: "#4ECDC4",
+                        lineHeight: "1",
+                      }}
+                    >
                       {workoutInProgress.completedSets?.length || 0}
                     </div>
-                    <div style={{ fontSize: "10px", color: "#999", marginTop: "4px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#999",
+                        marginTop: "4px",
+                      }}
+                    >
                       Sets Done
                     </div>
                   </div>
                 </div>
               </div>
-              <Link 
+              <Link
                 to="/routines"
                 state={{ resumeWorkout: workoutInProgress }}
                 style={{
@@ -437,7 +774,8 @@ export default function Dashboard() {
                   justifyContent: "center",
                   gap: "8px",
                   padding: "10px 16px",
-                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                   color: "#fff",
                   borderRadius: "8px",
                   textDecoration: "none",
@@ -445,22 +783,173 @@ export default function Dashboard() {
                   fontSize: "12px",
                   letterSpacing: "0.05em",
                   textTransform: "uppercase",
-                  transition: "all 0.2s"
+                  transition: "all 0.2s",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.5)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(102, 126, 234, 0.5)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
                   e.currentTarget.style.boxShadow = "none";
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "16px" }}>play_arrow</span>
+                <span className="material-icons" style={{ fontSize: "16px" }}>
+                  play_arrow
+                </span>
                 Continue Workout
               </Link>
             </div>
-          )}
+          ) : activeProgram && currentDayRoutine ? (
+            // Show Active Program when no workout in progress
+            <div
+              style={{
+                marginBottom: "20px",
+                paddingBottom: "20px",
+                borderBottom: "1px solid #2a2a2a",
+              }}
+            >
+              <div
+                style={{
+                  background:
+                    "linear-gradient(135deg, #FFD93D15 0%, #FFC93D15 100%)",
+                  border: "2px solid #FFD93D30",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "12px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  <span
+                    className="material-icons"
+                    style={{ color: "#FFD93D", fontSize: "20px" }}
+                  >
+                    event_note
+                  </span>
+                  <h4
+                    style={{
+                      fontSize: "16px",
+                      fontFamily: "Bebas Neue",
+                      color: "#FFD93D",
+                      letterSpacing: "0.05em",
+                      margin: 0,
+                    }}
+                  >
+                    {currentDayRoutine.programName}
+                  </h4>
+                </div>
+                <div
+                  style={{
+                    fontSize: "13px",
+                    color: "#999",
+                    marginBottom: "12px",
+                  }}
+                >
+                  Day {currentDayRoutine.currentDay} of {currentDayRoutine.totalDays} • {currentDayRoutine.name}
+                </div>
+                <div style={{ display: "flex", gap: "12px" }}>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      padding: "8px",
+                      background: "#0a0a0a",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        fontFamily: "Bebas Neue",
+                        color: "#FFD93D",
+                      }}
+                    >
+                      {currentDayRoutine.exercises?.length || 0}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#999",
+                        marginTop: "4px",
+                      }}
+                    >
+                      Exercises
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      flex: 1,
+                      textAlign: "center",
+                      padding: "8px",
+                      background: "#0a0a0a",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "20px",
+                        fontFamily: "Bebas Neue",
+                        color: "#FFD93D",
+                      }}
+                    >
+                      {currentDayRoutine.currentDay}/{currentDayRoutine.totalDays}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#999",
+                        marginTop: "4px",
+                      }}
+                    >
+                      Day Progress
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Link
+                to="/routines"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                  padding: "10px 16px",
+                  background:
+                    "linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%)",
+                  color: "#000",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                  fontSize: "12px",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  transition: "all 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(255, 217, 61, 0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "16px" }}>
+                  play_arrow
+                </span>
+                Start Today's Workout
+              </Link>
+            </div>
+          ) : null}
 
           {/* Recent Activity Section */}
           {loading ? (
@@ -539,92 +1028,131 @@ export default function Dashboard() {
             </div>
           ) : (
             <div>
-              <div style={{ 
-                fontSize: "12px", 
-                color: "#999", 
-                marginBottom: "12px",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                fontWeight: 700
-              }}>
-                <span className="material-icons" style={{ fontSize: "16px" }}>history</span>
+              <div
+                style={{
+                  fontSize: "12px",
+                  color: "#999",
+                  marginBottom: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontWeight: 700,
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "16px" }}>
+                  history
+                </span>
                 Recent Activity
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              {recentLogs.map((log, idx) => (
-                <div
-                  key={idx}
-                  className="fade-in"
-                  style={{
-                    padding: "20px",
-                    background:
-                      "linear-gradient(90deg, #FFB6B908 0%, #0a0a0a 15%)",
-                    borderRadius: "16px",
-                    borderLeft: "4px solid #FFB6B9",
-                    border: "1px solid #2a2a2a",
-                    borderLeftWidth: "4px",
-                    borderLeftColor: "#FFB6B9",
-                    transition: "all 0.3s ease",
-                    animationDelay: `${idx * 0.1}s`,
-                    boxShadow: "0 2px 10px rgba(255, 182, 185, 0.1)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(90deg, #FFB6B920 0%, #FFB6B908 15%)";
-                    e.currentTarget.style.borderLeftColor = "#FFB6B9";
-                    e.currentTarget.style.transform = "translateX(8px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 20px rgba(255, 182, 185, 0.25)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background =
-                      "linear-gradient(90deg, #FFB6B908 0%, #0a0a0a 15%)";
-                    e.currentTarget.style.borderLeftColor = "#FFB6B9";
-                    e.currentTarget.style.transform = "translateX(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 2px 10px rgba(255, 182, 185, 0.1)";
-                  }}
-                >
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
+                {recentLogs.map((log, idx) => (
                   <div
+                    key={idx}
+                    className="fade-in"
                     style={{
-                      fontSize: "16px",
-                      fontWeight: 700,
-                      marginBottom: "8px",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
+                      padding: "20px",
+                      background:
+                        "linear-gradient(90deg, #FFB6B908 0%, #0a0a0a 15%)",
+                      borderRadius: "16px",
+                      borderLeft: "4px solid #FFB6B9",
+                      border: "1px solid #2a2a2a",
+                      borderLeftWidth: "4px",
+                      borderLeftColor: "#FFB6B9",
+                      transition: "all 0.3s ease",
+                      animationDelay: `${idx * 0.1}s`,
+                      boxShadow: "0 2px 10px rgba(255, 182, 185, 0.1)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background =
+                        "linear-gradient(90deg, #FFB6B920 0%, #FFB6B908 15%)";
+                      e.currentTarget.style.borderLeftColor = "#FFB6B9";
+                      e.currentTarget.style.transform = "translateX(8px)";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 20px rgba(255, 182, 185, 0.25)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background =
+                        "linear-gradient(90deg, #FFB6B908 0%, #0a0a0a 15%)";
+                      e.currentTarget.style.borderLeftColor = "#FFB6B9";
+                      e.currentTarget.style.transform = "translateX(0)";
+                      e.currentTarget.style.boxShadow =
+                        "0 2px 10px rgba(255, 182, 185, 0.1)";
                     }}
                   >
-                    <span
-                      className="material-icons"
-                      style={{ fontSize: "20px", color: "#FFB6B9" }}
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        fontWeight: 700,
+                        marginBottom: "8px",
+                        color: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px",
+                      }}
                     >
-                      fitness_center
-                    </span>
-                    {log.exerciseName}
+                      <span
+                        className="material-icons"
+                        style={{ fontSize: "20px", color: "#FFB6B9" }}
+                      >
+                        fitness_center
+                      </span>
+                      {log.exerciseName}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "13px",
+                        color: "#999",
+                        fontFamily: "Roboto Mono, monospace",
+                        paddingLeft: "30px",
+                      }}
+                    >
+                      {log.reps === 0 && log.durationSeconds
+                        ? `${log.sets} set${log.sets > 1 ? "s" : ""} × ${
+                            log.durationSeconds
+                          }s duration`
+                        : `${log.sets} set${log.sets > 1 ? "s" : ""} × ${
+                            log.reps
+                          } reps @ ${log.weightKg}kg`}
+                    </div>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      color: "#999",
-                      fontFamily: "Roboto Mono, monospace",
-                      paddingLeft: "30px",
-                    }}
-                  >
-                    {log.reps === 0 && log.durationSeconds
-                      ? `${log.sets} set${log.sets > 1 ? "s" : ""} × ${
-                          log.durationSeconds
-                        }s duration`
-                      : `${log.sets} set${log.sets > 1 ? "s" : ""} × ${
-                          log.reps
-                        } reps @ ${log.weightKg}kg`}
-                  </div>
-                </div>
-              ))}
+                ))}
               </div>
             </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* Muscle Heatmap - Full Width */}
+      <div style={{ marginTop: "20px" }}>
+        <Panel title="Muscle Heatmap - Overview" icon="psychology">
+          {loading ? (
+            <div
+              style={{
+                textAlign: "center",
+                padding: "60px 20px",
+                color: "#666",
+              }}
+            >
+              <span
+                className="material-icons rotating"
+                style={{ fontSize: "48px", marginBottom: "16px" }}
+              >
+                sync
+              </span>
+              <p>Loading...</p>
+            </div>
+          ) : (
+            <MuscleHeatmap
+              weeklyData={weeklyMuscleData}
+              monthlyData={monthlyMuscleData}
+              onMonthChange={handleMonthChange}
+            />
           )}
         </Panel>
       </div>
@@ -637,6 +1165,7 @@ function Panel({ title, icon, children }) {
     bar_chart: "#667eea",
     history: "#FFB6B9",
     fitness_center: "#4ECDC4",
+    psychology: "#FFD93D",
   };
   const iconColor = iconColors[icon] || "#FFD93D";
 

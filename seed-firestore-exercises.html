@@ -51,7 +51,7 @@
   </head>
   <body>
     <h1>🏋️ Seed Firestore Exercises</h1>
-    <p>This will add all 79 exercises to your Firestore database.</p>
+    <p>This will add all exercises to your Firestore database.</p>
     <p>
       <strong>Important:</strong> Make sure you're signed in to your app first!
     </p>
@@ -60,6 +60,21 @@
 
     <div id="status"></div>
 
+    <hr style="margin: 40px 0; border: 1px solid #2a2a2a" />
+
+    <h1>🗑️ Delete Unwanted Exercises</h1>
+    <p>
+      This will delete the 18 exercises you want to remove from your database.
+    </p>
+    <p>
+      <strong>Exercises to delete:</strong> Wide Push-ups, Landmine Press, Face
+      Pulls, Meadows Row, Rack Pulls, Pike Push-ups, Goblet Squat, Sissy Squat,
+      Kickbacks, Dead Bug, Dragon Flag, Cable Crunches, Clean and Press,
+      Thrusters, Turkish Get-up, Kettlebell Swings, Man Makers, Bear Crawls
+    </p>
+    <button id="deleteBtn" onclick="deleteExercises()">Delete Exercises</button>
+    <div id="deleteStatus"></div>
+
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
       import {
@@ -67,6 +82,7 @@
         collection,
         addDoc,
         getDocs,
+        deleteDoc,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
@@ -807,6 +823,321 @@
           met_value: 3.0,
           volume_coefficient: 0.0008,
         },
+
+        // ADDITIONAL CHEST EXERCISES
+        {
+          name: "Diamond Push-ups",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["triceps", "anterior deltoid"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "Svend Press",
+          category: "chest",
+          muscles: {
+            primary: ["pectoralis major"],
+            secondary: ["anterior deltoid"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0014,
+        },
+
+        // ADDITIONAL BACK EXERCISES
+        {
+          name: "Wide Grip Pull-ups",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["biceps", "rear deltoid"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0024,
+        },
+        {
+          name: "Single Arm Dumbbell Row",
+          category: "back",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["rhomboids", "biceps"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0022,
+        },
+
+        // ADDITIONAL SHOULDER EXERCISES
+        {
+          name: "Machine Shoulder Press",
+          category: "shoulders",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["lateral deltoid", "triceps"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Cable Lateral Raises",
+          category: "shoulders",
+          muscles: { primary: ["lateral deltoid"], secondary: ["trapezius"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0014,
+        },
+        {
+          name: "Upright Row",
+          category: "shoulders",
+          muscles: {
+            primary: ["lateral deltoid"],
+            secondary: ["trapezius", "biceps"],
+          },
+          met_value: 5.0,
+          volume_coefficient: 0.002,
+        },
+
+        // ADDITIONAL LEG EXERCISES
+        {
+          name: "Sumo Squat",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "adductors"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0028,
+        },
+        {
+          name: "Walking Lunges",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Hack Squat",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "hamstrings"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0026,
+        },
+        {
+          name: "Glute Bridge",
+          category: "legs",
+          muscles: { primary: ["glutes"], secondary: ["hamstrings"] },
+          met_value: 4.5,
+          volume_coefficient: 0.0016,
+        },
+        {
+          name: "Nordic Hamstring Curl",
+          category: "legs",
+          muscles: {
+            primary: ["hamstrings"],
+            secondary: ["glutes", "erector spinae"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.0022,
+        },
+        {
+          name: "Box Jumps",
+          category: "legs",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "gastrocnemius"],
+          },
+          met_value: 7.0,
+          volume_coefficient: 0.0018,
+        },
+
+        // ADDITIONAL BICEPS EXERCISES
+        {
+          name: "EZ Bar Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: ["brachialis"] },
+          met_value: 4.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Incline Dumbbell Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: [] },
+          met_value: 4.5,
+          volume_coefficient: 0.0017,
+        },
+        {
+          name: "Spider Curl",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: [] },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
+        {
+          name: "21s (Bicep Curls)",
+          category: "biceps",
+          muscles: { primary: ["biceps brachii"], secondary: ["brachialis"] },
+          met_value: 5.0,
+          volume_coefficient: 0.0018,
+        },
+
+        // ADDITIONAL TRICEPS EXERCISES
+        {
+          name: "Cable Overhead Extension",
+          category: "triceps",
+          muscles: { primary: ["triceps"], secondary: [] },
+          met_value: 4.5,
+          volume_coefficient: 0.0017,
+        },
+        {
+          name: "JM Press",
+          category: "triceps",
+          muscles: {
+            primary: ["triceps"],
+            secondary: ["pectoralis major"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0022,
+        },
+
+        // ADDITIONAL CORE EXERCISES
+        {
+          name: "Bicycle Crunches",
+          category: "core",
+          muscles: { primary: ["obliques"], secondary: ["rectus abdominis"] },
+          met_value: 4.5,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Side Plank",
+          category: "core",
+          muscles: { primary: ["obliques"], secondary: ["rectus abdominis"] },
+          met_value: 4.0,
+          volume_coefficient: 0.0012,
+        },
+        {
+          name: "Hanging Knee Raise",
+          category: "core",
+          muscles: {
+            primary: ["rectus abdominis"],
+            secondary: ["hip flexors"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0018,
+        },
+        {
+          name: "Ab Wheel Rollout",
+          category: "core",
+          muscles: {
+            primary: ["rectus abdominis"],
+            secondary: ["erector spinae", "anterior deltoid"],
+          },
+          met_value: 6.0,
+          volume_coefficient: 0.002,
+        },
+        {
+          name: "Windshield Wipers",
+          category: "core",
+          muscles: { primary: ["obliques"], secondary: ["rectus abdominis"] },
+          met_value: 6.5,
+          volume_coefficient: 0.002,
+        },
+
+        // ADDITIONAL CARDIO EXERCISES
+        {
+          name: "Jumping Jacks",
+          category: "cardio",
+          muscles: {
+            primary: ["gastrocnemius"],
+            secondary: ["quadriceps", "deltoids"],
+          },
+          met_value: 7.5,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "High Knees",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["hip flexors", "gastrocnemius"],
+          },
+          met_value: 8.5,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Box Step-ups",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "gastrocnemius"],
+          },
+          met_value: 6.5,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Battle Ropes",
+          category: "cardio",
+          muscles: {
+            primary: ["anterior deltoid"],
+            secondary: ["latissimus dorsi", "rectus abdominis"],
+          },
+          met_value: 9.0,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Stair Climbing",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["glutes", "gastrocnemius"],
+          },
+          met_value: 7.0,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Elliptical",
+          category: "cardio",
+          muscles: {
+            primary: ["quadriceps"],
+            secondary: ["hamstrings", "glutes"],
+          },
+          met_value: 5.5,
+          volume_coefficient: 0.0,
+        },
+        {
+          name: "Swimming",
+          category: "cardio",
+          muscles: {
+            primary: ["latissimus dorsi"],
+            secondary: ["deltoids", "quadriceps"],
+          },
+          met_value: 8.5,
+          volume_coefficient: 0.0,
+        },
+
+        // ADDITIONAL FOREARM EXERCISES
+        {
+          name: "Plate Pinch",
+          category: "forearms",
+          muscles: { primary: ["grip muscles"], secondary: [] },
+          met_value: 3.5,
+          volume_coefficient: 0.001,
+        },
+        {
+          name: "Zottman Curl",
+          category: "forearms",
+          muscles: {
+            primary: ["wrist extensors"],
+            secondary: ["biceps brachii"],
+          },
+          met_value: 4.0,
+          volume_coefficient: 0.0015,
+        },
       ];
 
       window.seedExercises = async function () {
@@ -817,25 +1148,37 @@
         statusDiv.innerHTML = "<p>Starting seed process...</p>";
 
         try {
-          // Check if exercises already exist
+          // Get existing exercises to check for duplicates
           const existingExercises = await getDocs(collection(db, "exercises"));
-          if (!existingExercises.empty) {
-            const confirmOverwrite = confirm(
-              `Found ${existingExercises.size} existing exercises. Do you want to add these exercises anyway? (This will create duplicates)`
-            );
-            if (!confirmOverwrite) {
-              statusDiv.innerHTML = '<p class="error">❌ Seeding cancelled</p>';
-              btn.disabled = false;
-              return;
-            }
-          }
+          const existingNames = new Set();
+          existingExercises.forEach((doc) => {
+            existingNames.add(doc.data().name);
+          });
+
+          statusDiv.innerHTML = `<p>Found ${existingNames.size} existing exercises. Checking for duplicates...</p>`;
 
           let successCount = 0;
           let errorCount = 0;
+          let skippedCount = 0;
 
           for (let i = 0; i < exercises.length; i++) {
             const exercise = exercises[i];
             try {
+              // Skip if exercise already exists
+              if (existingNames.has(exercise.name)) {
+                skippedCount++;
+                statusDiv.innerHTML = `
+                            <p class="progress">Progress: ${i + 1}/${
+                  exercises.length
+                }</p>
+                            <p style="color: #FFD93D;">⊘ Skipped (already exists): ${
+                              exercise.name
+                            }</p>
+                            <p>Added: ${successCount} | Skipped: ${skippedCount} | Errors: ${errorCount}</p>
+                        `;
+                continue;
+              }
+
               await addDoc(collection(db, "exercises"), exercise);
               successCount++;
               statusDiv.innerHTML = `
@@ -843,7 +1186,7 @@
                 exercises.length
               }</p>
                             <p class="success">✓ Added: ${exercise.name}</p>
-                            <p>Success: ${successCount} | Errors: ${errorCount}</p>
+                            <p>Added: ${successCount} | Skipped: ${skippedCount} | Errors: ${errorCount}</p>
                         `;
             } catch (error) {
               errorCount++;
@@ -856,11 +1199,84 @@
                     <hr>
                     <h2 class="success">✅ Seeding Complete!</h2>
                     <p><strong>Successfully added:</strong> ${successCount} exercises</p>
+                    <p><strong>Skipped (duplicates):</strong> ${skippedCount}</p>
                     <p><strong>Errors:</strong> ${errorCount}</p>
+                    <p><strong>Total in database:</strong> ${
+                      existingNames.size + successCount
+                    }</p>
                 `;
         } catch (error) {
           statusDiv.innerHTML += `<p class="error">❌ Fatal error: ${error.message}</p>`;
           console.error("Seeding error:", error);
+        } finally {
+          btn.disabled = false;
+        }
+      };
+
+      window.deleteExercises = async function () {
+        const btn = document.getElementById("deleteBtn");
+        const statusDiv = document.getElementById("deleteStatus");
+
+        btn.disabled = true;
+        statusDiv.innerHTML = "<p>Starting delete process...</p>";
+
+        // List of exercises to delete
+        const exercisesToDelete = [
+          "Wide Push-ups",
+          "Landmine Press",
+          "Face Pulls",
+          "Meadows Row",
+          "Rack Pulls",
+          "Pike Push-ups",
+          "Goblet Squat",
+          "Sissy Squat",
+          "Kickbacks",
+          "Dead Bug",
+          "Dragon Flag",
+          "Cable Crunches",
+          "Clean and Press",
+          "Thrusters",
+          "Turkish Get-up",
+          "Kettlebell Swings",
+          "Man Makers",
+          "Bear Crawls",
+        ];
+
+        try {
+          const exercisesRef = collection(db, "exercises");
+          const snapshot = await getDocs(exercisesRef);
+
+          let deletedCount = 0;
+          let notFoundCount = 0;
+
+          for (const exerciseName of exercisesToDelete) {
+            const docToDelete = snapshot.docs.find(
+              (doc) => doc.data().name === exerciseName
+            );
+
+            if (docToDelete) {
+              await deleteDoc(docToDelete.ref);
+              deletedCount++;
+              statusDiv.innerHTML += `<p style="color: #4ECDC4;">✓ Deleted: ${exerciseName}</p>`;
+            } else {
+              notFoundCount++;
+              statusDiv.innerHTML += `<p style="color: #999;">⊘ Not found: ${exerciseName}</p>`;
+            }
+          }
+
+          statusDiv.innerHTML += `
+            <div style="margin-top: 20px; padding: 20px; background: #0a0a0a; border-radius: 8px;">
+              <h3 style="color: #4ECDC4; margin-bottom: 10px;">Delete Complete!</h3>
+              <p style="color: #4ECDC4;">✓ Deleted: ${deletedCount}</p>
+              <p style="color: #999;">⊘ Not Found: ${notFoundCount}</p>
+              <p style="color: #fff; margin-top: 10px;">Total exercises remaining: ${
+                snapshot.docs.length - deletedCount
+              }</p>
+            </div>
+          `;
+        } catch (error) {
+          statusDiv.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+          console.error("Delete error:", error);
         } finally {
           btn.disabled = false;
         }

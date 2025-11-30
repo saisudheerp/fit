@@ -3,12 +3,16 @@ import {
   getExercises,
   createWorkoutSession,
   logExercise,
+  checkAndUpdatePR,
+  getPR,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 
 export default function ExerciseLog() {
   const { user, profile } = useAuth();
+  const toast = useToast();
   const [exercises, setExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
   const [sets, setSets] = useState(3);
@@ -20,6 +24,8 @@ export default function ExerciseLog() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [currentPR, setCurrentPR] = useState(null);
+  const [newPRAlert, setNewPRAlert] = useState(null);
 
   // Get body weight from profile
   const bodyWeight = profile?.body_weight_kg || 75;
@@ -100,6 +106,25 @@ export default function ExerciseLog() {
     loadExercises();
   }, []);
 
+  useEffect(() => {
+    if (selectedExercise && user) {
+      loadPR();
+    } else {
+      setCurrentPR(null);
+    }
+  }, [selectedExercise, user]);
+
+  const loadPR = async () => {
+    if (!selectedExercise || !user) return;
+    try {
+      const pr = await getPR(user.uid, selectedExercise.id);
+      setCurrentPR(pr);
+    } catch (error) {
+      // Silent fail - PR might not exist yet, which is normal
+      setCurrentPR(null);
+    }
+  };
+
   // Calculate calories whenever inputs change
   useEffect(() => {
     if (selectedExercise) {
@@ -142,9 +167,6 @@ export default function ExerciseLog() {
       setExercises(data);
     } catch (error) {
       console.error("Error loading exercises:", error);
-      alert(
-        "Error loading exercises. Make sure you have added exercises to your Supabase database."
-      );
     } finally {
       setLoading(false);
     }
@@ -198,12 +220,30 @@ export default function ExerciseLog() {
         date: new Date().toISOString().split("T")[0],
       });
 
-      alert("Exercise logged successfully!");
+      // Check for PR (only for strength exercises with weight)
+      if (!isTimed && weight > 0) {
+        const prResult = await checkAndUpdatePR(
+          user.uid,
+          selectedExercise.id,
+          selectedExercise.name,
+          weight,
+          reps,
+          sets
+        );
+
+        if (prResult.isNewPR) {
+          setNewPRAlert(prResult);
+          setTimeout(() => setNewPRAlert(null), 5000);
+        }
+      }
+
+      toast.success("Exercise logged successfully!");
       setResult(null);
       setSelectedExercise(null);
+      setCurrentPR(null);
     } catch (error) {
       console.error("Error saving exercise:", error);
-      alert("Error saving exercise: " + error.message);
+      toast.error("Failed to save exercise: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -222,8 +262,89 @@ export default function ExerciseLog() {
   };
 
   return (
-    <div style={{ maxWidth: "1600px", margin: "0 auto", padding: "40px 24px" }}>
+    <div
+      style={{
+        maxWidth: "1600px",
+        margin: "0 auto",
+        padding: "40px 24px",
+        position: "relative",
+      }}
+    >
+      {/* New PR Alert */}
+      {newPRAlert && (
+        <div
+          style={{
+            position: "fixed",
+            top: "100px",
+            right: "24px",
+            zIndex: 1000,
+            background: "linear-gradient(135deg, #FFD93D 0%, #FF6B35 100%)",
+            border: "3px solid #fff",
+            borderRadius: "16px",
+            padding: "24px",
+            maxWidth: "350px",
+            boxShadow: "0 8px 32px rgba(255, 217, 61, 0.5)",
+            animation: "slideInRight 0.5s ease-out",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "12px",
+            }}
+          >
+            <span
+              className="material-icons"
+              style={{ fontSize: "48px", color: "#000" }}
+            >
+              emoji_events
+            </span>
+            <div>
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  color: "#000",
+                  fontFamily: "Bebas Neue",
+                  letterSpacing: "0.05em",
+                  marginBottom: "4px",
+                }}
+              >
+                NEW PERSONAL RECORD!
+              </h3>
+              <div style={{ fontSize: "13px", color: "#000", opacity: 0.8 }}>
+                {selectedExercise?.name}
+              </div>
+            </div>
+          </div>
+          <div style={{ fontSize: "14px", color: "#000", fontWeight: 600 }}>
+            {newPRAlert.prType.includes("weight") && (
+              <div>🏋️ Weight: {newPRAlert.data.weight}kg</div>
+            )}
+            {newPRAlert.prType.includes("reps") && (
+              <div>💪 Reps: {newPRAlert.data.reps}</div>
+            )}
+            {newPRAlert.prType.includes("volume") && (
+              <div>📊 Volume: {newPRAlert.data.volume}kg</div>
+            )}
+          </div>
+        </div>
+      )}
+
       <style>{`
+        @keyframes slideInRight {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        
         @media (max-width: 768px) {
           .exercise-log-header h2 {
             font-size: 36px !important;
@@ -253,7 +374,10 @@ export default function ExerciseLog() {
       `}</style>
 
       {/* Header */}
-      <div className="exercise-log-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <div
+        className="exercise-log-header"
+        style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}
+      >
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -804,112 +928,237 @@ export default function ExerciseLog() {
 
               {/* Results - Only show calories */}
               {result && (
-                <div
-                  style={{
-                    backgroundColor: "#1a1a1a",
-                    border: "2px solid #fff",
-                    borderRadius: "16px",
-                    padding: "32px",
-                    textAlign: "center",
-                    animation: "scaleIn 0.3s ease-out",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Background glow effect */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: "200px",
-                      height: "200px",
-                      background:
-                        "radial-gradient(circle, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0) 70%)",
-                      pointerEvents: "none",
-                    }}
-                  ></div>
+                <>
+                  {/* Personal Records Display */}
+                  {currentPR &&
+                    selectedExercise.type === "strength" &&
+                    weight > 0 && (
+                      <div
+                        style={{
+                          backgroundColor: "#0a0a0a",
+                          border: "2px solid #FFD93D40",
+                          borderRadius: "16px",
+                          padding: "20px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            marginBottom: "16px",
+                          }}
+                        >
+                          <span
+                            className="material-icons"
+                            style={{ color: "#FFD93D", fontSize: "24px" }}
+                          >
+                            emoji_events
+                          </span>
+                          <h4
+                            style={{
+                              fontSize: "16px",
+                              fontWeight: 700,
+                              color: "#FFD93D",
+                              fontFamily: "Bebas Neue",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            Current Personal Records
+                          </h4>
+                        </div>
+                        <div
+                          style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(3, 1fr)",
+                            gap: "12px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              background: "#121212",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "20px",
+                                fontWeight: 700,
+                                color:
+                                  weight > currentPR.maxWeight
+                                    ? "#4ECDC4"
+                                    : "#fff",
+                                fontFamily: "Bebas Neue",
+                              }}
+                            >
+                              {currentPR.maxWeight}kg
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#999" }}>
+                              Max Weight
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              background: "#121212",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "20px",
+                                fontWeight: 700,
+                                color:
+                                  reps > currentPR.maxReps ? "#4ECDC4" : "#fff",
+                                fontFamily: "Bebas Neue",
+                              }}
+                            >
+                              {currentPR.maxReps}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#999" }}>
+                              Max Reps
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              background: "#121212",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              textAlign: "center",
+                            }}
+                          >
+                            <div
+                              style={{
+                                fontSize: "20px",
+                                fontWeight: 700,
+                                color:
+                                  weight * reps * sets > currentPR.maxVolume
+                                    ? "#4ECDC4"
+                                    : "#fff",
+                                fontFamily: "Bebas Neue",
+                              }}
+                            >
+                              {currentPR.maxVolume}
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#999" }}>
+                              Max Volume
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                   <div
                     style={{
-                      fontSize: "72px",
-                      fontWeight: 700,
-                      marginBottom: "12px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "16px",
+                      backgroundColor: "#1a1a1a",
+                      border: "2px solid #fff",
+                      borderRadius: "16px",
+                      padding: "32px",
+                      textAlign: "center",
+                      animation: "scaleIn 0.3s ease-out",
                       position: "relative",
-                      fontFamily: "Bebas Neue, Impact, sans-serif",
-                      letterSpacing: "0.02em",
+                      overflow: "hidden",
                     }}
                   >
-                    <span
-                      className="material-icons pulse"
-                      style={{ fontSize: "64px", color: "#ff6b35" }}
+                    {/* Background glow effect */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: "200px",
+                        height: "200px",
+                        background:
+                          "radial-gradient(circle, rgba(255,107,53,0.2) 0%, rgba(255,107,53,0) 70%)",
+                        pointerEvents: "none",
+                      }}
+                    ></div>
+
+                    <div
+                      style={{
+                        fontSize: "72px",
+                        fontWeight: 700,
+                        marginBottom: "12px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "16px",
+                        position: "relative",
+                        fontFamily: "Bebas Neue, Impact, sans-serif",
+                        letterSpacing: "0.02em",
+                      }}
                     >
-                      local_fire_department
-                    </span>
-                    {Math.round(result.totalCalories)}
+                      <span
+                        className="material-icons pulse"
+                        style={{ fontSize: "64px", color: "#ff6b35" }}
+                      >
+                        local_fire_department
+                      </span>
+                      {Math.round(result.totalCalories)}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: "16px",
+                        color: "#666",
+                        marginBottom: "32px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.15em",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Calories Burned
+                    </div>
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      style={{
+                        width: "100%",
+                        padding: "18px",
+                        backgroundColor: saving ? "#666" : "#fff",
+                        color: "#000",
+                        border: "none",
+                        borderRadius: "12px",
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                        cursor: saving ? "not-allowed" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "8px",
+                        transition: "all 0.2s",
+                        boxShadow: saving
+                          ? "none"
+                          : "0 4px 12px rgba(255,255,255,0.2)",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!saving) {
+                          e.target.style.transform = "translateY(-2px)";
+                          e.target.style.boxShadow =
+                            "0 6px 16px rgba(255,255,255,0.3)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!saving) {
+                          e.target.style.transform = "translateY(0)";
+                          e.target.style.boxShadow =
+                            "0 4px 12px rgba(255,255,255,0.2)";
+                        }
+                      }}
+                    >
+                      <span className="material-icons">
+                        {saving ? "hourglass_empty" : "save"}
+                      </span>
+                      {saving ? "Saving..." : "Save Calories"}
+                    </button>
                   </div>
-                  <div
-                    style={{
-                      fontSize: "16px",
-                      color: "#666",
-                      marginBottom: "32px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.15em",
-                      fontWeight: 700,
-                    }}
-                  >
-                    Calories Burned
-                  </div>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    style={{
-                      width: "100%",
-                      padding: "18px",
-                      backgroundColor: saving ? "#666" : "#fff",
-                      color: "#000",
-                      border: "none",
-                      borderRadius: "12px",
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                      cursor: saving ? "not-allowed" : "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "8px",
-                      transition: "all 0.2s",
-                      boxShadow: saving
-                        ? "none"
-                        : "0 4px 12px rgba(255,255,255,0.2)",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!saving) {
-                        e.target.style.transform = "translateY(-2px)";
-                        e.target.style.boxShadow =
-                          "0 6px 16px rgba(255,255,255,0.3)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!saving) {
-                        e.target.style.transform = "translateY(0)";
-                        e.target.style.boxShadow =
-                          "0 4px 12px rgba(255,255,255,0.2)";
-                      }
-                    }}
-                  >
-                    <span className="material-icons">
-                      {saving ? "hourglass_empty" : "save"}
-                    </span>
-                    {saving ? "Saving..." : "Save Calories"}
-                  </button>
-                </div>
+                </>
               )}
             </div>
           ) : (

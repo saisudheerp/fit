@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useLocation } from "react-router-dom";
+import { useToast } from "../contexts/ToastContext";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   getRoutines,
   createRoutine,
@@ -16,12 +17,18 @@ import {
   subscribeToWorkoutProgress,
   deleteAllOldWorkoutProgress,
   getWorkoutSessions,
+  getCurrentDayRoutine,
+  completeCurrentDay,
+  getActiveProgram,
+  deactivateProgram,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 
 export default function Routines() {
   const { user, profile } = useAuth();
+  const toast = useToast();
   const location = useLocation();
+  const navigate = useNavigate();
   const [routines, setRoutines] = useState([]);
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,6 +40,8 @@ export default function Routines() {
   const [activeWorkout, setActiveWorkout] = useState(null);
   const [savedWorkout, setSavedWorkout] = useState(null);
   const [completedWorkouts, setCompletedWorkouts] = useState([]);
+  const [activeProgram, setActiveProgram] = useState(null);
+  const [currentDayRoutine, setCurrentDayRoutine] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -110,15 +119,30 @@ export default function Routines() {
       const progress = await getAllWorkoutProgress(user.uid);
 
       if (progress.length > 0) {
-        // Match progress with loaded routines
+        // Match progress with loaded routines or active program
         const progressWithRoutines = progress
           .map((p) => {
+            // First try to match with regular routines
             const matchingRoutine = routines.find(
               (r) => r.name === p.routineName
             );
             if (matchingRoutine) {
               return { ...p, routine: matchingRoutine };
             }
+
+            // If no match, check if it's the current day routine from active program
+            if (currentDayRoutine && currentDayRoutine.name === p.routineName) {
+              return {
+                ...p,
+                routine: {
+                  name: currentDayRoutine.name,
+                  exercises: currentDayRoutine.exercises,
+                  muscleGroups: currentDayRoutine.muscleGroups,
+                  isProgramDay: true,
+                },
+              };
+            }
+
             return p;
           })
           .filter((p) => p.routine);
@@ -139,19 +163,21 @@ export default function Routines() {
     }
   };
 
-  // Re-check for saved workout when routines are loaded
+  // Re-check for saved workout when routines or currentDayRoutine are loaded
   useEffect(() => {
-    if (routines.length > 0) {
+    if (routines.length > 0 || currentDayRoutine) {
       checkForSavedWorkout();
     }
-  }, [routines]);
+  }, [routines, currentDayRoutine]);
 
   // Handle resume workout from dashboard
   useEffect(() => {
     if (location.state?.resumeWorkout && routines.length > 0) {
       const workoutData = location.state.resumeWorkout;
-      const matchingRoutine = routines.find(r => r.name === workoutData.routineName);
-      
+      const matchingRoutine = routines.find(
+        (r) => r.name === workoutData.routineName
+      );
+
       if (matchingRoutine && workoutData.routine) {
         // Resume the workout with saved progress
         setActiveWorkout({
@@ -166,7 +192,7 @@ export default function Routines() {
           isResume: true,
         });
       }
-      
+
       // Clear the state after using it
       window.history.replaceState({}, document.title);
     }
@@ -176,31 +202,38 @@ export default function Routines() {
   useEffect(() => {
     const loadCompletedWorkouts = async () => {
       if (!user) return;
-      
+
       try {
         const sessions = await getWorkoutSessions(user.uid);
         const today = new Date().toISOString().split("T")[0];
-        const todaySessions = sessions.filter(s => s.date === today);
-        
+        const todaySessions = sessions.filter((s) => s.date === today);
+
         // Get unique routine names
-        const uniqueRoutines = [...new Set(todaySessions.map(s => s.routineName))];
+        const uniqueRoutines = [
+          ...new Set(todaySessions.map((s) => s.routineName)),
+        ];
         setCompletedWorkouts(uniqueRoutines);
       } catch (error) {
         console.error("Error loading completed workouts:", error);
       }
     };
-    
+
     loadCompletedWorkouts();
   }, [user]);
 
   const loadData = async () => {
     try {
-      const [routinesData, exercisesData] = await Promise.all([
-        getRoutines(user.uid),
-        getExercises(),
-      ]);
+      const [routinesData, exercisesData, programData, currentDay] =
+        await Promise.all([
+          getRoutines(user.uid),
+          getExercises(),
+          getActiveProgram(user.uid),
+          getCurrentDayRoutine(user.uid),
+        ]);
       setRoutines(routinesData);
       setExercises(exercisesData);
+      setActiveProgram(programData);
+      setCurrentDayRoutine(currentDay);
     } catch (error) {
       console.error("Error loading routines:", error);
     } finally {
@@ -217,7 +250,7 @@ export default function Routines() {
       if (selectedRoutine?.id === routineId) setSelectedRoutine(null);
     } catch (error) {
       console.error("Error deleting routine:", error);
-      alert("Error deleting routine");
+      toast.error("Failed to delete routine");
     }
   };
 
@@ -236,10 +269,9 @@ export default function Routines() {
       }
       setRoutines([]);
       setSelectedRoutine(null);
-      alert("All routines deleted successfully");
     } catch (error) {
       console.error("Error deleting all routines:", error);
-      alert("Error deleting routines");
+      toast.error("Failed to delete routines");
     }
   };
 
@@ -249,7 +281,7 @@ export default function Routines() {
       await loadData();
     } catch (error) {
       console.error("Error duplicating routine:", error);
-      alert("Error duplicating routine");
+      toast.error("Failed to duplicate routine");
     }
   };
 
@@ -265,7 +297,7 @@ export default function Routines() {
       setEditingRoutine(null);
     } catch (error) {
       console.error("Error saving routine:", error);
-      alert("Error saving routine");
+      toast.error("Failed to save routine");
     }
   };
 
@@ -273,8 +305,32 @@ export default function Routines() {
     // Don't clear saved workouts - allow multiple in-progress workouts
     // Each routine will have its own saved state
 
+    // Normalize exercise structure - ensure exerciseData exists
+    const normalizedExercises = routine.exercises.map((ex) => {
+      // If exercise already has exerciseData, use it
+      if (ex.exerciseData) {
+        return ex;
+      }
+      // If exercise has name directly (from custom programs), wrap it in exerciseData
+      return {
+        ...ex,
+        exerciseData: {
+          id: ex.exerciseId || ex.id,
+          name: ex.name,
+          muscleGroup: ex.muscleGroup,
+          category: ex.category || ex.muscleGroup,
+          type: ex.category === "cardio" ? "cardio" : "strength",
+          met: 8.0, // Default MET value
+          volume_coefficient: 1.0,
+        },
+      };
+    });
+
     setActiveWorkout({
-      routine,
+      routine: {
+        ...routine,
+        exercises: normalizedExercises,
+      },
       currentExerciseIndex: 0,
       currentSet: 1,
       completedSets: [],
@@ -372,7 +428,7 @@ export default function Routines() {
       await loadData();
     } catch (error) {
       console.error("Error creating routine:", error);
-      alert("Error creating routine");
+      toast.error("Failed to create routine");
     }
   };
 
@@ -487,7 +543,10 @@ export default function Routines() {
         }
       `}</style>
 
-      <div className="routines-header" style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}>
+      <div
+        className="routines-header"
+        style={{ marginBottom: "40px", animation: "fadeIn 0.5s ease-out" }}
+      >
         <h2
           style={{
             fontFamily: "Bebas Neue, Impact, sans-serif",
@@ -501,7 +560,7 @@ export default function Routines() {
             backgroundClip: "text",
           }}
         >
-          WORKOUT ROUTINES
+          ROUTINE HUB
         </h2>
         <p
           style={{
@@ -532,17 +591,10 @@ export default function Routines() {
       >
         <ActionButton
           icon="add_circle"
-          label="Create Custom"
+          label="Create Routine"
           gradient="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
           glow="rgba(102, 126, 234, 0.4)"
-          onClick={() => setShowCreateModal(true)}
-        />
-        <ActionButton
-          icon="auto_awesome"
-          label="Predefined Routines"
-          gradient="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
-          glow="rgba(245, 87, 108, 0.4)"
-          onClick={() => setShowPredefinedModal(true)}
+          onClick={() => navigate("/create-routine")}
         />
         <ActionButton
           icon="delete_sweep"
@@ -552,6 +604,313 @@ export default function Routines() {
           onClick={handleDeleteAllRoutines}
         />
       </div>
+
+      {/* Saved/In-Progress Workouts - MOVED TO TOP */}
+      {savedWorkout &&
+        Array.isArray(savedWorkout) &&
+        savedWorkout.length > 0 && (
+          <div style={{ marginBottom: "48px" }}>
+            <h3
+              style={{
+                fontSize: "28px",
+                fontWeight: 700,
+                marginBottom: "20px",
+                color: "#A8E6CF",
+                fontFamily: "Bebas Neue, Impact, sans-serif",
+                letterSpacing: "0.05em",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <span className="material-icons" style={{ fontSize: "32px" }}>
+                play_circle
+              </span>
+              WORKOUTS IN PROGRESS
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
+                gap: "16px",
+              }}
+            >
+              {savedWorkout.map(
+                (workout, idx) =>
+                  workout.routine && (
+                    <div
+                      key={idx}
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(168, 230, 207, 0.1) 0%, rgba(78, 205, 196, 0.1) 100%)",
+                        border: "2px solid #A8E6CF",
+                        borderRadius: "20px",
+                        padding: "20px",
+                        animation: "pulse 2s ease-in-out infinite",
+                        boxShadow: "0 8px 30px rgba(168, 230, 207, 0.3)",
+                      }}
+                    >
+                      <div style={{ marginBottom: "16px" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          <span
+                            className="material-icons"
+                            style={{ fontSize: "24px", color: "#A8E6CF" }}
+                          >
+                            play_circle
+                          </span>
+                          <h4
+                            style={{
+                              fontSize: "18px",
+                              fontWeight: 700,
+                              color: "#fff",
+                              fontFamily: "Bebas Neue, Impact, sans-serif",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            {workout.routineName || workout.routine.name}
+                          </h4>
+                        </div>
+                        <p style={{ fontSize: "13px", color: "#999" }}>
+                          Exercise {(workout.currentExerciseIndex || 0) + 1} of{" "}
+                          {workout.routine.exercises?.length || 0} • Set{" "}
+                          {workout.currentSet || 1} •
+                          {workout.completedSets?.length || 0} sets completed
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          workout.isResume = true;
+                          setActiveWorkout(workout);
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "14px 20px",
+                          background:
+                            "linear-gradient(135deg, #A8E6CF 0%, #4ECDC4 100%)",
+                          border: "none",
+                          borderRadius: "12px",
+                          color: "#000",
+                          fontSize: "14px",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "8px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                          boxShadow: "0 4px 15px rgba(168, 230, 207, 0.4)",
+                        }}
+                      >
+                        <span
+                          className="material-icons"
+                          style={{ fontSize: "18px" }}
+                        >
+                          play_arrow
+                        </span>
+                        Resume Workout
+                      </button>
+                    </div>
+                  )
+              )}
+            </div>
+          </div>
+        )}
+
+      {/* Active Program - Current Day */}
+      {activeProgram && currentDayRoutine && (
+        <div style={{ marginBottom: "48px" }}>
+          <div
+            style={{
+              background:
+                "linear-gradient(135deg, #FFD93D20 0%, #FFD93D10 100%)",
+              border: "2px solid #FFD93D",
+              borderRadius: "16px",
+              padding: "32px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "#FFD93D",
+                color: "#000",
+                padding: "6px 16px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 700,
+                letterSpacing: "0.05em",
+              }}
+            >
+              PROGRAMS
+            </div>
+
+            <h3
+              style={{
+                fontSize: "32px",
+                fontWeight: 700,
+                marginBottom: "8px",
+                color: "#FFD93D",
+                fontFamily: "Bebas Neue",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {currentDayRoutine.programName}
+            </h3>
+
+            <p
+              style={{ color: "#999", fontSize: "14px", marginBottom: "24px" }}
+            >
+              Day {currentDayRoutine.currentDay} of{" "}
+              {currentDayRoutine.totalDays} • {currentDayRoutine.name}
+            </p>
+
+            <div
+              style={{
+                background: "#0a0a0a",
+                borderRadius: "12px",
+                padding: "20px",
+                marginBottom: "20px",
+              }}
+            >
+              <h4
+                style={{
+                  color: "#fff",
+                  fontSize: "18px",
+                  fontWeight: 700,
+                  marginBottom: "16px",
+                }}
+              >
+                Today's Workout: {currentDayRoutine.name}
+              </h4>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              >
+                {currentDayRoutine.exercises.slice(0, 5).map((ex, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      color: "#999",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <span>{ex.name}</span>
+                    <span style={{ color: "#FFD93D", fontWeight: 600 }}>
+                      {ex.sets} × {ex.reps}
+                    </span>
+                  </div>
+                ))}
+                {currentDayRoutine.exercises.length > 5 && (
+                  <div
+                    style={{
+                      color: "#666",
+                      fontSize: "13px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    +{currentDayRoutine.exercises.length - 5} more exercises
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => {
+                  handleStartWorkout({
+                    name: currentDayRoutine.name,
+                    exercises: currentDayRoutine.exercises,
+                    muscleGroups: currentDayRoutine.muscleGroups,
+                    isProgramDay: true,
+                  });
+                }}
+                style={{
+                  flex: 1,
+                  padding: "14px 24px",
+                  background:
+                    "linear-gradient(135deg, #FFD93D 0%, #FFC93D 100%)",
+                  border: "none",
+                  borderRadius: "12px",
+                  color: "#000",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
+              >
+                <span className="material-icons">play_arrow</span>
+                Start Today's Workout
+              </button>
+
+              <button
+                onClick={async () => {
+                  if (confirm("Skip to next day? Your progress will be saved.")) {
+                    await completeCurrentDay(user.uid);
+                    toast.showToast("Moved to next day", "success");
+                    loadData();
+                  }
+                }}
+                style={{
+                  padding: "14px 24px",
+                  background: "#0a0a0a",
+                  border: "2px solid #4ECDC4",
+                  borderRadius: "12px",
+                  color: "#4ECDC4",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "18px" }}>
+                  skip_next
+                </span>
+                Skip Day
+              </button>
+
+              <button
+                onClick={async () => {
+                  if (confirm("Stop this active program?")) {
+                    await deactivateProgram(activeProgram.id);
+                    toast.showToast("Program stopped", "info");
+                    loadData();
+                  }
+                }}
+                style={{
+                  padding: "14px 24px",
+                  background: "#0a0a0a",
+                  border: "2px solid #2a2a2a",
+                  borderRadius: "12px",
+                  color: "#999",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Stop Program
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Saved/In-Progress Workouts */}
       {savedWorkout &&
@@ -699,17 +1058,20 @@ export default function Routines() {
             </span>
             COMPLETED TODAY
           </h3>
-          <div style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "12px"
-          }}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
             {completedWorkouts.map((routineName, idx) => (
               <div
                 key={idx}
                 style={{
                   padding: "12px 20px",
-                  background: "linear-gradient(135deg, #4ECDC420 0%, #44A08D20 100%)",
+                  background:
+                    "linear-gradient(135deg, #4ECDC420 0%, #44A08D20 100%)",
                   border: "2px solid #4ECDC4",
                   borderRadius: "12px",
                   display: "flex",
@@ -718,7 +1080,7 @@ export default function Routines() {
                   color: "#4ECDC4",
                   fontSize: "14px",
                   fontWeight: 700,
-                  letterSpacing: "0.05em"
+                  letterSpacing: "0.05em",
                 }}
               >
                 <span className="material-icons" style={{ fontSize: "20px" }}>
@@ -815,7 +1177,7 @@ export default function Routines() {
             checkForSavedWorkout();
           }}
           onComplete={async () => {
-            alert("Workout completed! All exercises have been logged.");
+            toast.success("Workout completed! All exercises logged.");
             setActiveWorkout(null);
             setSavedWorkout(null);
             await loadData();
@@ -1203,11 +1565,11 @@ function RoutineModal({ routine, exercises, onClose, onSave, bodyWeight }) {
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert("Please enter a routine name");
+      toast.warning("Please enter a routine name");
       return;
     }
     if (selectedExercises.length === 0) {
-      alert("Please add at least one exercise");
+      toast.warning("Please add at least one exercise");
       return;
     }
 
@@ -1425,7 +1787,12 @@ function RoutineModal({ routine, exercises, onClose, onSave, bodyWeight }) {
                     color: "#666",
                   }}
                 >
-                  <span className="material-icons" style={{ fontSize: "16px", color: "#FF6B6B" }}>local_fire_department</span>
+                  <span
+                    className="material-icons"
+                    style={{ fontSize: "16px", color: "#FF6B6B" }}
+                  >
+                    local_fire_department
+                  </span>
                   <span>{Math.round(totalCalories)} cal</span>
                   <span>⏱️ {totalDuration} min</span>
                 </div>
@@ -2163,9 +2530,19 @@ function ViewRoutineModal({
                   color: "#666",
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "16px", color: "#4ECDC4" }}>place</span>
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "16px", color: "#4ECDC4" }}
+                >
+                  place
+                </span>
                 <span>{routine.type}</span>
-                <span className="material-icons" style={{ fontSize: "16px", color: "#A8E6CF" }}>fitness_center</span>
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "16px", color: "#A8E6CF" }}
+                >
+                  fitness_center
+                </span>
                 <span>{routine.split}</span>
               </div>
             </div>
@@ -2859,6 +3236,17 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
           await logExercise(user.uid, {
             sessionId,
             exerciseId: exercise.exercise_id,
+            exerciseName:
+              exercise.name ||
+              exercise.exerciseData?.name ||
+              currentExercise?.exerciseData?.name ||
+              "Unknown Exercise",
+            muscleGroup:
+              exercise.muscleGroup ||
+              exercise.exerciseData?.muscleGroup ||
+              exercise.exerciseData?.category ||
+              currentExercise?.exerciseData?.muscleGroup ||
+              "unknown",
             sets: completedCount,
             skippedSets: skippedSetsForExercise.length,
             reps: isTimed ? 0 : avgReps,
@@ -2973,9 +3361,41 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
 
         // Log the exercise immediately with actual completed/skipped data
         if (sessionId) {
+          // Debug logging
+          console.log("=== LOGGING EXERCISE ===");
+          console.log("currentExercise:", currentExercise);
+          console.log("exercise (from loop):", exercise);
+          console.log("exerciseName being logged:", 
+              currentExercise?.exerciseData?.name ||
+              currentExercise?.name ||
+              exercise.name ||
+              exercise.exerciseData?.name ||
+              "Unknown Exercise"
+          );
+          
           await logExercise(user.uid, {
             sessionId,
-            exerciseId: exercise.exercise_id,
+            exerciseId:
+              currentExercise?.exerciseData?.id ||
+              currentExercise?.exerciseId ||
+              currentExercise?.name ||
+              exercise.exerciseId ||
+              exercise.exercise_id ||
+              exercise.exerciseData?.id,
+            exerciseName:
+              currentExercise?.exerciseData?.name ||
+              currentExercise?.name ||
+              exercise.name ||
+              exercise.exerciseData?.name ||
+              "Unknown Exercise",
+            muscleGroup:
+              currentExercise?.exerciseData?.muscleGroup ||
+              currentExercise?.muscleGroup ||
+              currentExercise?.exerciseData?.category ||
+              exercise.muscleGroup ||
+              exercise.exerciseData?.muscleGroup ||
+              exercise.exerciseData?.category ||
+              "unknown",
             sets: completedCount,
             skippedSets: skippedSetsForExercise.length,
             reps: isTimed ? 0 : avgReps,
@@ -2999,6 +3419,11 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
         // Workout complete - delete this specific routine's progress from Firebase
         try {
           await deleteWorkoutProgress(user.uid, workout.routine.name);
+
+          // If this is a program day, advance to next day
+          if (workout.routine.isProgramDay) {
+            await completeCurrentDay(user.uid);
+          }
         } catch (error) {
           console.error("Error deleting workout progress:", error);
         }
@@ -3070,7 +3495,8 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
       totalCalories += calories.totalCalories;
       totalVolume += calories.volume || 0;
       totalDuration +=
-        exerciseDuration + effectiveSets * (ex.rest_seconds / 60);
+        exerciseDuration +
+        effectiveSets * ((ex.restSeconds || ex.rest_seconds || 60) / 60);
     });
 
     return {
@@ -3394,7 +3820,10 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
                 marginBottom: "24px",
               }}
             >
-              <div className="workout-stat-item" style={{ textAlign: "center" }}>
+              <div
+                className="workout-stat-item"
+                style={{ textAlign: "center" }}
+              >
                 <div
                   className="workout-stat-value"
                   style={{

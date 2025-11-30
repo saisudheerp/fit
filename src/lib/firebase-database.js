@@ -88,7 +88,13 @@ export async function getExercises() {
       data.name.includes("Hyperextensions") ||
       data.name.includes("Burpees") ||
       data.name.includes("Lunges") ||
-      data.name.includes("Step-ups")
+      data.name.includes("Step-ups") ||
+      data.name.includes("Box Jump") ||
+      data.name.includes("Jumping Jack") ||
+      data.name.includes("High Knees") ||
+      data.name.includes("Bicycle Crunch") ||
+      data.name.includes("Windshield Wiper") ||
+      data.name.includes("Hanging Knee Raise")
     ) {
       type = "bodyweight";
       requiresWeight = false;
@@ -98,6 +104,7 @@ export async function getExercises() {
       id: doc.id,
       name: data.name,
       category: data.category,
+      muscleGroup: data.category, // Add muscleGroup field
       body_part: data.category,
       type: type,
       difficulty: "intermediate",
@@ -353,35 +360,38 @@ export async function getUserStats(userId) {
 
 export async function getWeeklyStats(userId) {
   const today = new Date();
-  
+
   // Get data for each of the last 7 days starting from Monday
   const stats = [];
-  
+
   // Find the most recent Monday
   const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, etc.
   const daysToMonday = currentDay === 0 ? 6 : currentDay - 1; // If Sunday, go back 6 days, else go back to Monday
-  
+
   const monday = new Date(today);
   monday.setDate(monday.getDate() - daysToMonday);
-  
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(monday);
     date.setDate(date.getDate() + i);
     const dateStr = date.toISOString().split("T")[0];
-    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-    
+    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
     try {
       // Get exercise logs for this specific date
       const logs = await getExerciseLogs(userId, dateStr);
-      
-      const calories = logs.reduce((sum, log) => sum + (log.caloriesBurned || 0), 0);
+
+      const calories = logs.reduce(
+        (sum, log) => sum + (log.caloriesBurned || 0),
+        0
+      );
       const workouts = logs.length;
-      
+
       stats.push({
         date: dateStr,
         day: dayName,
         calories: Math.round(calories),
-        workouts: workouts
+        workouts: workouts,
       });
     } catch (error) {
       console.error(`Error fetching stats for ${dateStr}:`, error);
@@ -389,11 +399,462 @@ export async function getWeeklyStats(userId) {
         date: dateStr,
         day: dayName,
         calories: 0,
-        workouts: 0
+        workouts: 0,
       });
     }
   }
-  
+
+  return stats;
+}
+
+export async function getWeeklyMuscleData(userId) {
+  const today = new Date();
+  const stats = [];
+
+  // Find the most recent Monday
+  const currentDay = today.getDay();
+  const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+  const monday = new Date(today);
+  monday.setDate(monday.getDate() - daysToMonday);
+
+  // Helper function to normalize muscle names
+  const normalizeMuscle = (muscleName) => {
+    if (!muscleName) return null;
+    const name = muscleName.toLowerCase().trim();
+
+    // Map variations to standard muscle group names
+    if (name.includes("chest") || name.includes("pec")) return "chest";
+    if (name.includes("shoulder") || name.includes("delt")) return "shoulders";
+    if (
+      name.includes("bicep") ||
+      name === "biceps" ||
+      name.includes("brachialis")
+    )
+      return "biceps";
+    if (name.includes("tricep")) return "triceps";
+    if (
+      name.includes("forearm") ||
+      name.includes("wrist") ||
+      name.includes("grip")
+    )
+      return "forearms";
+    if (
+      name.includes("abs") ||
+      name.includes("core") ||
+      name.includes("abdominal") ||
+      name.includes("rectus abdominis") ||
+      name.includes("oblique")
+    )
+      return "abs";
+    if (
+      name.includes("back") ||
+      name.includes("lat") ||
+      name.includes("trap") ||
+      name.includes("rhomboid") ||
+      name.includes("erector spinae") ||
+      name.includes("rotator cuff")
+    )
+      return "back";
+    if (name.includes("glute") || name.includes("butt")) return "glutes";
+    if (
+      name.includes("quad") ||
+      name.includes("thigh") ||
+      name.includes("hip flexor")
+    )
+      return "quads";
+    if (name.includes("hamstring")) return "hamstrings";
+    if (
+      name.includes("calf") ||
+      name.includes("calves") ||
+      name.includes("gastrocnemius") ||
+      name.includes("soleus")
+    )
+      return "calves";
+    if (name.includes("leg")) return "quads"; // Default legs to quads
+
+    // Ignore these - they don't map to specific muscle groups
+    if (name.includes("full body") || name.includes("neck")) return null;
+
+    return null;
+  };
+
+  // Helper function to extract muscles from different data formats
+  const extractMuscles = (exerciseData) => {
+    const primary = [];
+    const secondary = [];
+
+    // Format 1: muscles.primary/secondary as arrays
+    if (exerciseData.muscles) {
+      if (Array.isArray(exerciseData.muscles.primary)) {
+        exerciseData.muscles.primary.forEach((m) => {
+          const normalized = normalizeMuscle(m);
+          if (normalized) primary.push(normalized);
+        });
+      }
+      if (Array.isArray(exerciseData.muscles.secondary)) {
+        exerciseData.muscles.secondary.forEach((m) => {
+          const normalized = normalizeMuscle(m);
+          if (normalized) secondary.push(normalized);
+        });
+      }
+    }
+
+    // Format 2: primary/secondary as objects with muscle property
+    if (exerciseData.primary && exerciseData.primary.muscle) {
+      const muscles = exerciseData.primary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !primary.includes(normalized))
+          primary.push(normalized);
+      });
+    }
+    if (exerciseData.secondary && exerciseData.secondary.muscle) {
+      const muscles = exerciseData.secondary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !secondary.includes(normalized))
+          secondary.push(normalized);
+      });
+    }
+    if (exerciseData.tertiary && exerciseData.tertiary.muscle) {
+      const muscles = exerciseData.tertiary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !secondary.includes(normalized))
+          secondary.push(normalized);
+      });
+    }
+
+    // Fallback: try to infer from exercise name and category
+    if (primary.length === 0 && exerciseData.name) {
+      const name = exerciseData.name.toLowerCase();
+      const category = (
+        exerciseData.category ||
+        exerciseData.bodyPart ||
+        ""
+      ).toLowerCase();
+
+      if (
+        category.includes("chest") ||
+        name.includes("bench") ||
+        name.includes("press")
+      ) {
+        primary.push("chest");
+      } else if (
+        category.includes("back") ||
+        name.includes("row") ||
+        name.includes("pull")
+      ) {
+        primary.push("back");
+      } else if (category.includes("shoulder") || name.includes("shoulder")) {
+        primary.push("shoulders");
+      } else if (category.includes("arm")) {
+        if (name.includes("curl") || name.includes("bicep"))
+          primary.push("biceps");
+        else if (name.includes("tricep") || name.includes("extension"))
+          primary.push("triceps");
+      } else if (category.includes("leg")) {
+        if (name.includes("squat") || name.includes("quad"))
+          primary.push("quads");
+        else if (name.includes("curl") || name.includes("hamstring"))
+          primary.push("hamstrings");
+        else if (name.includes("calf")) primary.push("calves");
+        else primary.push("quads");
+      } else if (category.includes("abs") || category.includes("core")) {
+        primary.push("abs");
+      }
+    }
+
+    return {
+      primary: [...new Set(primary)],
+      secondary: [...new Set(secondary)],
+    };
+  };
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toISOString().split("T")[0];
+    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+    try {
+      const logs = await getExerciseLogs(userId, dateStr);
+      if (logs.length === 0) {
+        stats.push({
+          date: dateStr,
+          day: dayName,
+          exercises: [],
+          calories: 0,
+        });
+        continue;
+      }
+
+      const totalCalories = logs.reduce(
+        (sum, log) => sum + (log.caloriesBurned || 0),
+        0
+      );
+
+      // Batch fetch all exercise documents at once for better performance
+      const uniqueExerciseIds = [...new Set(logs.map((log) => log.exerciseId))];
+      const exerciseDocsPromises = uniqueExerciseIds.map((id) =>
+        getDoc(doc(db, "exercises", id))
+      );
+      const exerciseDocs = await Promise.all(exerciseDocsPromises);
+
+      // Create exercise cache for quick lookup
+      const exerciseCache = {};
+      exerciseDocs.forEach((docSnap, idx) => {
+        if (docSnap.exists()) {
+          exerciseCache[uniqueExerciseIds[idx]] = docSnap.data();
+        }
+      });
+
+      // Map logs to exercises using cache
+      const exercisesWithMuscles = logs
+        .map((log) => {
+          const exerciseData = exerciseCache[log.exerciseId];
+          if (exerciseData) {
+            return {
+              ...log,
+              name: exerciseData.name,
+              category: exerciseData.category || exerciseData.bodyPart,
+              muscles: extractMuscles(exerciseData),
+            };
+          }
+          return null;
+        })
+        .filter((e) => e !== null);
+
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        exercises: exercisesWithMuscles.filter((e) => e !== null),
+        calories: Math.round(totalCalories),
+      });
+    } catch (error) {
+      console.error(`Error fetching muscle data for ${dateStr}:`, error);
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        exercises: [],
+        calories: 0,
+      });
+    }
+  }
+
+  return stats;
+}
+
+export async function getMonthlyMuscleData(userId, monthOffset = 0) {
+  const today = new Date();
+  const stats = [];
+
+  // Get first day of target month (current month + offset)
+  const firstDayOfMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + monthOffset,
+    1
+  );
+
+  // Get number of days in target month
+  const lastDayOfMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() + monthOffset + 1,
+    0
+  );
+  const daysInMonth = lastDayOfMonth.getDate();
+
+  // Helper function to normalize muscle names (same as weekly)
+  const normalizeMuscle = (muscleName) => {
+    if (!muscleName) return null;
+    const name = muscleName.toLowerCase().trim();
+
+    if (name.includes("chest") || name.includes("pec")) return "chest";
+    if (name.includes("shoulder") || name.includes("delt")) return "shoulders";
+    if (
+      name.includes("bicep") ||
+      name === "biceps" ||
+      name.includes("brachialis")
+    )
+      return "biceps";
+    if (name.includes("tricep")) return "triceps";
+    if (
+      name.includes("forearm") ||
+      name.includes("wrist") ||
+      name.includes("grip")
+    )
+      return "forearms";
+    if (
+      name.includes("abs") ||
+      name.includes("core") ||
+      name.includes("abdominal") ||
+      name.includes("rectus abdominis") ||
+      name.includes("oblique")
+    )
+      return "abs";
+    if (
+      name.includes("back") ||
+      name.includes("lat") ||
+      name.includes("trap") ||
+      name.includes("rhomboid") ||
+      name.includes("erector spinae") ||
+      name.includes("rotator cuff")
+    )
+      return "back";
+    if (name.includes("glute") || name.includes("butt")) return "glutes";
+    if (
+      name.includes("quad") ||
+      name.includes("thigh") ||
+      name.includes("hip flexor")
+    )
+      return "quads";
+    if (name.includes("hamstring")) return "hamstrings";
+    if (
+      name.includes("calf") ||
+      name.includes("calves") ||
+      name.includes("gastrocnemius") ||
+      name.includes("soleus")
+    )
+      return "calves";
+    if (name.includes("leg")) return "quads";
+
+    if (name.includes("full body") || name.includes("neck")) return null;
+
+    return null;
+  };
+
+  // Helper function to extract muscles (same as weekly)
+  const extractMuscles = (exerciseData) => {
+    const primary = [];
+    const secondary = [];
+
+    if (exerciseData.muscles) {
+      if (Array.isArray(exerciseData.muscles.primary)) {
+        exerciseData.muscles.primary.forEach((m) => {
+          const normalized = normalizeMuscle(m);
+          if (normalized) primary.push(normalized);
+        });
+      }
+      if (Array.isArray(exerciseData.muscles.secondary)) {
+        exerciseData.muscles.secondary.forEach((m) => {
+          const normalized = normalizeMuscle(m);
+          if (normalized) secondary.push(normalized);
+        });
+      }
+    }
+
+    if (exerciseData.primary && exerciseData.primary.muscle) {
+      const muscles = exerciseData.primary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !primary.includes(normalized))
+          primary.push(normalized);
+      });
+    }
+    if (exerciseData.secondary && exerciseData.secondary.muscle) {
+      const muscles = exerciseData.secondary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !secondary.includes(normalized))
+          secondary.push(normalized);
+      });
+    }
+    if (exerciseData.tertiary && exerciseData.tertiary.muscle) {
+      const muscles = exerciseData.tertiary.muscle
+        .split(",")
+        .map((m) => m.trim());
+      muscles.forEach((m) => {
+        const normalized = normalizeMuscle(m);
+        if (normalized && !secondary.includes(normalized))
+          secondary.push(normalized);
+      });
+    }
+
+    return {
+      primary: [...new Set(primary)],
+      secondary: [...new Set(secondary)],
+    };
+  };
+
+  // Fetch all days in the month
+  for (let i = 0; i < daysInMonth; i++) {
+    const date = new Date(firstDayOfMonth);
+    date.setDate(date.getDate() + i);
+    const dateStr = date.toISOString().split("T")[0];
+    const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
+
+    try {
+      const logs = await getExerciseLogs(userId, dateStr);
+      if (logs.length === 0) {
+        stats.push({
+          date: dateStr,
+          day: dayName,
+          exercises: [],
+          calories: 0,
+        });
+        continue;
+      }
+
+      const totalCalories = logs.reduce(
+        (sum, log) => sum + (log.caloriesBurned || 0),
+        0
+      );
+
+      // Batch fetch exercise documents
+      const uniqueExerciseIds = [...new Set(logs.map((log) => log.exerciseId))];
+      const exerciseDocs = await Promise.all(
+        uniqueExerciseIds.map((id) => getDoc(doc(db, "exercises", id)))
+      );
+
+      const exerciseCache = {};
+      exerciseDocs.forEach((docSnap, idx) => {
+        if (docSnap.exists()) {
+          exerciseCache[uniqueExerciseIds[idx]] = docSnap.data();
+        }
+      });
+
+      const exercisesWithMuscles = logs
+        .map((log) => {
+          const exerciseData = exerciseCache[log.exerciseId];
+          if (exerciseData) {
+            return {
+              ...log,
+              name: exerciseData.name,
+              category: exerciseData.category || exerciseData.bodyPart,
+              muscles: extractMuscles(exerciseData),
+            };
+          }
+          return null;
+        })
+        .filter((e) => e !== null);
+
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        exercises: exercisesWithMuscles.filter((e) => e !== null),
+        calories: Math.round(totalCalories),
+      });
+    } catch (error) {
+      console.error(`Error fetching muscle data for ${dateStr}:`, error);
+      stats.push({
+        date: dateStr,
+        day: dayName,
+        exercises: [],
+        calories: 0,
+      });
+    }
+  }
+
   return stats;
 }
 
@@ -563,5 +1024,241 @@ export function subscribeToWorkoutProgress(userId, callback) {
     });
 
     callback(progress);
+  });
+}
+
+// ============================================
+// PERSONAL RECORDS (PR) TRACKING
+// ============================================
+
+export async function savePR(userId, prData) {
+  const docRef = doc(db, "personal_records", `${userId}_${prData.exerciseId}`);
+
+  await setDoc(
+    docRef,
+    {
+      user_id: userId,
+      exerciseId: prData.exerciseId,
+      exerciseName: prData.exerciseName,
+      maxWeight: prData.maxWeight || 0,
+      maxReps: prData.maxReps || 0,
+      maxVolume: prData.maxVolume || 0,
+      maxWeightDate: prData.maxWeightDate || null,
+      maxRepsDate: prData.maxRepsDate || null,
+      maxVolumeDate: prData.maxVolumeDate || null,
+      updatedAt: new Date(),
+    },
+    { merge: true }
+  );
+}
+
+export async function getPR(userId, exerciseId) {
+  const docRef = doc(db, "personal_records", `${userId}_${exerciseId}`);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() };
+  }
+  return null;
+}
+
+export async function getAllPRs(userId) {
+  const q = query(
+    collection(db, "personal_records"),
+    where("user_id", "==", userId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const prs = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  // Sort by most recent update
+  return prs.sort((a, b) => {
+    const timeA = a.updatedAt?.seconds || 0;
+    const timeB = b.updatedAt?.seconds || 0;
+    return timeB - timeA;
+  });
+}
+
+export async function checkAndUpdatePR(
+  userId,
+  exerciseId,
+  exerciseName,
+  weight,
+  reps,
+  sets
+) {
+  const volume = weight * reps * sets;
+  const currentPR = await getPR(userId, exerciseId);
+
+  let isNewPR = false;
+  let prType = [];
+
+  const today = new Date().toISOString();
+
+  if (!currentPR) {
+    // First time doing this exercise - everything is a PR!
+    await savePR(userId, {
+      exerciseId,
+      exerciseName,
+      maxWeight: weight,
+      maxReps: reps,
+      maxVolume: volume,
+      maxWeightDate: today,
+      maxRepsDate: today,
+      maxVolumeDate: today,
+    });
+    return {
+      isNewPR: true,
+      prType: ["weight", "reps", "volume"],
+      data: { weight, reps, volume },
+    };
+  }
+
+  const updates = {
+    exerciseId,
+    exerciseName,
+    maxWeight: currentPR.maxWeight,
+    maxReps: currentPR.maxReps,
+    maxVolume: currentPR.maxVolume,
+    maxWeightDate: currentPR.maxWeightDate,
+    maxRepsDate: currentPR.maxRepsDate,
+    maxVolumeDate: currentPR.maxVolumeDate,
+  };
+
+  // Check for new PRs
+  if (weight > currentPR.maxWeight) {
+    updates.maxWeight = weight;
+    updates.maxWeightDate = today;
+    prType.push("weight");
+    isNewPR = true;
+  }
+
+  if (reps > currentPR.maxReps) {
+    updates.maxReps = reps;
+    updates.maxRepsDate = today;
+    prType.push("reps");
+    isNewPR = true;
+  }
+
+  if (volume > currentPR.maxVolume) {
+    updates.maxVolume = volume;
+    updates.maxVolumeDate = today;
+    prType.push("volume");
+    isNewPR = true;
+  }
+
+  if (isNewPR) {
+    await savePR(userId, updates);
+  }
+
+  return { isNewPR, prType, data: { weight, reps, volume }, currentPR };
+}
+
+// ============================================
+// ACTIVE ROUTINE PROGRAMS (Multi-Day Tracking)
+// ============================================
+
+export async function createActiveProgram(userId, programData) {
+  const docRef = await addDoc(collection(db, "active_programs"), {
+    user_id: userId,
+    programName: programData.programName,
+    goal: programData.goal,
+    totalDays: programData.totalDays,
+    currentDay: 0, // Start at day 0, will increment to 1 on first workout
+    allRoutines: programData.allRoutines, // Array of all daily routines
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  return docRef.id;
+}
+
+export async function getActiveProgram(userId) {
+  const q = query(
+    collection(db, "active_programs"),
+    where("user_id", "==", userId),
+    where("isActive", "==", true),
+    limit(1)
+  );
+  const querySnapshot = await getDocs(q);
+
+  if (!querySnapshot.empty) {
+    const doc = querySnapshot.docs[0];
+    return { id: doc.id, ...doc.data() };
+  }
+  return null;
+}
+
+export async function getCurrentDayRoutine(userId) {
+  const program = await getActiveProgram(userId);
+  if (!program) return null;
+
+  const dayIndex = program.currentDay % program.totalDays;
+  const dayRoutine = program.allRoutines[dayIndex];
+
+  // Enrich exercises with full details from exercises collection
+  const enrichedExercises = await Promise.all(
+    dayRoutine.exercises.map(async (ex) => {
+      // If exercise already has name, use it directly
+      if (ex.name && ex.name !== "Unknown Exercise") {
+        return ex;
+      }
+
+      // Otherwise try to fetch from exercises collection
+      try {
+        const exerciseDoc = await getDoc(doc(db, "exercises", ex.exerciseId));
+        if (exerciseDoc.exists()) {
+          const exerciseData = exerciseDoc.data();
+          return {
+            ...ex,
+            name: exerciseData.name,
+            muscleGroup: exerciseData.muscleGroup || ex.muscleGroup,
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching exercise:", error);
+      }
+
+      // Fallback to existing data
+      return ex;
+    })
+  );
+
+  return {
+    ...dayRoutine,
+    exercises: enrichedExercises,
+    programId: program.id,
+    currentDay: program.currentDay + 1, // Display as 1-indexed
+    totalDays: program.totalDays,
+    programName: program.programName,
+  };
+}
+
+export async function completeCurrentDay(userId) {
+  const program = await getActiveProgram(userId);
+  if (!program) return;
+
+  const nextDay = (program.currentDay + 1) % program.totalDays;
+
+  await updateDoc(doc(db, "active_programs", program.id), {
+    currentDay: nextDay,
+    updatedAt: new Date(),
+  });
+}
+
+export async function deactivateProgram(programId) {
+  await updateDoc(doc(db, "active_programs", programId), {
+    isActive: false,
+    updatedAt: new Date(),
+  });
+}
+
+export async function resetProgramDay(programId, dayNumber) {
+  await updateDoc(doc(db, "active_programs", programId), {
+    currentDay: dayNumber,
+    updatedAt: new Date(),
   });
 }
