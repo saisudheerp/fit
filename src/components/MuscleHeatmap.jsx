@@ -295,8 +295,9 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
         )}
       </div>
 
-      {/* Grid Layout */}
+      {/* Muscle Grid */}
       <div
+        className="muscle-heatmap-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",
@@ -333,7 +334,7 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
                   intensity > 0 ? "80" : "20"
                 }`,
                 borderRadius: "12px",
-                padding: "16px",
+                padding: "12px 8px",
                 textAlign: "center",
                 transition: "all 0.3s ease",
                 cursor: "pointer",
@@ -355,10 +356,11 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
               <img
                 src={muscle.icon}
                 alt={muscle.name}
+                className="muscle-icon"
                 style={{
                   width: "40px",
                   height: "40px",
-                  marginBottom: "8px",
+                  marginBottom: "6px",
                   filter: intensity > 0 ? "none" : "grayscale(1)",
                   opacity: intensity > 0 ? 1 : 0.3,
                   display: "block",
@@ -442,6 +444,7 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
 
       {/* Summary Stats */}
       <div
+        className="muscle-stats-grid"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(4, 1fr)",

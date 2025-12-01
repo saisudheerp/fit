@@ -387,17 +387,47 @@ textarea::placeholder {
     grid-template-columns: 1fr 1fr !important;
   }
   
-  /* Exception: Muscle heatmap grid - 2 columns on mobile for better fit */
-  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+  /* Muscle heatmap responsive layout */
+  .muscle-heatmap-grid {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
     max-width: 100% !important;
+    padding: 0 8px !important;
   }
   
-  /* Exception: Muscle heatmap stats - 2x2 grid on mobile */
-  div[style*="gridTemplateColumns: repeat(4, 1fr)"] + div,
-  div[style*="borderTop: 1px solid #2a2a2a"] {
+  .muscle-heatmap-grid > div {
+    padding: 10px 6px !important;
+    min-height: 100px !important;
+  }
+  
+  .muscle-icon {
+    width: 32px !important;
+    height: 32px !important;
+    margin-bottom: 4px !important;
+  }
+  
+  .muscle-heatmap-grid div[style*="fontSize: 10px"] {
+    font-size: 9px !important;
+  }
+  
+  .muscle-heatmap-grid div[style*="fontSize: 20px"] {
+    font-size: 18px !important;
+  }
+  
+  /* Muscle stats grid - 2x2 on mobile */
+  .muscle-stats-grid {
     grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    padding-top: 16px !important;
+    margin-top: 16px !important;
+  }
+  
+  .muscle-stats-grid div[style*="fontSize: 24px"] {
+    font-size: 20px !important;
+  }
+  
+  .muscle-stats-grid div[style*="fontSize: 11px"] {
+    font-size: 10px !important;
   }
 
   /* Padding adjustments for containers */
@@ -469,6 +499,41 @@ textarea::placeholder {
   /* Flex direction changes */
   div[style*="display: flex"][style*="gap"] {
     flex-wrap: wrap !important;
+  }
+  
+  /* Workout modal specific fixes */
+  .workout-live-stats {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
+  }
+  
+  .workout-live-stats > div {
+    padding: 6px 4px !important;
+  }
+  
+  .workout-live-stats div[style*="fontSize: 18px"] {
+    font-size: 16px !important;
+  }
+  
+  .workout-live-stats div[style*="fontSize: 10px"] {
+    font-size: 9px !important;
+  }
+  
+  /* Workout modal header on mobile */
+  div[style*="TODAY'S ROUTINE"] {
+    font-size: 18px !important;
+  }
+  
+  /* Workout card exercise name */
+  div[style*="fontSize: 28px"][style*="Bebas Neue"] {
+    font-size: 22px !important;
+  }
+  
+  /* Workout modal buttons */
+  div[style*="display: flex"][style*="justifyContent: space-between"] button {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 18px !important;
   }
 
   /* Button groups */
