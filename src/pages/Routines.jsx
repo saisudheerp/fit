@@ -525,8 +525,26 @@ export default function Routines() {
             font-size: 36px !important;
           }
           .workout-live-stats {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: 1fr 1fr 1fr !important;
             gap: 6px !important;
+          }
+          .workout-live-stats > div {
+            padding: 6px 4px !important;
+          }
+          /* Workout modal header */
+          .workout-modal-header h3 {
+            font-size: 18px !important;
+          }
+          .workout-modal-header p {
+            font-size: 14px !important;
+          }
+          .workout-modal-header button {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          /* Exercise card in workout modal */
+          .exercise-card-name {
+            font-size: 22px !important;
           }
           /* Fix Predefined Routines Modal cards */
           .predefined-routines-grid {

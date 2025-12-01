@@ -210,6 +210,28 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
 
   return (
     <div style={{ padding: "20px 0" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .muscle-heatmap-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+            max-width: 100% !important;
+            margin: 0 auto 16px !important;
+          }
+          .muscle-heatmap-grid > div {
+            padding: 8px 4px !important;
+          }
+          .muscle-heatmap-grid img {
+            width: 28px !important;
+            height: 28px !important;
+            margin: 0 auto 4px !important;
+          }
+          .muscle-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+          }
+        }
+      `}</style>
       {/* Time Period Toggle */}
       <div
         style={{
