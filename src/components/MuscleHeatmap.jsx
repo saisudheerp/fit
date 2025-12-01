@@ -12,11 +12,7 @@ import hamstringsIcon from "../assets/hamstrings.png";
 import calvesIcon from "../assets/calves.png";
 import cardioIcon from "../assets/cardio.png";
 
-export default function MuscleHeatmap({
-  weeklyData,
-  monthlyData,
-  onMonthChange,
-}) {
+export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }) {
   const [muscleGroups, setMuscleGroups] = useState({});
   const [cardioCount, setCardioCount] = useState(0);
   const [totalCalories, setTotalCalories] = useState(0);
@@ -201,7 +197,7 @@ export default function MuscleHeatmap({
   const getMonthLabel = () => {
     const date = new Date();
     date.setMonth(date.getMonth() + selectedMonthOffset);
-    return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   };
 
   const handleMonthChange = (offset) => {
@@ -259,7 +255,7 @@ export default function MuscleHeatmap({
         >
           Monthly
         </button>
-
+        
         {timePeriod === "monthly" && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <button
@@ -274,19 +270,9 @@ export default function MuscleHeatmap({
                 transition: "all 0.2s ease",
               }}
             >
-              <span className="material-icons" style={{ fontSize: "18px" }}>
-                chevron_left
-              </span>
+              <span className="material-icons" style={{ fontSize: "18px" }}>chevron_left</span>
             </button>
-            <span
-              style={{
-                color: "#4ECDC4",
-                fontWeight: 600,
-                fontSize: "14px",
-                minWidth: "150px",
-                textAlign: "center",
-              }}
-            >
+            <span style={{ color: "#4ECDC4", fontWeight: 600, fontSize: "14px", minWidth: "150px", textAlign: "center" }}>
               {getMonthLabel()}
             </span>
             <button
@@ -303,9 +289,7 @@ export default function MuscleHeatmap({
                 opacity: selectedMonthOffset >= 0 ? 0.5 : 1,
               }}
             >
-              <span className="material-icons" style={{ fontSize: "18px" }}>
-                chevron_right
-              </span>
+              <span className="material-icons" style={{ fontSize: "18px" }}>chevron_right</span>
             </button>
           </div>
         )}
@@ -494,21 +478,20 @@ export default function MuscleHeatmap({
               fontFamily: "Bebas Neue",
             }}
           >
-            {Object.keys(muscleGroups)
-              .reduce(
-                (max, key) =>
-                  muscleGroups[key] > muscleGroups[max] ? key : max,
-                Object.keys(muscleGroups)[0] || ""
-              )
-              .charAt(0)
-              .toUpperCase() +
-              Object.keys(muscleGroups)
-                .reduce(
-                  (max, key) =>
-                    muscleGroups[key] > muscleGroups[max] ? key : max,
-                  Object.keys(muscleGroups)[0] || ""
-                )
-                .slice(1) || "-"}
+            {(() => {
+              const sortedMuscles = Object.keys(muscleGroups)
+                .filter(k => muscleGroups[k] > 0)
+                .sort((a, b) => muscleGroups[b] - muscleGroups[a]);
+              
+              if (sortedMuscles.length === 0) return "-";
+              
+              const maxCount = muscleGroups[sortedMuscles[0]];
+              const topMuscles = sortedMuscles
+                .filter(m => muscleGroups[m] === maxCount)
+                .map(m => m.charAt(0).toUpperCase() + m.slice(1));
+              
+              return topMuscles.join(" • ");
+            })()}
           </div>
           <div style={{ fontSize: "11px", color: "#999", fontWeight: 600 }}>
             Most Worked

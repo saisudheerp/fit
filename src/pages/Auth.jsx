@@ -15,7 +15,7 @@ export default function Auth() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && profile) {
       console.log("Auth redirect check:", {
         user: user?.uid,
         profile: profile?.name,
@@ -24,13 +24,13 @@ export default function Auth() {
 
       if (!profile?.name || !profile?.body_weight_kg) {
         console.log("Redirecting to /setup");
-        navigate("/setup");
+        navigate("/setup", { replace: true });
       } else {
         console.log("Redirecting to /");
-        navigate("/");
+        navigate("/", { replace: true });
       }
     }
-  }, [user, profile, authLoading, navigate]);
+  }, [user, profile, authLoading]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

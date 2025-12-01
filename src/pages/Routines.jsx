@@ -21,6 +21,7 @@ import {
   completeCurrentDay,
   getActiveProgram,
   deactivateProgram,
+  getLocalDateString,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 
@@ -205,7 +206,7 @@ export default function Routines() {
 
       try {
         const sessions = await getWorkoutSessions(user.uid);
-        const today = new Date().toISOString().split("T")[0];
+        const today = getLocalDateString();
         const todaySessions = sessions.filter((s) => s.date === today);
 
         // Get unique routine names
@@ -911,131 +912,6 @@ export default function Routines() {
           </div>
         </div>
       )}
-
-      {/* Saved/In-Progress Workouts */}
-      {savedWorkout &&
-        Array.isArray(savedWorkout) &&
-        savedWorkout.length > 0 && (
-          <div style={{ marginBottom: "48px" }}>
-            <h3
-              style={{
-                fontSize: "28px",
-                fontWeight: 700,
-                marginBottom: "20px",
-                color: "#A8E6CF",
-                fontFamily: "Bebas Neue, Impact, sans-serif",
-                letterSpacing: "0.05em",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-              }}
-            >
-              <span className="material-icons" style={{ fontSize: "32px" }}>
-                play_circle
-              </span>
-              WORKOUTS IN PROGRESS
-            </h3>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))",
-                gap: "16px",
-              }}
-            >
-              {savedWorkout.map(
-                (workout, idx) =>
-                  workout.routine && (
-                    <div
-                      key={idx}
-                      style={{
-                        background:
-                          "linear-gradient(135deg, rgba(168, 230, 207, 0.1) 0%, rgba(78, 205, 196, 0.1) 100%)",
-                        border: "2px solid #A8E6CF",
-                        borderRadius: "20px",
-                        padding: "20px",
-                        animation: "pulse 2s ease-in-out infinite",
-                        boxShadow: "0 8px 30px rgba(168, 230, 207, 0.3)",
-                      }}
-                    >
-                      <div style={{ marginBottom: "16px" }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          <span
-                            className="material-icons"
-                            style={{ fontSize: "24px", color: "#A8E6CF" }}
-                          >
-                            play_circle
-                          </span>
-                          <h4
-                            style={{
-                              fontSize: "18px",
-                              fontWeight: 700,
-                              color: "#fff",
-                              fontFamily: "Bebas Neue, Impact, sans-serif",
-                              letterSpacing: "0.05em",
-                            }}
-                          >
-                            {workout.routineName || workout.routine.name}
-                          </h4>
-                        </div>
-                        <p style={{ fontSize: "13px", color: "#999" }}>
-                          Exercise {(workout.currentExerciseIndex || 0) + 1} of{" "}
-                          {workout.routine.exercises?.length || 0} • Set{" "}
-                          {workout.currentSet || 1} •
-                          {workout.completedSets?.length || 0} sets completed
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => {
-                          workout.isResume = true;
-                          setActiveWorkout(workout);
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "12px 24px",
-                          background:
-                            "linear-gradient(135deg, #A8E6CF 0%, #88D8B0 100%)",
-                          border: "none",
-                          borderRadius: "12px",
-                          color: "#000",
-                          fontSize: "14px",
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "8px",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                          boxShadow: "0 4px 15px rgba(168, 230, 207, 0.5)",
-                          transition: "all 0.2s",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = "translateY(-2px)";
-                          e.currentTarget.style.boxShadow =
-                            "0 6px 20px rgba(168, 230, 207, 0.7)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = "translateY(0)";
-                          e.currentTarget.style.boxShadow =
-                            "0 4px 15px rgba(168, 230, 207, 0.5)";
-                        }}
-                      >
-                        <span className="material-icons">play_arrow</span>
-                        Resume Workout
-                      </button>
-                    </div>
-                  )
-              )}
-            </div>
-          </div>
-        )}
 
       {/* Completed Workouts Today */}
       {completedWorkouts.length > 0 && (
@@ -3027,7 +2903,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
       // Create new session if starting fresh
       try {
         const sid = await createWorkoutSession(user.uid, {
-          date: new Date().toISOString().split("T")[0],
+          date: getLocalDateString(),
           routineName: workout.routine.name,
         });
         setSessionId(sid);
@@ -3255,7 +3131,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             durationSeconds: isTimed ? avgDuration : 0,
             caloriesBurned: calories.totalCalories,
             volume: calories.volume || 0,
-            date: new Date().toISOString().split("T")[0],
+            date: getLocalDateString(),
           });
         }
       } catch (error) {
@@ -3404,7 +3280,7 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             durationSeconds: isTimed ? avgDuration : 0,
             caloriesBurned: calories.totalCalories,
             volume: calories.volume || 0,
-            date: new Date().toISOString().split("T")[0],
+            date: getLocalDateString(),
           });
         }
       } catch (error) {

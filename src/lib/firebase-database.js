@@ -17,6 +17,41 @@ import {
 import { db } from "./firebase";
 
 // ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+// Get local date string (YYYY-MM-DD) at midnight local time
+// This ensures days/weeks/months start at exactly 12:00 AM local time
+export function getLocalDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// Get start of day in local time
+function getStartOfDay(date = new Date()) {
+  const newDate = new Date(date);
+  newDate.setHours(0, 0, 0, 0);
+  return newDate;
+}
+
+// Get start of week (Sunday) in local time
+function getStartOfWeek(date = new Date()) {
+  const newDate = getStartOfDay(date);
+  const day = newDate.getDay();
+  newDate.setDate(newDate.getDate() - day);
+  return newDate;
+}
+
+// Get start of month in local time
+function getStartOfMonth(date = new Date()) {
+  const newDate = getStartOfDay(date);
+  newDate.setDate(1);
+  return newDate;
+}
+
+// ============================================
 // PROFILES
 // ============================================
 
@@ -163,6 +198,10 @@ export async function logExercise(userId, exerciseData) {
   });
 }
 
+export async function deleteExerciseLog(logId) {
+  await deleteDoc(doc(db, "exercise_logs", logId));
+}
+
 export async function getExerciseLogs(userId, date) {
   const q = query(
     collection(db, "exercise_logs"),
@@ -179,6 +218,12 @@ export async function getExerciseLogs(userId, date) {
   // Fetch exercise names for all logs
   const logsWithNames = await Promise.all(
     logs.map(async (log) => {
+      // If exerciseName is already saved in the log, use it
+      if (log.exerciseName) {
+        return log;
+      }
+      
+      // Otherwise, try to fetch from exercises collection
       try {
         const exerciseDoc = await getDoc(doc(db, "exercises", log.exerciseId));
         return {
@@ -219,6 +264,12 @@ export async function getRecentLogs(userId, limitCount = 10) {
   // Fetch exercise names for all logs
   const logsWithNames = await Promise.all(
     logs.map(async (log) => {
+      // If exerciseName is already saved in the log, use it
+      if (log.exerciseName) {
+        return log;
+      }
+      
+      // Otherwise, try to fetch from exercises collection
       try {
         const exerciseDoc = await getDoc(doc(db, "exercises", log.exerciseId));
         return {
@@ -322,8 +373,8 @@ export async function getStepLogs(userId, startDate, endDate) {
 // ============================================
 
 export async function getUserStats(userId) {
-  // Get today's logs
-  const today = new Date().toISOString().split("T")[0];
+  // Get today's logs using local date
+  const today = getLocalDateString();
 
   console.log("getUserStats - userId:", userId, "today:", today);
 
@@ -374,7 +425,7 @@ export async function getWeeklyStats(userId) {
   for (let i = 0; i < 7; i++) {
     const date = new Date(monday);
     date.setDate(date.getDate() + i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = getLocalDateString(date);
     const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
 
     try {
@@ -580,7 +631,7 @@ export async function getWeeklyMuscleData(userId) {
   for (let i = 0; i < 7; i++) {
     const date = new Date(monday);
     date.setDate(date.getDate() + i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = getLocalDateString(date);
     const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
 
     try {
@@ -790,7 +841,7 @@ export async function getMonthlyMuscleData(userId, monthOffset = 0) {
   for (let i = 0; i < daysInMonth; i++) {
     const date = new Date(firstDayOfMonth);
     date.setDate(date.getDate() + i);
-    const dateStr = date.toISOString().split("T")[0];
+    const dateStr = getLocalDateString(date);
     const dayName = date.toLocaleDateString("en-US", { weekday: "short" });
 
     try {
@@ -935,7 +986,7 @@ export async function saveWorkoutProgress(userId, routineName, progressData) {
     routineName,
     ...progressData,
     lastUpdated: Timestamp.now(),
-    date: new Date().toISOString().split("T")[0],
+    date: getLocalDateString(),
   });
 }
 
@@ -964,7 +1015,7 @@ export async function getAllWorkoutProgress(userId) {
   querySnapshot.forEach((doc) => {
     const data = doc.data();
     // Check if it's from today
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
     if (data.date === today) {
       progress.push({ id: doc.id, ...data });
     }
@@ -987,7 +1038,7 @@ export async function deleteAllOldWorkoutProgress(userId) {
   // This prevents permission errors when trying to query all documents
   if (!userId) return;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
 
   const q = query(
     collection(db, "workout_progress"),
@@ -1014,7 +1065,7 @@ export function subscribeToWorkoutProgress(userId, callback) {
 
   return onSnapshot(q, (snapshot) => {
     const progress = [];
-    const today = new Date().toISOString().split("T")[0];
+    const today = getLocalDateString();
 
     snapshot.forEach((doc) => {
       const data = doc.data();

@@ -448,7 +448,7 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
-            <div style={{ padding: "10px 0" }}>
+            <div style={{ padding: "10px 0", marginTop: "24px" }}>
               {/* Chart */}
               <div
                 style={{
@@ -457,6 +457,7 @@ export default function Dashboard() {
                   gap: "8px",
                   height: "180px",
                   marginBottom: "20px",
+                  marginTop: "12px",
                 }}
               >
                 {weeklyStats.map((stat, idx) => {

@@ -5,6 +5,7 @@ import {
   logExercise,
   checkAndUpdatePR,
   getPR,
+  getLocalDateString,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 import { useAuth } from "../contexts/AuthContext";
@@ -190,7 +191,7 @@ export default function ExerciseLog() {
     try {
       // Create session for today
       const sessionId = await createWorkoutSession(user.uid, {
-        date: new Date().toISOString().split("T")[0],
+        date: getLocalDateString(),
       });
 
       const isTimed =
@@ -217,7 +218,7 @@ export default function ExerciseLog() {
         durationSeconds: isTimed ? duration : 0, // Store seconds for timed exercises
         caloriesBurned: result.totalCalories,
         volume: result.volume,
-        date: new Date().toISOString().split("T")[0],
+        date: getLocalDateString(),
       });
 
       // Check for PR (only for strength exercises with weight)
