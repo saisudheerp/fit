@@ -381,6 +381,24 @@ textarea::placeholder {
   div[style*="grid-template-columns"] {
     grid-template-columns: 1fr !important;
   }
+  
+  /* Exception: Keep Weekly Overview summary side-by-side */
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr 1fr !important;
+  }
+  
+  /* Exception: Muscle heatmap grid - 2 columns on mobile for better fit */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+  }
+  
+  /* Exception: Muscle heatmap stats - 2x2 grid on mobile */
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] + div,
+  div[style*="borderTop: 1px solid #2a2a2a"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
 
   /* Padding adjustments for containers */
   div[style*="padding: 40px"] {
