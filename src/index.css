@@ -378,7 +378,7 @@ textarea::placeholder {
   }
 
   /* Grid adjustments - make all grids single column on mobile */
-  div[style*="grid-template-columns"] {
+  div[style*="grid-template-columns"]:not(.muscle-heatmap-grid):not(.muscle-stats-grid):not(.workout-stats-grid):not(.workout-live-stats) {
     grid-template-columns: 1fr !important;
   }
   
@@ -390,8 +390,7 @@ textarea::placeholder {
   /* Muscle heatmap responsive layout - 3 columns x 4 rows */
   .muscle-heatmap-grid {
     grid-template-columns: repeat(3, 1fr) !important;
-    grid-template-rows: repeat(4, auto) !important;
-    gap: 6px !important;
+    gap: 8px !important;
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 auto 16px !important;
