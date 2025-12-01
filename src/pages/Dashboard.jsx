@@ -448,15 +448,16 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
-            <div style={{ padding: "10px 0", marginTop: "24px" }}>
+            <div className="weekly-chart-container" style={{ padding: "10px 0", marginTop: "24px" }}>
               {/* Chart */}
               <div
+                className="weekly-chart"
                 style={{
                   display: "flex",
                   alignItems: "end",
                   gap: "8px",
                   height: "180px",
-                  marginBottom: "20px",
+                  marginBottom: "40px",
                   marginTop: "12px",
                 }}
               >

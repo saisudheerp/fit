@@ -513,16 +513,23 @@ export default function Routines() {
           .workout-controls button {
             width: 100% !important;
           }
-          /* Fix Active Workout Modal - Sets/Reps/Weight overflow */
+          /* Fix Active Workout Modal - Sets/Reps/Weight layout */
           .workout-stats-grid {
             grid-template-columns: 1fr 1fr !important;
             gap: 12px !important;
           }
-          .workout-stat-item {
-            padding: 12px 8px !important;
+          .workout-stats-grid > div:first-child {
+            grid-column: span 2 !important;
+            text-align: center !important;
           }
           .workout-stat-value {
             font-size: 36px !important;
+          }
+          div[style*="fontSize: 48px"] {
+            font-size: 36px !important;
+          }
+          div[style*="minWidth: 120px"] {
+            min-width: 80px !important;
           }
           .workout-live-stats {
             grid-template-columns: 1fr 1fr 1fr !important;

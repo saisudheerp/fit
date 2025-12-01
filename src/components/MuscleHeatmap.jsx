@@ -19,6 +19,14 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
   const [totalWorkouts, setTotalWorkouts] = useState(0);
   const [timePeriod, setTimePeriod] = useState("weekly"); // 'weekly' or 'monthly'
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = current, -1 = previous, etc.
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Detect mobile screen
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Muscle groups with their display positions and icons
   const muscles = [
@@ -213,17 +221,20 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
       <style>{`
         @media (max-width: 768px) {
           .muscle-heatmap-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 8px !important;
+            grid-template-columns: repeat(3, 1fr) !important;
+            grid-template-rows: repeat(4, auto) !important;
+            gap: 6px !important;
             max-width: 100% !important;
             margin: 0 auto 16px !important;
           }
           .muscle-heatmap-grid > div {
             padding: 8px 4px !important;
+            grid-row: auto !important;
+            grid-column: auto !important;
           }
           .muscle-heatmap-grid img {
-            width: 28px !important;
-            height: 28px !important;
+            width: 26px !important;
+            height: 26px !important;
             margin: 0 auto 4px !important;
           }
           .muscle-stats-grid {
@@ -322,10 +333,10 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
         className="muscle-heatmap-grid"
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "12px",
+          gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(4, 1fr)",
+          gap: isMobile ? "8px" : "12px",
           marginBottom: "24px",
-          maxWidth: "700px",
+          maxWidth: isMobile ? "100%" : "700px",
           margin: "0 auto 24px",
         }}
       >
@@ -340,9 +351,9 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
           return (
             <div
               key={muscle.key}
+              className="muscle-card"
               style={{
-                gridRow: muscle.row + 1,
-                gridColumn: muscle.col + 1,
+                ...(isMobile ? {} : { gridRow: muscle.row + 1, gridColumn: muscle.col + 1 }),
                 background: `linear-gradient(135deg, ${
                   muscle.color
                 }${Math.round(opacity * 255)
@@ -356,7 +367,7 @@ export default function MuscleHeatmap({ weeklyData, monthlyData, onMonthChange }
                   intensity > 0 ? "80" : "20"
                 }`,
                 borderRadius: "12px",
-                padding: "12px 8px",
+                padding: isMobile ? "10px 6px" : "12px 8px",
                 textAlign: "center",
                 transition: "all 0.3s ease",
                 cursor: "pointer",
