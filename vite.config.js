@@ -5,4 +5,10 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(),tailwindcss(),],
+  server: {
+    // Handle SPA routing - serve index.html for all routes
+    historyApiFallback: true,
+  },
+  // For production builds, ensure proper base path
+  base: '/',
 })
