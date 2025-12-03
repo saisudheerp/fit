@@ -475,16 +475,19 @@ const CustomSingleRoutine = () => {
                           SETS
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={exercise.sets}
-                          onChange={(e) =>
-                            updateExercise(
-                              index,
-                              "sets",
-                              parseInt(e.target.value) || 1
-                            )
-                          }
-                          min="1"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || /^\d*$/.test(val)) {
+                              updateExercise(
+                                index,
+                                "sets",
+                                parseInt(val) || 1
+                              );
+                            }
+                          }}
                           style={{
                             width: "100%",
                             padding: "8px",
@@ -510,16 +513,19 @@ const CustomSingleRoutine = () => {
                           REPS
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={exercise.reps}
-                          onChange={(e) =>
-                            updateExercise(
-                              index,
-                              "reps",
-                              parseInt(e.target.value) || 1
-                            )
-                          }
-                          min="1"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || /^\d*$/.test(val)) {
+                              updateExercise(
+                                index,
+                                "reps",
+                                parseInt(val) || 1
+                              );
+                            }
+                          }}
                           style={{
                             width: "100%",
                             padding: "8px",
@@ -545,17 +551,19 @@ const CustomSingleRoutine = () => {
                           REST (s)
                         </label>
                         <input
-                          type="number"
+                          type="text"
+                          inputMode="numeric"
                           value={exercise.restSeconds}
-                          onChange={(e) =>
-                            updateExercise(
-                              index,
-                              "restSeconds",
-                              parseInt(e.target.value) || 30
-                            )
-                          }
-                          min="30"
-                          step="15"
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '' || /^\d*$/.test(val)) {
+                              updateExercise(
+                                index,
+                                "restSeconds",
+                                parseInt(val) || 30
+                              );
+                            }
+                          }}
                           style={{
                             width: "100%",
                             padding: "8px",

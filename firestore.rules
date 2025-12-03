@@ -15,42 +15,55 @@ service cloud.firestore {
     
     // Routines - users can only access their own routines
     match /routines/{routineId} {
-      allow read, write: if request.auth != null && resource.data.user_id == request.auth.uid;
+      allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // Workout Sessions - users can only access their own sessions
     match /workout_sessions/{sessionId} {
-      allow read, write: if request.auth != null && resource.data.user_id == request.auth.uid;
+      allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // Exercise Logs - users can only access their own logs
     match /exercise_logs/{logId} {
-      allow read, write: if request.auth != null && resource.data.user_id == request.auth.uid;
+      allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // Step Logs - users can only access their own step logs
     match /step_logs/{logId} {
       allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
-      allow write: if request.auth != null && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
     
     // Workout Progress - users can read/write their own in-progress workouts
     match /workout_progress/{progressId} {
       allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow write: if request.auth != null && request.resource.data.userId == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     
     // Active Programs - users can only access their own active programs
     match /active_programs/{programId} {
       allow read: if request.auth != null && resource.data.user_id == request.auth.uid;
-      allow write: if request.auth != null && resource.data.user_id == request.auth.uid;
       allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.user_id == request.auth.uid;
+    }
+
+    // Personal Records - users can only access their own PRs
+    // Using document ID pattern: {userId}_{exerciseId}
+    match /personal_records/{recordId} {
+      allow read: if request.auth != null && 
+        (resource == null || resource.data.user_id == request.auth.uid);
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+      allow update: if request.auth != null && 
+        resource.data.user_id == request.auth.uid && 
+        request.resource.data.user_id == request.auth.uid;
       allow delete: if request.auth != null && resource.data.user_id == request.auth.uid;
     }
   }

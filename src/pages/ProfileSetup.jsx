@@ -286,16 +286,17 @@ export default function ProfileSetup() {
               BODY WEIGHT (KG) <span style={{ color: "#ff6b6b" }}>*</span>
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={formData.bodyWeight}
-              onChange={(e) =>
-                setFormData({ ...formData, bodyWeight: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                  setFormData({ ...formData, bodyWeight: val });
+                }
+              }}
               placeholder="e.g., 75"
               required
-              min="30"
-              max="300"
-              step="0.1"
               style={{
                 width: "100%",
                 padding: "14px 16px",
@@ -332,16 +333,17 @@ export default function ProfileSetup() {
               HEIGHT (CM) <span style={{ color: "#ff6b6b" }}>*</span>
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={formData.height}
-              onChange={(e) =>
-                setFormData({ ...formData, height: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                  setFormData({ ...formData, height: val });
+                }
+              }}
               placeholder="e.g., 175"
               required
-              min="100"
-              max="250"
-              step="0.1"
               style={{
                 width: "100%",
                 padding: "14px 16px",
@@ -378,14 +380,16 @@ export default function ProfileSetup() {
               AGE (OPTIONAL)
             </label>
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={formData.age}
-              onChange={(e) =>
-                setFormData({ ...formData, age: e.target.value })
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === '' || /^\d*$/.test(val)) {
+                  setFormData({ ...formData, age: val });
+                }
+              }}
               placeholder="e.g., 25"
-              min="10"
-              max="120"
               style={{
                 width: "100%",
                 padding: "14px 16px",

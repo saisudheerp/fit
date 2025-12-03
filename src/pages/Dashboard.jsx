@@ -538,6 +538,7 @@ export default function Dashboard() {
 
               {/* Summary */}
               <div
+                className="weekly-summary"
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr",

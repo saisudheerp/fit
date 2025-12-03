@@ -297,6 +297,31 @@ export async function getRecentLogs(userId, limitCount = 10) {
     .slice(0, limitCount);
 }
 
+// Get exercise history by exercise ID for PR progression chart
+export async function getExerciseHistory(userId, exerciseId) {
+  const q = query(
+    collection(db, "exercise_logs"),
+    where("user_id", "==", userId),
+    where("exerciseId", "==", exerciseId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const logs = querySnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  // Sort by date ascending for chart
+  return logs.sort((a, b) => {
+    const dateA = a.date || a.createdAt?.seconds || 0;
+    const dateB = b.date || b.createdAt?.seconds || 0;
+    if (typeof dateA === 'string' && typeof dateB === 'string') {
+      return dateA.localeCompare(dateB);
+    }
+    return dateA - dateB;
+  });
+}
+
 // ============================================
 // WORKOUT SESSIONS
 // ============================================

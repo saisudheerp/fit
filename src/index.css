@@ -378,13 +378,66 @@ textarea::placeholder {
   }
 
   /* Grid adjustments - make all grids single column on mobile */
-  div[style*="grid-template-columns"]:not(.muscle-heatmap-grid):not(.muscle-stats-grid):not(.workout-stats-grid):not(.workout-live-stats) {
+  div[style*="grid-template-columns"]:not(.muscle-heatmap-grid):not(.muscle-stats-grid):not(.workout-stats-grid):not(.workout-live-stats):not(.weekly-summary) {
     grid-template-columns: 1fr !important;
   }
   
   /* Exception: Keep Weekly Overview summary side-by-side */
-  div[style*="grid-template-columns: 1fr 1fr"] {
+  .weekly-summary {
+    display: grid !important;
     grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  
+  .weekly-summary > div {
+    padding: 10px 8px !important;
+  }
+  
+  .weekly-summary div[style*="fontSize: 24px"] {
+    font-size: 20px !important;
+  }
+  
+  /* Workout stats grid - Set on top, Reps/Weight side-by-side */
+  .workout-stats-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  
+  .workout-stats-grid > div:first-child {
+    grid-column: span 2 !important;
+    text-align: center !important;
+  }
+  
+  .workout-stats-grid > div:nth-child(2),
+  .workout-stats-grid > div:nth-child(3) {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+  
+  .workout-stats-grid div[style*="fontSize: 48px"] {
+    font-size: 28px !important;
+  }
+  
+  .workout-stats-grid div[style*="minWidth"] {
+    min-width: 50px !important;
+  }
+  
+  .workout-stats-grid div[style*="display: flex"][style*="alignItems: center"] {
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+  
+  .workout-stats-grid button {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  /* Workout live stats - 3 columns */
+  .workout-live-stats {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 6px !important;
   }
   
   /* Muscle heatmap responsive layout - 3 columns x 4 rows */

@@ -708,17 +708,20 @@ const CustomAutoRoutineBuilder = () => {
                                     SETS
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={exercise.sets}
-                                    onChange={(e) =>
-                                      updateExerciseInDay(
-                                        selectedDay,
-                                        exIdx,
-                                        "sets",
-                                        parseInt(e.target.value) || 1
-                                      )
-                                    }
-                                    min="1"
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*$/.test(val)) {
+                                        updateExerciseInDay(
+                                          selectedDay,
+                                          exIdx,
+                                          "sets",
+                                          parseInt(val) || 1
+                                        );
+                                      }
+                                    }}
                                     style={{
                                       width: "100%",
                                       padding: "8px",
@@ -744,17 +747,20 @@ const CustomAutoRoutineBuilder = () => {
                                     REPS
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={exercise.reps}
-                                    onChange={(e) =>
-                                      updateExerciseInDay(
-                                        selectedDay,
-                                        exIdx,
-                                        "reps",
-                                        parseInt(e.target.value) || 1
-                                      )
-                                    }
-                                    min="1"
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*$/.test(val)) {
+                                        updateExerciseInDay(
+                                          selectedDay,
+                                          exIdx,
+                                          "reps",
+                                          parseInt(val) || 1
+                                        );
+                                      }
+                                    }}
                                     style={{
                                       width: "100%",
                                       padding: "8px",
@@ -780,18 +786,20 @@ const CustomAutoRoutineBuilder = () => {
                                     REST (s)
                                   </label>
                                   <input
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={exercise.restSeconds}
-                                    onChange={(e) =>
-                                      updateExerciseInDay(
-                                        selectedDay,
-                                        exIdx,
-                                        "restSeconds",
-                                        parseInt(e.target.value) || 30
-                                      )
-                                    }
-                                    min="30"
-                                    step="15"
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      if (val === '' || /^\d*$/.test(val)) {
+                                        updateExerciseInDay(
+                                          selectedDay,
+                                          exIdx,
+                                          "restSeconds",
+                                          parseInt(val) || 30
+                                        );
+                                      }
+                                    }}
                                     style={{
                                       width: "100%",
                                       padding: "8px",

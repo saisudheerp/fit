@@ -22,6 +22,7 @@ import {
   getActiveProgram,
   deactivateProgram,
   getLocalDateString,
+  checkAndUpdatePR,
 } from "../lib/firebase-database";
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 
@@ -515,21 +516,32 @@ export default function Routines() {
           }
           /* Fix Active Workout Modal - Sets/Reps/Weight layout */
           .workout-stats-grid {
+            display: grid !important;
             grid-template-columns: 1fr 1fr !important;
-            gap: 12px !important;
+            gap: 10px !important;
           }
           .workout-stats-grid > div:first-child {
             grid-column: span 2 !important;
             text-align: center !important;
           }
+          .workout-stats-grid > div:nth-child(2),
+          .workout-stats-grid > div:nth-child(3) {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .workout-stats-grid div[style*="display: flex"][style*="gap: 8px"] {
+            flex-direction: column !important;
+            gap: 4px !important;
+          }
           .workout-stat-value {
-            font-size: 36px !important;
+            font-size: 28px !important;
           }
           div[style*="fontSize: 48px"] {
-            font-size: 36px !important;
+            font-size: 28px !important;
           }
           div[style*="minWidth: 120px"] {
-            min-width: 80px !important;
+            min-width: 50px !important;
           }
           .workout-live-stats {
             grid-template-columns: 1fr 1fr 1fr !important;
@@ -1974,9 +1986,15 @@ function InputField({ label, value, onChange }) {
         {label}
       </label>
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+            onChange(val);
+          }
+        }}
         style={{
           width: "100%",
           padding: "8px",
@@ -3158,6 +3176,29 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             volume: calories.volume || 0,
             date: getLocalDateString(),
           });
+
+          // Check for personal record (only for strength exercises with weight)
+          if (!isTimed && avgWeight > 0 && exercise.exerciseData?.type !== 'cardio') {
+            try {
+              const exerciseId = exercise.exerciseData?.id || exercise.exercise_id || exercise.id;
+              const exerciseName = exercise.name || exercise.exerciseData?.name || "Unknown Exercise";
+              
+              const prResult = await checkAndUpdatePR(
+                user.uid,
+                exerciseId,
+                exerciseName,
+                avgWeight,
+                avgReps,
+                completedCount
+              );
+              
+              if (prResult?.isNewPR) {
+                showToastMessage(`🏆 New PR! ${prResult.prType.join(', ')}`);
+              }
+            } catch (prError) {
+              console.error("Error checking PR:", prError);
+            }
+          }
         }
       } catch (error) {
         console.error("Error logging skipped exercise:", error);
@@ -3307,6 +3348,42 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             volume: calories.volume || 0,
             date: getLocalDateString(),
           });
+
+          // Check for Personal Record (PR) - only for strength exercises with weight
+          if (!isTimed && avgWeight > 0) {
+            const exerciseId =
+              currentExercise?.exerciseData?.id ||
+              currentExercise?.exerciseId ||
+              currentExercise?.name ||
+              exercise.exerciseId ||
+              exercise.exercise_id ||
+              exercise.exerciseData?.id;
+            const exerciseName =
+              currentExercise?.exerciseData?.name ||
+              currentExercise?.name ||
+              exercise.name ||
+              exercise.exerciseData?.name ||
+              "Unknown Exercise";
+
+            try {
+              const prResult = await checkAndUpdatePR(
+                user.uid,
+                exerciseId,
+                exerciseName,
+                avgWeight,
+                avgReps,
+                completedCount
+              );
+
+              if (prResult.isNewPR) {
+                showToastMessage(
+                  `🏆 New PR! ${prResult.prType.join(", ")} for ${exerciseName}!`
+                );
+              }
+            } catch (prError) {
+              console.error("Error checking PR:", prError);
+            }
+          }
         }
       } catch (error) {
         console.error("Error logging exercise:", error);
@@ -4117,18 +4194,27 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
               bottom: "100px",
               left: "50%",
               transform: "translateX(-50%)",
-              background: "linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)",
+              background: showToast.includes("PR") ? "#111" : "#1a1a1a",
+              border: showToast.includes("PR") ? "1px solid #D4AF3750" : "1px solid #2a2a2a",
               color: "#fff",
-              padding: "12px 24px",
-              borderRadius: "12px",
-              fontWeight: 600,
-              fontSize: "14px",
-              boxShadow: "0 4px 20px rgba(78, 205, 196, 0.4)",
+              padding: "12px 20px",
+              borderRadius: "10px",
+              fontWeight: 500,
+              fontSize: "13px",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.4)",
               zIndex: 3000,
               animation: "fadeIn 0.3s ease-out",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
             }}
           >
-            {showToast}
+            {showToast.includes("PR") && (
+              <span className="material-icons" style={{ color: "#D4AF37", fontSize: "18px" }}>emoji_events</span>
+            )}
+            <span style={{ color: showToast.includes("PR") ? "#D4AF37" : "#fff" }}>
+              {showToast.replace("🏆 ", "")}
+            </span>
           </div>
         )}
       </div>

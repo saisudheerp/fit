@@ -279,13 +279,13 @@ export default function ExerciseLog() {
             top: "100px",
             right: "24px",
             zIndex: 1000,
-            background: "linear-gradient(135deg, #FFD93D 0%, #FF6B35 100%)",
-            border: "3px solid #fff",
-            borderRadius: "16px",
-            padding: "24px",
-            maxWidth: "350px",
-            boxShadow: "0 8px 32px rgba(255, 217, 61, 0.5)",
-            animation: "slideInRight 0.5s ease-out",
+            background: "#111",
+            border: "1px solid #D4AF3750",
+            borderRadius: "12px",
+            padding: "16px 20px",
+            maxWidth: "280px",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+            animation: "slideInRight 0.4s ease-out",
           }}
         >
           <div
@@ -296,39 +296,45 @@ export default function ExerciseLog() {
               marginBottom: "12px",
             }}
           >
-            <span
-              className="material-icons"
-              style={{ fontSize: "48px", color: "#000" }}
+            <div
+              style={{
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
+                background: "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              emoji_events
-            </span>
+              <span className="material-icons" style={{ fontSize: "22px", color: "#000" }}>emoji_events</span>
+            </div>
             <div>
-              <h3
+              <div
                 style={{
-                  fontSize: "20px",
-                  fontWeight: 700,
-                  color: "#000",
-                  fontFamily: "Bebas Neue",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "#D4AF37",
                   letterSpacing: "0.05em",
-                  marginBottom: "4px",
+                  marginBottom: "2px",
                 }}
               >
-                NEW PERSONAL RECORD!
-              </h3>
-              <div style={{ fontSize: "13px", color: "#000", opacity: 0.8 }}>
+                NEW PR!
+              </div>
+              <div style={{ fontSize: "12px", color: "#888" }}>
                 {selectedExercise?.name}
               </div>
             </div>
           </div>
-          <div style={{ fontSize: "14px", color: "#000", fontWeight: 600 }}>
+          <div style={{ fontSize: "12px", color: "#666", display: "flex", gap: "12px" }}>
             {newPRAlert.prType.includes("weight") && (
-              <div>🏋️ Weight: {newPRAlert.data.weight}kg</div>
+              <span><span style={{ color: "#D4AF37" }}>{newPRAlert.data.weight}</span>kg</span>
             )}
             {newPRAlert.prType.includes("reps") && (
-              <div>💪 Reps: {newPRAlert.data.reps}</div>
+              <span><span style={{ color: "#fff" }}>{newPRAlert.data.reps}</span> reps</span>
             )}
             {newPRAlert.prType.includes("volume") && (
-              <div>📊 Volume: {newPRAlert.data.volume}kg</div>
+              <span><span style={{ color: "#888" }}>{newPRAlert.data.volume}</span> vol</span>
             )}
           </div>
         </div>
@@ -814,7 +820,8 @@ export default function ExerciseLog() {
                       Body Weight (kg)
                     </label>
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={bodyWeight}
                       disabled
                       style={{
@@ -1241,9 +1248,15 @@ function InputField({ label, value, onChange }) {
         {label}
       </label>
       <input
-        type="number"
+        type="text"
+        inputMode="decimal"
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+            onChange(val === '' ? 0 : Number(val));
+          }
+        }}
         style={{
           width: "100%",
           padding: "12px 16px",
