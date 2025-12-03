@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/firebase-auth";
 
 export default function Layout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -21,7 +22,7 @@ export default function Layout({ children }) {
   const handleSignOut = async () => {
     try {
       await signOut();
-      window.location.href = "/auth";
+      navigate("/auth", { replace: true });
     } catch (error) {
       console.error("Error signing out:", error);
     }
