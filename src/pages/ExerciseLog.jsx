@@ -186,6 +186,7 @@ export default function ExerciseLog() {
 
   const handleSave = async () => {
     if (!result || !user || !selectedExercise) return;
+    if (saving) return; // Prevent double submission
 
     setSaving(true);
     try {
@@ -307,7 +308,12 @@ export default function ExerciseLog() {
                 justifyContent: "center",
               }}
             >
-              <span className="material-icons" style={{ fontSize: "22px", color: "#000" }}>emoji_events</span>
+              <span
+                className="material-icons"
+                style={{ fontSize: "22px", color: "#000" }}
+              >
+                emoji_events
+              </span>
             </div>
             <div>
               <div
@@ -326,15 +332,33 @@ export default function ExerciseLog() {
               </div>
             </div>
           </div>
-          <div style={{ fontSize: "12px", color: "#666", display: "flex", gap: "12px" }}>
+          <div
+            style={{
+              fontSize: "12px",
+              color: "#666",
+              display: "flex",
+              gap: "12px",
+            }}
+          >
             {newPRAlert.prType.includes("weight") && (
-              <span><span style={{ color: "#D4AF37" }}>{newPRAlert.data.weight}</span>kg</span>
+              <span>
+                <span style={{ color: "#D4AF37" }}>
+                  {newPRAlert.data.weight}
+                </span>
+                kg
+              </span>
             )}
             {newPRAlert.prType.includes("reps") && (
-              <span><span style={{ color: "#fff" }}>{newPRAlert.data.reps}</span> reps</span>
+              <span>
+                <span style={{ color: "#fff" }}>{newPRAlert.data.reps}</span>{" "}
+                reps
+              </span>
             )}
             {newPRAlert.prType.includes("volume") && (
-              <span><span style={{ color: "#888" }}>{newPRAlert.data.volume}</span> vol</span>
+              <span>
+                <span style={{ color: "#888" }}>{newPRAlert.data.volume}</span>{" "}
+                vol
+              </span>
             )}
           </div>
         </div>
@@ -1253,8 +1277,8 @@ function InputField({ label, value, onChange }) {
         value={value}
         onChange={(e) => {
           const val = e.target.value;
-          if (val === '' || /^\d*\.?\d*$/.test(val)) {
-            onChange(val === '' ? 0 : Number(val));
+          if (val === "" || /^\d*\.?\d*$/.test(val)) {
+            onChange(val === "" ? 0 : Number(val));
           }
         }}
         style={{

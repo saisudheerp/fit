@@ -562,8 +562,12 @@ const CustomAutoRoutineBuilder = () => {
                       <input
                         type="text"
                         value={dayRoutines[selectedDay].customName || ""}
-                        onChange={(e) => updateDayName(selectedDay, e.target.value)}
-                        placeholder={`Day ${selectedDay + 1} (e.g., "Chest Day", "Leg Day")`}
+                        onChange={(e) =>
+                          updateDayName(selectedDay, e.target.value)
+                        }
+                        placeholder={`Day ${
+                          selectedDay + 1
+                        } (e.g., "Chest Day", "Leg Day")`}
                         style={{
                           width: "100%",
                           background: "#121212",
@@ -713,7 +717,7 @@ const CustomAutoRoutineBuilder = () => {
                                     value={exercise.sets}
                                     onChange={(e) => {
                                       const val = e.target.value;
-                                      if (val === '' || /^\d*$/.test(val)) {
+                                      if (val === "" || /^\d*$/.test(val)) {
                                         updateExerciseInDay(
                                           selectedDay,
                                           exIdx,
@@ -752,7 +756,7 @@ const CustomAutoRoutineBuilder = () => {
                                     value={exercise.reps}
                                     onChange={(e) => {
                                       const val = e.target.value;
-                                      if (val === '' || /^\d*$/.test(val)) {
+                                      if (val === "" || /^\d*$/.test(val)) {
                                         updateExerciseInDay(
                                           selectedDay,
                                           exIdx,
@@ -791,7 +795,7 @@ const CustomAutoRoutineBuilder = () => {
                                     value={exercise.restSeconds}
                                     onChange={(e) => {
                                       const val = e.target.value;
-                                      if (val === '' || /^\d*$/.test(val)) {
+                                      if (val === "" || /^\d*$/.test(val)) {
                                         updateExerciseInDay(
                                           selectedDay,
                                           exIdx,

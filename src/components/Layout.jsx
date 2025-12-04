@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/firebase-auth";
+import warriorImg from "../assets/w.png";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -13,6 +14,7 @@ export default function Layout({ children }) {
     { path: "/", label: "Dashboard", icon: "dashboard" },
     { path: "/log", label: "Log", icon: "fitness_center" },
     { path: "/routines", label: "Routines", icon: "event_note" },
+    { path: "/coach", label: "AI Coach", icon: "auto_awesome" },
     { path: "/history", label: "History", icon: "history" },
     { path: "/settings", label: "Settings", icon: "settings" },
   ];
@@ -380,6 +382,85 @@ export default function Layout({ children }) {
           </div>
         </div>
       </footer>
+
+      {/* Floating AI Coach Button - hidden on Coach page */}
+      {location.pathname !== "/coach" && (
+        <Link
+          to="/coach"
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "12px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+            zIndex: 1000,
+            textDecoration: "none",
+            transition: "all 0.3s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = "scale(1.1)";
+            e.currentTarget.querySelector('.coach-tooltip').style.opacity = "1";
+            e.currentTarget.querySelector('.coach-tooltip').style.transform = "translateY(0)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = "scale(1)";
+            e.currentTarget.querySelector('.coach-tooltip').style.opacity = "0";
+            e.currentTarget.querySelector('.coach-tooltip').style.transform = "translateY(8px)";
+          }}
+        >
+          <span
+            className="coach-tooltip"
+            style={{
+              background: "rgba(20, 20, 20, 0.95)",
+              backdropFilter: "blur(12px)",
+              color: "#fff",
+              padding: "10px 18px",
+              borderRadius: "14px",
+              fontSize: "13px",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+              opacity: 0,
+              transform: "translateY(8px)",
+              transition: "all 0.3s ease",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(244, 63, 94, 0.3)",
+              border: "1px solid rgba(244, 63, 94, 0.2)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+            }}
+          >
+            <span style={{
+              width: "8px",
+              height: "8px",
+              background: "#f43f5e",
+              borderRadius: "50%",
+              boxShadow: "0 0 8px #f43f5e",
+              animation: "pulse-dot 2s ease-in-out infinite",
+            }} />
+            Talk to AI Coach
+          </span>
+          <img
+            src={warriorImg}
+            alt="AI Coach"
+            style={{ 
+              width: "72px", 
+              height: "72px", 
+              objectFit: "contain",
+              filter: "drop-shadow(0 4px 12px rgba(244, 63, 94, 0.3))",
+            }}
+          />
+        </Link>
+      )}
+
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(1.2); }
+        }
+      `}</style>
     </div>
   );
 }

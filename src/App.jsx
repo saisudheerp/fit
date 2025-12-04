@@ -12,6 +12,7 @@ import CustomSingleRoutine from "./pages/CustomSingleRoutine";
 import PredefinedSingleRoutine from "./pages/PredefinedSingleRoutine";
 import History from "./pages/History";
 import Settings from "./pages/Settings";
+import Coach from "./pages/Coach";
 import Auth from "./pages/Auth";
 import ProfileSetup from "./pages/ProfileSetup";
 
@@ -98,6 +99,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Routines />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/coach"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Coach />
                   </Layout>
                 </ProtectedRoute>
               }

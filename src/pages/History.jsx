@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
-import { getWorkoutSessions, getExerciseLogs, getLocalDateString, deleteExerciseLog } from "../lib/firebase-database";
+import {
+  getWorkoutSessions,
+  getExerciseLogs,
+  getLocalDateString,
+  deleteExerciseLog,
+} from "../lib/firebase-database";
 
 export default function History() {
   const { user } = useAuth();
@@ -264,7 +269,13 @@ export default function History() {
                     >
                       {log.exerciseName}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
                       {log.caloriesBurned > 0 && (
                         <div
                           style={{
@@ -278,64 +289,67 @@ export default function History() {
                             boxShadow: "0 4px 12px rgba(255, 107, 107, 0.4)",
                           }}
                         >
-                        <span
-                          className="material-icons pulse"
-                          style={{ fontSize: "16px", color: "#fff" }}
-                        >
-                          local_fire_department
-                        </span>
-                        <span
-                          style={{
-                            fontSize: "15px",
-                            fontWeight: 700,
-                            color: "#fff",
-                            fontFamily: "Bebas Neue",
-                            letterSpacing: "0.05em",
-                          }}
-                        >
-                          {Math.round(log.caloriesBurned)}
-                        </span>
-                      </div>
-                    )}
-                    <button
-                      onClick={async () => {
-                        if (window.confirm("Delete this exercise log?")) {
-                          try {
-                            await deleteExerciseLog(log.id);
-                            toast.showToast("Exercise deleted");
-                            loadHistory();
-                          } catch (error) {
-                            console.error("Error deleting log:", error);
-                            toast.showToast("Failed to delete");
+                          <span
+                            className="material-icons pulse"
+                            style={{ fontSize: "16px", color: "#fff" }}
+                          >
+                            local_fire_department
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "15px",
+                              fontWeight: 700,
+                              color: "#fff",
+                              fontFamily: "Bebas Neue",
+                              letterSpacing: "0.05em",
+                            }}
+                          >
+                            {Math.round(log.caloriesBurned)}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        onClick={async () => {
+                          if (window.confirm("Delete this exercise log?")) {
+                            try {
+                              await deleteExerciseLog(log.id);
+                              toast.showToast("Exercise deleted");
+                              loadHistory();
+                            } catch (error) {
+                              console.error("Error deleting log:", error);
+                              toast.showToast("Failed to delete");
+                            }
                           }
-                        }
-                      }}
-                      style={{
-                        padding: "8px",
-                        background: "transparent",
-                        border: "1px solid #ff4444",
-                        borderRadius: "8px",
-                        color: "#ff4444",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = "#ff4444";
-                        e.currentTarget.style.color = "#fff";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = "transparent";
-                        e.currentTarget.style.color = "#ff4444";
-                      }}
-                    >
-                      <span className="material-icons" style={{ fontSize: "18px" }}>
-                        delete
-                      </span>
-                    </button>
-                  </div>
+                        }}
+                        style={{
+                          padding: "8px",
+                          background: "transparent",
+                          border: "1px solid #ff4444",
+                          borderRadius: "8px",
+                          color: "#ff4444",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = "#ff4444";
+                          e.currentTarget.style.color = "#fff";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = "transparent";
+                          e.currentTarget.style.color = "#ff4444";
+                        }}
+                      >
+                        <span
+                          className="material-icons"
+                          style={{ fontSize: "18px" }}
+                        >
+                          delete
+                        </span>
+                      </button>
+                    </div>
                   </div>
                   <div
                     style={{

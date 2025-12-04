@@ -480,12 +480,8 @@ const CustomSingleRoutine = () => {
                           value={exercise.sets}
                           onChange={(e) => {
                             const val = e.target.value;
-                            if (val === '' || /^\d*$/.test(val)) {
-                              updateExercise(
-                                index,
-                                "sets",
-                                parseInt(val) || 1
-                              );
+                            if (val === "" || /^\d*$/.test(val)) {
+                              updateExercise(index, "sets", parseInt(val) || 1);
                             }
                           }}
                           style={{
@@ -518,12 +514,8 @@ const CustomSingleRoutine = () => {
                           value={exercise.reps}
                           onChange={(e) => {
                             const val = e.target.value;
-                            if (val === '' || /^\d*$/.test(val)) {
-                              updateExercise(
-                                index,
-                                "reps",
-                                parseInt(val) || 1
-                              );
+                            if (val === "" || /^\d*$/.test(val)) {
+                              updateExercise(index, "reps", parseInt(val) || 1);
                             }
                           }}
                           style={{
@@ -556,7 +548,7 @@ const CustomSingleRoutine = () => {
                           value={exercise.restSeconds}
                           onChange={(e) => {
                             const val = e.target.value;
-                            if (val === '' || /^\d*$/.test(val)) {
+                            if (val === "" || /^\d*$/.test(val)) {
                               updateExercise(
                                 index,
                                 "restSeconds",

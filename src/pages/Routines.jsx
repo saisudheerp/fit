@@ -898,7 +898,9 @@ export default function Routines() {
 
               <button
                 onClick={async () => {
-                  if (confirm("Skip to next day? Your progress will be saved.")) {
+                  if (
+                    confirm("Skip to next day? Your progress will be saved.")
+                  ) {
                     await completeCurrentDay(user.uid);
                     toast.showToast("Moved to next day", "success");
                     loadData();
@@ -1991,7 +1993,7 @@ function InputField({ label, value, onChange }) {
         value={value}
         onChange={(e) => {
           const val = e.target.value;
-          if (val === '' || /^\d*\.?\d*$/.test(val)) {
+          if (val === "" || /^\d*\.?\d*$/.test(val)) {
             onChange(val);
           }
         }}
@@ -3178,11 +3180,21 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
           });
 
           // Check for personal record (only for strength exercises with weight)
-          if (!isTimed && avgWeight > 0 && exercise.exerciseData?.type !== 'cardio') {
+          if (
+            !isTimed &&
+            avgWeight > 0 &&
+            exercise.exerciseData?.type !== "cardio"
+          ) {
             try {
-              const exerciseId = exercise.exerciseData?.id || exercise.exercise_id || exercise.id;
-              const exerciseName = exercise.name || exercise.exerciseData?.name || "Unknown Exercise";
-              
+              const exerciseId =
+                exercise.exerciseData?.id ||
+                exercise.exercise_id ||
+                exercise.id;
+              const exerciseName =
+                exercise.name ||
+                exercise.exerciseData?.name ||
+                "Unknown Exercise";
+
               const prResult = await checkAndUpdatePR(
                 user.uid,
                 exerciseId,
@@ -3191,9 +3203,9 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
                 avgReps,
                 completedCount
               );
-              
+
               if (prResult?.isNewPR) {
-                showToastMessage(`🏆 New PR! ${prResult.prType.join(', ')}`);
+                showToastMessage(`🏆 New PR! ${prResult.prType.join(", ")}`);
               }
             } catch (prError) {
               console.error("Error checking PR:", prError);
@@ -3307,14 +3319,15 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
           console.log("=== LOGGING EXERCISE ===");
           console.log("currentExercise:", currentExercise);
           console.log("exercise (from loop):", exercise);
-          console.log("exerciseName being logged:", 
-              currentExercise?.exerciseData?.name ||
+          console.log(
+            "exerciseName being logged:",
+            currentExercise?.exerciseData?.name ||
               currentExercise?.name ||
               exercise.name ||
               exercise.exerciseData?.name ||
               "Unknown Exercise"
           );
-          
+
           await logExercise(user.uid, {
             sessionId,
             exerciseId:
@@ -3377,7 +3390,9 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
 
               if (prResult.isNewPR) {
                 showToastMessage(
-                  `🏆 New PR! ${prResult.prType.join(", ")} for ${exerciseName}!`
+                  `🏆 New PR! ${prResult.prType.join(
+                    ", "
+                  )} for ${exerciseName}!`
                 );
               }
             } catch (prError) {
@@ -4195,7 +4210,9 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
               left: "50%",
               transform: "translateX(-50%)",
               background: showToast.includes("PR") ? "#111" : "#1a1a1a",
-              border: showToast.includes("PR") ? "1px solid #D4AF3750" : "1px solid #2a2a2a",
+              border: showToast.includes("PR")
+                ? "1px solid #D4AF3750"
+                : "1px solid #2a2a2a",
               color: "#fff",
               padding: "12px 20px",
               borderRadius: "10px",
@@ -4210,9 +4227,16 @@ function ActiveWorkoutModal({ workout, user, profile, onClose, onComplete }) {
             }}
           >
             {showToast.includes("PR") && (
-              <span className="material-icons" style={{ color: "#D4AF37", fontSize: "18px" }}>emoji_events</span>
+              <span
+                className="material-icons"
+                style={{ color: "#D4AF37", fontSize: "18px" }}
+              >
+                emoji_events
+              </span>
             )}
-            <span style={{ color: showToast.includes("PR") ? "#D4AF37" : "#fff" }}>
+            <span
+              style={{ color: showToast.includes("PR") ? "#D4AF37" : "#fff" }}
+            >
               {showToast.replace("🏆 ", "")}
             </span>
           </div>

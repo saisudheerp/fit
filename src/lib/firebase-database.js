@@ -24,8 +24,8 @@ import { db } from "./firebase";
 // This ensures days/weeks/months start at exactly 12:00 AM local time
 export function getLocalDateString(date = new Date()) {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
 
@@ -222,7 +222,7 @@ export async function getExerciseLogs(userId, date) {
       if (log.exerciseName) {
         return log;
       }
-      
+
       // Otherwise, try to fetch from exercises collection
       try {
         const exerciseDoc = await getDoc(doc(db, "exercises", log.exerciseId));
@@ -268,7 +268,7 @@ export async function getRecentLogs(userId, limitCount = 10) {
       if (log.exerciseName) {
         return log;
       }
-      
+
       // Otherwise, try to fetch from exercises collection
       try {
         const exerciseDoc = await getDoc(doc(db, "exercises", log.exerciseId));
@@ -315,7 +315,7 @@ export async function getExerciseHistory(userId, exerciseId) {
   return logs.sort((a, b) => {
     const dateA = a.date || a.createdAt?.seconds || 0;
     const dateB = b.date || b.createdAt?.seconds || 0;
-    if (typeof dateA === 'string' && typeof dateB === 'string') {
+    if (typeof dateA === "string" && typeof dateB === "string") {
       return dateA.localeCompare(dateB);
     }
     return dateA - dateB;

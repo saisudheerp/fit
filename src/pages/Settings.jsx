@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
-import { updateProfile, getAllPRs, getExerciseHistory, getExercises } from "../lib/firebase-database";
+import {
+  updateProfile,
+  getAllPRs,
+  getExerciseHistory,
+  getExercises,
+} from "../lib/firebase-database";
 import { signOut } from "../lib/firebase-auth";
 import { useNavigate } from "react-router-dom";
 import {
@@ -27,7 +32,7 @@ export default function Settings() {
   const [personalRecords, setPersonalRecords] = useState([]);
   const [loadingPRs, setLoadingPRs] = useState(true);
   const [exercises, setExercises] = useState([]);
-  
+
   // PR Search state
   const [prSearchQuery, setPrSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("ALL");
@@ -35,7 +40,18 @@ export default function Settings() {
   const [prHistory, setPrHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const allCategories = ["ALL", "CHEST", "BACK", "SHOULDERS", "BICEPS", "TRICEPS", "FOREARMS", "LEGS", "CORE", "CARDIO"];
+  const allCategories = [
+    "ALL",
+    "CHEST",
+    "BACK",
+    "SHOULDERS",
+    "BICEPS",
+    "TRICEPS",
+    "FOREARMS",
+    "LEGS",
+    "CORE",
+    "CARDIO",
+  ];
 
   useEffect(() => {
     if (profile) {
@@ -58,15 +74,15 @@ export default function Settings() {
       // Load exercises first to get categories
       const allExercises = await getExercises();
       setExercises(allExercises);
-      
+
       // Load PRs and enrich with category data
       const prs = await getAllPRs(user.uid);
-      const enrichedPRs = prs.map(pr => {
-        const exercise = allExercises.find(e => e.id === pr.exerciseId);
+      const enrichedPRs = prs.map((pr) => {
+        const exercise = allExercises.find((e) => e.id === pr.exerciseId);
         return {
           ...pr,
           category: exercise?.category || pr.category || "other",
-          muscleGroup: exercise?.muscleGroup || pr.muscleGroup || "other"
+          muscleGroup: exercise?.muscleGroup || pr.muscleGroup || "other",
         };
       });
       setPersonalRecords(enrichedPRs);
@@ -84,24 +100,28 @@ export default function Settings() {
       setPrHistory([]);
       return;
     }
-    
+
     setSelectedPR(pr);
     setLoadingHistory(true);
     setPrHistory([]);
-    
+
     try {
       // Get exercise history for chart
       const history = await getExerciseHistory(user.uid, pr.exerciseId);
-      
+
       // Process history for chart - group by date and get max weight
       const chartData = [];
       const dateMap = new Map();
-      
-      history.forEach(log => {
-        const date = log.date || (log.createdAt?.toDate ? log.createdAt.toDate().toLocaleDateString() : 'N/A');
+
+      history.forEach((log) => {
+        const date =
+          log.date ||
+          (log.createdAt?.toDate
+            ? log.createdAt.toDate().toLocaleDateString()
+            : "N/A");
         const weight = log.weightKg || 0;
         const volume = (log.weightKg || 0) * (log.reps || 0) * (log.sets || 1);
-        
+
         if (!dateMap.has(date)) {
           dateMap.set(date, { date, maxWeight: weight, maxVolume: volume });
         } else {
@@ -110,8 +130,8 @@ export default function Settings() {
           if (volume > existing.maxVolume) existing.maxVolume = volume;
         }
       });
-      
-      dateMap.forEach(value => chartData.push(value));
+
+      dateMap.forEach((value) => chartData.push(value));
       setPrHistory(chartData);
     } catch (error) {
       console.error("Error loading PR history:", error);
@@ -121,10 +141,13 @@ export default function Settings() {
   };
 
   // Filter PRs based on search and category
-  const filteredPRs = personalRecords.filter(pr => {
-    const matchesSearch = pr.exerciseName?.toLowerCase().includes(prSearchQuery.toLowerCase());
+  const filteredPRs = personalRecords.filter((pr) => {
+    const matchesSearch = pr.exerciseName
+      ?.toLowerCase()
+      .includes(prSearchQuery.toLowerCase());
     const prCategory = (pr.category || "other").toUpperCase();
-    const matchesCategory = selectedCategory === "ALL" || prCategory === selectedCategory;
+    const matchesCategory =
+      selectedCategory === "ALL" || prCategory === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -133,8 +156,8 @@ export default function Settings() {
     if (cat === "ALL") {
       acc[cat] = personalRecords.length;
     } else {
-      acc[cat] = personalRecords.filter(pr => 
-        (pr.category || "other").toUpperCase() === cat
+      acc[cat] = personalRecords.filter(
+        (pr) => (pr.category || "other").toUpperCase() === cat
       ).length;
     }
     return acc;
@@ -363,8 +386,8 @@ export default function Settings() {
                   value={bodyWeight}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                      setBodyWeight(val === '' ? 0 : Number(val));
+                    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                      setBodyWeight(val === "" ? 0 : Number(val));
                     }
                   }}
                   style={{
@@ -403,8 +426,8 @@ export default function Settings() {
                   value={height}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val === '' || /^\d*\.?\d*$/.test(val)) {
-                      setHeight(val === '' ? 0 : Number(val));
+                    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+                      setHeight(val === "" ? 0 : Number(val));
                     }
                   }}
                   style={{
@@ -451,8 +474,8 @@ export default function Settings() {
                   value={age}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (val === '' || /^\d*$/.test(val)) {
-                      setAge(val === '' ? 0 : Number(val));
+                    if (val === "" || /^\d*$/.test(val)) {
+                      setAge(val === "" ? 0 : Number(val));
                     }
                   }}
                   style={{
@@ -749,7 +772,14 @@ export default function Settings() {
           }}
         >
           {/* Header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "28px",
+            }}
+          >
             <h3
               style={{
                 fontSize: "24px",
@@ -768,28 +798,34 @@ export default function Settings() {
                   width: "44px",
                   height: "44px",
                   borderRadius: "12px",
-                  background: "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)",
+                  background:
+                    "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   boxShadow: "0 4px 12px rgba(212, 175, 55, 0.25)",
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "22px", color: "#000" }}>
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "22px", color: "#000" }}
+                >
                   emoji_events
                 </span>
               </div>
               Personal Records
             </h3>
-            <div style={{ 
-              background: "rgba(212, 175, 55, 0.1)",
-              border: "1px solid rgba(212, 175, 55, 0.2)",
-              padding: "6px 14px",
-              borderRadius: "20px",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "#D4AF37"
-            }}>
+            <div
+              style={{
+                background: "rgba(212, 175, 55, 0.1)",
+                border: "1px solid rgba(212, 175, 55, 0.2)",
+                padding: "6px 14px",
+                borderRadius: "20px",
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#D4AF37",
+              }}
+            >
               {personalRecords.length} PRs
             </div>
           </div>
@@ -807,7 +843,10 @@ export default function Settings() {
               marginBottom: "20px",
             }}
           >
-            <span className="material-icons" style={{ color: "#555", fontSize: "20px" }}>
+            <span
+              className="material-icons"
+              style={{ color: "#555", fontSize: "20px" }}
+            >
               search
             </span>
             <input
@@ -838,7 +877,10 @@ export default function Settings() {
                   justifyContent: "center",
                 }}
               >
-                <span className="material-icons" style={{ color: "#999", fontSize: "16px" }}>
+                <span
+                  className="material-icons"
+                  style={{ color: "#999", fontSize: "16px" }}
+                >
                   close
                 </span>
               </button>
@@ -858,7 +900,7 @@ export default function Settings() {
               const count = categoryCount[cat] || 0;
               const isActive = selectedCategory === cat;
               const hasRecords = cat === "ALL" || count > 0;
-              
+
               return (
                 <button
                   key={cat}
@@ -872,9 +914,11 @@ export default function Settings() {
                     padding: "8px 14px",
                     borderRadius: "8px",
                     border: "none",
-                    background: isActive 
+                    background: isActive
                       ? "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)"
-                      : hasRecords ? "#1a1a1a" : "#0f0f0f",
+                      : hasRecords
+                      ? "#1a1a1a"
+                      : "#0f0f0f",
                     color: isActive ? "#000" : hasRecords ? "#888" : "#333",
                     fontSize: "10px",
                     fontWeight: 600,
@@ -892,7 +936,9 @@ export default function Settings() {
                   {count > 0 && (
                     <span
                       style={{
-                        background: isActive ? "rgba(0,0,0,0.2)" : "rgba(255,255,255,0.1)",
+                        background: isActive
+                          ? "rgba(0,0,0,0.2)"
+                          : "rgba(255,255,255,0.1)",
                         padding: "2px 8px",
                         borderRadius: "12px",
                         fontSize: "10px",
@@ -917,34 +963,56 @@ export default function Settings() {
                 marginBottom: "24px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: "24px",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "16px" }}
+                >
                   <div
                     style={{
                       width: "52px",
                       height: "52px",
                       borderRadius: "14px",
-                      background: "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)",
+                      background:
+                        "linear-gradient(145deg, #D4AF37 0%, #B8860B 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       boxShadow: "0 4px 16px rgba(212, 175, 55, 0.3)",
                     }}
                   >
-                    <span className="material-icons" style={{ color: "#000", fontSize: "26px" }}>
+                    <span
+                      className="material-icons"
+                      style={{ color: "#000", fontSize: "26px" }}
+                    >
                       emoji_events
                     </span>
                   </div>
                   <div>
-                    <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>
+                    <div
+                      style={{
+                        fontSize: "18px",
+                        fontWeight: 600,
+                        color: "#fff",
+                        marginBottom: "4px",
+                      }}
+                    >
                       {selectedPR.exerciseName}
                     </div>
-                    <div style={{ 
-                      fontSize: "11px", 
-                      color: "#666", 
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "#666",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
                       {selectedPR.category || "Exercise"}
                     </div>
                   </div>
@@ -963,7 +1031,9 @@ export default function Settings() {
                     transition: "all 0.2s",
                   }}
                 >
-                  <span className="material-icons" style={{ color: "#999" }}>close</span>
+                  <span className="material-icons" style={{ color: "#999" }}>
+                    close
+                  </span>
                 </button>
               </div>
 
@@ -985,12 +1055,45 @@ export default function Settings() {
                     border: "1px solid #1f1f1f",
                   }}
                 >
-                  <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Weight</div>
-                  <div style={{ fontSize: "36px", fontWeight: 700, color: "#D4AF37", fontFamily: "Bebas Neue", letterSpacing: "0.02em" }}>
-                    {selectedPR.maxWeight}<span style={{ fontSize: "14px", color: "#666", marginLeft: "2px" }}>kg</span>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#555",
+                      marginBottom: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Weight
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "36px",
+                      fontWeight: 700,
+                      color: "#D4AF37",
+                      fontFamily: "Bebas Neue",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    {selectedPR.maxWeight}
+                    <span
+                      style={{
+                        fontSize: "14px",
+                        color: "#666",
+                        marginLeft: "2px",
+                      }}
+                    >
+                      kg
+                    </span>
                   </div>
                   {selectedPR.maxWeightDate && (
-                    <div style={{ fontSize: "10px", color: "#444", marginTop: "8px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#444",
+                        marginTop: "8px",
+                      }}
+                    >
                       {new Date(selectedPR.maxWeightDate).toLocaleDateString()}
                     </div>
                   )}
@@ -1004,12 +1107,36 @@ export default function Settings() {
                     border: "1px solid #1f1f1f",
                   }}
                 >
-                  <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Reps</div>
-                  <div style={{ fontSize: "36px", fontWeight: 700, color: "#fff", fontFamily: "Bebas Neue", letterSpacing: "0.02em" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#555",
+                      marginBottom: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Reps
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "36px",
+                      fontWeight: 700,
+                      color: "#fff",
+                      fontFamily: "Bebas Neue",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
                     {selectedPR.maxReps}
                   </div>
                   {selectedPR.maxRepsDate && (
-                    <div style={{ fontSize: "10px", color: "#444", marginTop: "8px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#444",
+                        marginTop: "8px",
+                      }}
+                    >
                       {new Date(selectedPR.maxRepsDate).toLocaleDateString()}
                     </div>
                   )}
@@ -1023,12 +1150,36 @@ export default function Settings() {
                     border: "1px solid #1f1f1f",
                   }}
                 >
-                  <div style={{ fontSize: "10px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.1em" }}>Volume</div>
-                  <div style={{ fontSize: "36px", fontWeight: 700, color: "#888", fontFamily: "Bebas Neue", letterSpacing: "0.02em" }}>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#555",
+                      marginBottom: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.1em",
+                    }}
+                  >
+                    Volume
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "36px",
+                      fontWeight: 700,
+                      color: "#888",
+                      fontFamily: "Bebas Neue",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
                     {selectedPR.maxVolume}
                   </div>
                   {selectedPR.maxVolumeDate && (
-                    <div style={{ fontSize: "10px", color: "#444", marginTop: "8px" }}>
+                    <div
+                      style={{
+                        fontSize: "10px",
+                        color: "#444",
+                        marginTop: "8px",
+                      }}
+                    >
                       {new Date(selectedPR.maxVolumeDate).toLocaleDateString()}
                     </div>
                   )}
@@ -1037,28 +1188,66 @@ export default function Settings() {
 
               {/* Progress Chart */}
               {loadingHistory ? (
-                <div style={{ textAlign: "center", padding: "24px", color: "#444" }}>
-                  <span className="material-icons rotating" style={{ fontSize: "20px", color: "#D4AF37" }}>sync</span>
-                  <p style={{ marginTop: "8px", fontSize: "12px" }}>Loading...</p>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "24px",
+                    color: "#444",
+                  }}
+                >
+                  <span
+                    className="material-icons rotating"
+                    style={{ fontSize: "20px", color: "#D4AF37" }}
+                  >
+                    sync
+                  </span>
+                  <p style={{ marginTop: "8px", fontSize: "12px" }}>
+                    Loading...
+                  </p>
                 </div>
               ) : prHistory.length > 1 ? (
-                <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #1f1f1f" }}>
-                  <div style={{ fontSize: "11px", fontWeight: 600, color: "#555", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                    <span className="material-icons" style={{ fontSize: "16px", color: "#D4AF37" }}>trending_up</span>
+                <div
+                  style={{
+                    marginTop: "20px",
+                    paddingTop: "20px",
+                    borderTop: "1px solid #1f1f1f",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: "#555",
+                      marginBottom: "16px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    <span
+                      className="material-icons"
+                      style={{ fontSize: "16px", color: "#D4AF37" }}
+                    >
+                      trending_up
+                    </span>
                     Progress
                   </div>
                   <div style={{ height: "160px" }}>
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={prHistory}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#1a1a1a" />
-                        <XAxis 
-                          dataKey="date" 
-                          stroke="#333" 
+                        <XAxis
+                          dataKey="date"
+                          stroke="#333"
                           fontSize={10}
                           tickFormatter={(value) => {
-                            if (!value || value === 'N/A') return '';
-                            const parts = value.split('/');
-                            return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : value;
+                            if (!value || value === "N/A") return "";
+                            const parts = value.split("/");
+                            return parts.length >= 2
+                              ? `${parts[0]}/${parts[1]}`
+                              : value;
                           }}
                         />
                         <YAxis stroke="#333" fontSize={10} />
@@ -1072,7 +1261,7 @@ export default function Settings() {
                           }}
                           formatter={(value, name) => [
                             name === "maxWeight" ? `${value}kg` : value,
-                            name === "maxWeight" ? "Weight" : "Volume"
+                            name === "maxWeight" ? "Weight" : "Volume",
                           ]}
                         />
                         <Line
@@ -1088,8 +1277,28 @@ export default function Settings() {
                   </div>
                 </div>
               ) : (
-                <div style={{ textAlign: "center", padding: "20px", color: "#444", fontSize: "12px", marginTop: "16px", borderTop: "1px solid #1f1f1f", paddingTop: "24px" }}>
-                  <span className="material-icons" style={{ fontSize: "20px", marginBottom: "8px", display: "block", color: "#333" }}>show_chart</span>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    color: "#444",
+                    fontSize: "12px",
+                    marginTop: "16px",
+                    borderTop: "1px solid #1f1f1f",
+                    paddingTop: "24px",
+                  }}
+                >
+                  <span
+                    className="material-icons"
+                    style={{
+                      fontSize: "20px",
+                      marginBottom: "8px",
+                      display: "block",
+                      color: "#333",
+                    }}
+                  >
+                    show_chart
+                  </span>
                   Log more to see progress
                 </div>
               )}
@@ -1098,8 +1307,15 @@ export default function Settings() {
 
           {/* PRs List */}
           {loadingPRs ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "#666" }}>
-              <span className="material-icons rotating" style={{ fontSize: "48px" }}>sync</span>
+            <div
+              style={{ textAlign: "center", padding: "40px", color: "#666" }}
+            >
+              <span
+                className="material-icons rotating"
+                style={{ fontSize: "48px" }}
+              >
+                sync
+              </span>
               <p style={{ marginTop: "16px" }}>Loading PRs...</p>
             </div>
           ) : personalRecords.length === 0 ? (
@@ -1109,7 +1325,8 @@ export default function Settings() {
                   width: "56px",
                   height: "56px",
                   borderRadius: "14px",
-                  background: "linear-gradient(145deg, #D4AF3715 0%, #B8860B10 100%)",
+                  background:
+                    "linear-gradient(145deg, #D4AF3715 0%, #B8860B10 100%)",
                   border: "1px solid #D4AF3720",
                   display: "flex",
                   alignItems: "center",
@@ -1117,11 +1334,26 @@ export default function Settings() {
                   margin: "0 auto 16px",
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "28px", color: "#D4AF3760" }}>emoji_events</span>
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "28px", color: "#D4AF3760" }}
+                >
+                  emoji_events
+                </span>
               </div>
-              <p style={{ color: "#555", fontSize: "13px", margin: 0, lineHeight: 1.6 }}>
-                No personal records yet<br/>
-                <span style={{ color: "#444" }}>Start logging to track PRs</span>
+              <p
+                style={{
+                  color: "#555",
+                  fontSize: "13px",
+                  margin: 0,
+                  lineHeight: 1.6,
+                }}
+              >
+                No personal records yet
+                <br />
+                <span style={{ color: "#444" }}>
+                  Start logging to track PRs
+                </span>
               </p>
             </div>
           ) : filteredPRs.length === 0 ? (
@@ -1139,23 +1371,36 @@ export default function Settings() {
                   margin: "0 auto 14px",
                 }}
               >
-                <span className="material-icons" style={{ fontSize: "22px", color: "#444" }}>search_off</span>
+                <span
+                  className="material-icons"
+                  style={{ fontSize: "22px", color: "#444" }}
+                >
+                  search_off
+                </span>
               </div>
               <p style={{ color: "#555", fontSize: "13px", margin: 0 }}>
-                No results for "<span style={{ color: "#D4AF37" }}>{prSearchQuery}</span>"
+                No results for "
+                <span style={{ color: "#D4AF37" }}>{prSearchQuery}</span>"
               </p>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+            >
               {filteredPRs.map((pr, idx) => (
                 <div
                   key={idx}
                   onClick={() => viewPRDetails(pr)}
                   style={{
-                    background: selectedPR?.exerciseId === pr.exerciseId 
-                      ? "#151515" 
-                      : "#0a0a0a",
-                    border: `1px solid ${selectedPR?.exerciseId === pr.exerciseId ? "#D4AF3740" : "#1a1a1a"}`,
+                    background:
+                      selectedPR?.exerciseId === pr.exerciseId
+                        ? "#151515"
+                        : "#0a0a0a",
+                    border: `1px solid ${
+                      selectedPR?.exerciseId === pr.exerciseId
+                        ? "#D4AF3740"
+                        : "#1a1a1a"
+                    }`,
                     borderRadius: "10px",
                     padding: "14px 16px",
                     transition: "all 0.15s ease",
@@ -1177,7 +1422,13 @@ export default function Settings() {
                     }
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                    }}
+                  >
                     <div
                       style={{
                         width: "36px",
@@ -1190,22 +1441,53 @@ export default function Settings() {
                         justifyContent: "center",
                       }}
                     >
-                      <span className="material-icons" style={{ fontSize: "18px", color: "#D4AF37" }}>
+                      <span
+                        className="material-icons"
+                        style={{ fontSize: "18px", color: "#D4AF37" }}
+                      >
                         fitness_center
                       </span>
                     </div>
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: 500, color: "#fff", marginBottom: "3px" }}>
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: 500,
+                          color: "#fff",
+                          marginBottom: "3px",
+                        }}
+                      >
                         {pr.exerciseName}
                       </div>
-                      <div style={{ fontSize: "12px", color: "#444", display: "flex", gap: "12px" }}>
-                        <span><span style={{ color: "#D4AF37" }}>{pr.maxWeight}</span>kg</span>
-                        <span><span style={{ color: "#888" }}>{pr.maxReps}</span> reps</span>
-                        <span><span style={{ color: "#555" }}>{pr.maxVolume}</span> vol</span>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#444",
+                          display: "flex",
+                          gap: "12px",
+                        }}
+                      >
+                        <span>
+                          <span style={{ color: "#D4AF37" }}>
+                            {pr.maxWeight}
+                          </span>
+                          kg
+                        </span>
+                        <span>
+                          <span style={{ color: "#888" }}>{pr.maxReps}</span>{" "}
+                          reps
+                        </span>
+                        <span>
+                          <span style={{ color: "#555" }}>{pr.maxVolume}</span>{" "}
+                          vol
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <span className="material-icons" style={{ color: "#333", fontSize: "18px" }}>
+                  <span
+                    className="material-icons"
+                    style={{ color: "#333", fontSize: "18px" }}
+                  >
                     chevron_right
                   </span>
                 </div>

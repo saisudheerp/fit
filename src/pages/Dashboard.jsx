@@ -81,16 +81,23 @@ export default function Dashboard() {
         setLoading(true);
       }
 
-      const [statsData, logs, weekly, muscleData, workoutProgress, routines, activeProg] =
-        await Promise.all([
-          getUserStats(user.uid),
-          getRecentLogs(user.uid, 1),
-          getWeeklyStats(user.uid),
-          getWeeklyMuscleData(user.uid),
-          getAllWorkoutProgress(user.uid),
-          getRoutines(user.uid),
-          getActiveProgram(user.uid),
-        ]);
+      const [
+        statsData,
+        logs,
+        weekly,
+        muscleData,
+        workoutProgress,
+        routines,
+        activeProg,
+      ] = await Promise.all([
+        getUserStats(user.uid),
+        getRecentLogs(user.uid, 1),
+        getWeeklyStats(user.uid),
+        getWeeklyMuscleData(user.uid),
+        getAllWorkoutProgress(user.uid),
+        getRoutines(user.uid),
+        getActiveProgram(user.uid),
+      ]);
 
       setStats(statsData);
       setRecentLogs(logs);
@@ -115,14 +122,18 @@ export default function Dashboard() {
         });
 
         const latestProgress = sortedProgress[0];
-        
+
         // Try to match with regular routines first
         let matchingRoutine = routines.find(
           (r) => r.name === latestProgress.routineName
         );
 
         // If no match and we have an active program, check if it's the current day routine
-        if (!matchingRoutine && dayRoutine && latestProgress.routineName === dayRoutine.name) {
+        if (
+          !matchingRoutine &&
+          dayRoutine &&
+          latestProgress.routineName === dayRoutine.name
+        ) {
           matchingRoutine = {
             name: dayRoutine.name,
             exercises: dayRoutine.exercises,
@@ -448,7 +459,10 @@ export default function Dashboard() {
               </p>
             </div>
           ) : (
-            <div className="weekly-chart-container" style={{ padding: "10px 0", marginTop: "24px" }}>
+            <div
+              className="weekly-chart-container"
+              style={{ padding: "10px 0", marginTop: "24px" }}
+            >
               {/* Chart */}
               <div
                 className="weekly-chart"
@@ -856,7 +870,8 @@ export default function Dashboard() {
                     marginBottom: "12px",
                   }}
                 >
-                  Day {currentDayRoutine.currentDay} of {currentDayRoutine.totalDays} • {currentDayRoutine.name}
+                  Day {currentDayRoutine.currentDay} of{" "}
+                  {currentDayRoutine.totalDays} • {currentDayRoutine.name}
                 </div>
                 <div style={{ display: "flex", gap: "12px" }}>
                   <div
@@ -903,7 +918,8 @@ export default function Dashboard() {
                         color: "#FFD93D",
                       }}
                     >
-                      {currentDayRoutine.currentDay}/{currentDayRoutine.totalDays}
+                      {currentDayRoutine.currentDay}/
+                      {currentDayRoutine.totalDays}
                     </div>
                     <div
                       style={{

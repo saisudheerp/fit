@@ -291,7 +291,7 @@ export default function ProfileSetup() {
               value={formData.bodyWeight}
               onChange={(e) => {
                 const val = e.target.value;
-                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                if (val === "" || /^\d*\.?\d*$/.test(val)) {
                   setFormData({ ...formData, bodyWeight: val });
                 }
               }}
@@ -338,7 +338,7 @@ export default function ProfileSetup() {
               value={formData.height}
               onChange={(e) => {
                 const val = e.target.value;
-                if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                if (val === "" || /^\d*\.?\d*$/.test(val)) {
                   setFormData({ ...formData, height: val });
                 }
               }}
@@ -385,7 +385,7 @@ export default function ProfileSetup() {
               value={formData.age}
               onChange={(e) => {
                 const val = e.target.value;
-                if (val === '' || /^\d*$/.test(val)) {
+                if (val === "" || /^\d*$/.test(val)) {
                   setFormData({ ...formData, age: val });
                 }
               }}
