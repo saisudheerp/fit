@@ -387,10 +387,11 @@ export default function Layout({ children }) {
       {location.pathname !== "/coach" && (
         <Link
           to="/coach"
+          className="floating-coach-btn"
           style={{
             position: "fixed",
-            bottom: "24px",
-            right: "12px",
+            bottom: "20px",
+            right: "16px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",

@@ -12,11 +12,7 @@ import {
   getMonthlyMuscleData,
   getExercises,
   createRoutine,
-  logExercise,
-  checkAndUpdatePR,
-  getLocalDateString,
 } from "../lib/firebase-database";
-import { calculateExerciseCalories } from "../lib/calorieEngine";
 import warriorImg from "../assets/w.png";
 
 const COACHES = {
@@ -59,14 +55,10 @@ export default function Coach() {
   const [loadingData, setLoadingData] = useState(true); // Show loading while fetching data
   const [activeCoach, setActiveCoach] = useState("sai");
   const [savingRoutine, setSavingRoutine] = useState(false);
-  const [loggingExercise, setLoggingExercise] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const messagesEndRef = useRef(null);
 
   const coach = COACHES[activeCoach];
-
-  // Get body weight from profile
-  const bodyWeight = profile?.body_weight_kg || 75;
 
   // Show greeting after data loads
   useEffect(() => {
@@ -345,293 +337,6 @@ export default function Coach() {
 
     // For single workout, use the first (and only) day
     await saveDayAsRoutine(days[0]);
-  };
-
-  // Log exercises from a workout day
-  const logWorkoutExercises = async (day) => {
-    if (!day || day.exercises.length === 0) {
-      toast.error("No exercises to log");
-      return;
-    }
-
-    setLoggingExercise(true);
-    const today = getLocalDateString();
-    let loggedCount = 0;
-
-    try {
-      for (const exercise of day.exercises) {
-        const exerciseData = exercise.exerciseData;
-        if (!exerciseData) continue;
-
-        // Calculate calories
-        const calories = calculateExerciseCalories({
-          exercise: exerciseData,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          weight: exercise.weight || 0,
-          duration: exercise.duration_seconds || 0,
-          bodyWeight: bodyWeight,
-        });
-
-        // Prepare log data
-        const logData = {
-          exerciseId: exerciseData.id,
-          exerciseName: exerciseData.name,
-          sets: exercise.sets,
-          reps: exercise.reps,
-          weight: exercise.weight || 0,
-          duration: exercise.duration_seconds || 0,
-          calories: calories,
-          date: today,
-          muscles: exerciseData.muscles || {},
-        };
-
-        // Log the exercise
-        await logExercise(user.uid, logData);
-
-        // Check for PR if weight is set
-        if (exercise.weight > 0) {
-          await checkAndUpdatePR(user.uid, exerciseData.id, exerciseData.name, {
-            weight: exercise.weight,
-            reps: exercise.reps,
-            volume: exercise.weight * exercise.reps * exercise.sets,
-          });
-        }
-
-        loggedCount++;
-      }
-
-      toast.success(`Logged ${loggedCount} exercises! 💪`);
-      
-      // Reload user data to reflect new logs
-      loadUserData();
-    } catch (error) {
-      console.error("Error logging exercises:", error);
-      toast.error("Failed to log some exercises");
-    } finally {
-      setLoggingExercise(false);
-    }
-  };
-
-  // Parse user message to extract exercise log details
-  // Supports formats like: 
-  // - "log bench press 3 sets 10 reps 80kg"
-  // - "log 3x10 squats at 100kg"
-  // - "log pushups 3 10" (exercise sets reps)
-  // - "log pushups 3 10 80" (exercise sets reps weight)
-  // - "log Push-ups: 3 sets of 10 reps"
-  // - "did 3 sets of bench press at 80kg"
-  // - "just finished squats 4x12 @100kg"
-  // - "completed deadlift 5 sets 5 reps 120kg"
-  const parseLogRequest = (message) => {
-    if (!userData?.exercises) {
-      console.log("parseLogRequest: No exercises in userData");
-      return null;
-    }
-    
-    // Normalize the message - remove punctuation and normalize spaces/hyphens
-    const lowerMsg = message.toLowerCase();
-    const normalizedMsg = lowerMsg.replace(/[-_]/g, ' ').replace(/[:\,]/g, ' ').replace(/\s+/g, ' ').trim();
-    
-    console.log("parseLogRequest: normalizedMsg =", normalizedMsg);
-    
-    // Check if this is a log request - expanded patterns
-    const logTriggers = ["log", "did", "just did", "just finished", "completed", "finished", "record"];
-    const hasLogTrigger = logTriggers.some(trigger => normalizedMsg.includes(trigger));
-    
-    if (!hasLogTrigger) {
-      console.log("parseLogRequest: No log trigger found");
-      return null;
-    }
-    
-    // Try to find exercise name with flexible matching
-    let matchedExercise = null;
-    let bestMatchLength = 0;
-    let exercisePosition = -1;
-    
-    for (const ex of userData.exercises) {
-      const exName = ex.name.toLowerCase();
-      // Normalize exercise name too
-      const normalizedExName = exName.replace(/[-_]/g, ' ').replace(/[:\,]/g, ' ').replace(/\s+/g, ' ');
-      
-      // Try exact match first
-      let pos = normalizedMsg.indexOf(normalizedExName);
-      if (pos !== -1 && normalizedExName.length > bestMatchLength) {
-        matchedExercise = ex;
-        bestMatchLength = normalizedExName.length;
-        exercisePosition = pos;
-      }
-      
-      // Also try without parentheses (e.g., "Bench Press (Barbell)" -> "Bench Press")
-      const simpleExName = normalizedExName.split("(")[0].trim();
-      const simplePos = normalizedMsg.indexOf(simpleExName);
-      if (simpleExName.length > 3 && simplePos !== -1 && simpleExName.length > bestMatchLength) {
-        matchedExercise = ex;
-        bestMatchLength = simpleExName.length;
-        exercisePosition = simplePos;
-      }
-      
-      // Try singular/plural variations and no-space versions
-      const noSpaceMsg = normalizedMsg.replace(/\s+/g, '');
-      const variations = [
-        simpleExName,
-        simpleExName.endsWith('s') ? simpleExName.slice(0, -1) : simpleExName + 's',
-        simpleExName.replace(/\s+/g, ''), // No spaces version (pushups vs push ups)
-      ];
-      
-      for (const variant of variations) {
-        if (variant.length > 3) {
-          // Try in normalized message (with spaces)
-          let varPos = normalizedMsg.indexOf(variant);
-          if (varPos !== -1 && variant.length > bestMatchLength - 2) {
-            matchedExercise = ex;
-            bestMatchLength = variant.length;
-            exercisePosition = varPos;
-          }
-          // Also try in no-space message for things like "pushups" matching "push ups"
-          const noSpaceVariant = variant.replace(/\s+/g, '');
-          varPos = noSpaceMsg.indexOf(noSpaceVariant);
-          if (varPos !== -1 && noSpaceVariant.length > bestMatchLength - 2) {
-            matchedExercise = ex;
-            bestMatchLength = noSpaceVariant.length;
-            // Find approximate position in original normalized message
-            exercisePosition = normalizedMsg.indexOf(variant) !== -1 
-              ? normalizedMsg.indexOf(variant) 
-              : 0;
-          }
-        }
-      }
-    }
-    
-    if (!matchedExercise) {
-      console.log("parseLogRequest: No exercise matched. Tried:", userData.exercises.slice(0, 5).map(e => e.name));
-      return null;
-    }
-    
-    console.log("parseLogRequest: Matched exercise =", matchedExercise.name);
-    
-    // Extract sets, reps, weight from the ORIGINAL message (not normalized)
-    let sets = 3; // default
-    let reps = 10; // default
-    let weight = 0;
-    let foundPattern = false;
-    
-    // Pattern: "3x10" or "3 x 10" or "3X10"
-    const xMatch = lowerMsg.match(/(\d+)\s*x\s*(\d+)/i);
-    if (xMatch) {
-      sets = parseInt(xMatch[1]);
-      reps = parseInt(xMatch[2]);
-      foundPattern = true;
-    }
-    
-    // Pattern: "3 sets" or "3sets" or "3 sets of"
-    const setsMatch = lowerMsg.match(/(\d+)\s*sets?(?:\s+of)?/);
-    if (setsMatch) {
-      sets = parseInt(setsMatch[1]);
-      foundPattern = true;
-    }
-    
-    // Pattern: "10 reps" or "10reps" or "for 10 reps"
-    const repsMatch = lowerMsg.match(/(?:for\s+)?(\d+)\s*reps?/);
-    if (repsMatch) {
-      reps = parseInt(repsMatch[1]);
-      foundPattern = true;
-    }
-    
-    // Pattern: "80kg" or "80 kg" or "at 80kg" or "@80kg"
-    const weightMatch = lowerMsg.match(/(?:at\s+|@)?(\d+(?:\.\d+)?)\s*kg/);
-    if (weightMatch) weight = parseFloat(weightMatch[1]);
-    
-    // Pattern: "80lbs" or "80 lbs" - convert to kg
-    const lbsMatch = lowerMsg.match(/(?:at\s+|@)?(\d+(?:\.\d+)?)\s*lbs?/);
-    if (lbsMatch) weight = parseFloat(lbsMatch[1]) * 0.453592;
-    
-    // Simple pattern: "log exercise 3 10" or "log exercise 3 10 80"
-    // Look for bare numbers after the exercise name
-    if (!foundPattern) {
-      const afterExercise = normalizedMsg.slice(exercisePosition + bestMatchLength);
-      // Match 2 or 3 consecutive numbers (sets reps [weight])
-      const simpleMatch = afterExercise.match(/^\s*(\d+)\s+(\d+)(?:\s+(\d+(?:\.\d+)?))?/);
-      if (simpleMatch) {
-        sets = parseInt(simpleMatch[1]);
-        reps = parseInt(simpleMatch[2]);
-        if (simpleMatch[3]) {
-          weight = parseFloat(simpleMatch[3]);
-        }
-        foundPattern = true;
-      }
-    }
-    
-    return {
-      exercise: matchedExercise,
-      sets,
-      reps,
-      weight: Math.round(weight * 10) / 10, // Round to 1 decimal
-    };
-  };
-
-  // Log a single exercise from user's chat request
-  const logSingleExercise = async (exerciseInfo) => {
-    setLoggingExercise(true);
-    const today = getLocalDateString();
-
-    try {
-      const { exercise, sets, reps, weight } = exerciseInfo;
-      
-      // Calculate calories
-      const calories = calculateExerciseCalories({
-        exercise: exercise,
-        sets: sets,
-        reps: reps,
-        weight: weight,
-        duration: 0,
-        bodyWeight: bodyWeight,
-      });
-
-      // Prepare log data
-      const logData = {
-        exerciseId: exercise.id,
-        exerciseName: exercise.name,
-        sets: sets,
-        reps: reps,
-        weight: weight,
-        duration: 0,
-        calories: calories,
-        date: today,
-        muscles: exercise.muscles || {},
-      };
-
-      // Log the exercise
-      await logExercise(user.uid, logData);
-
-      // Check for PR if weight is set
-      if (weight > 0) {
-        const prResult = await checkAndUpdatePR(user.uid, exercise.id, exercise.name, {
-          weight: weight,
-          reps: reps,
-          volume: weight * reps * sets,
-        });
-        
-        if (prResult?.newPR) {
-          toast.success(`🏆 NEW PR! ${exercise.name}: ${weight}kg x ${reps} reps!`);
-        } else {
-          toast.success(`Logged ${exercise.name}: ${sets}x${reps} @ ${weight}kg 💪`);
-        }
-      } else {
-        toast.success(`Logged ${exercise.name}: ${sets} sets x ${reps} reps 💪`);
-      }
-      
-      // Reload user data to reflect new logs
-      loadUserData();
-      
-      return true;
-    } catch (error) {
-      console.error("Error logging exercise:", error);
-      toast.error("Failed to log exercise");
-      return false;
-    } finally {
-      setLoggingExercise(false);
-    }
   };
 
   // Check if message contains workout days
@@ -1031,75 +736,6 @@ Based on this data, help the user with their fitness questions and provide perso
     setLoading(true);
 
     try {
-      // Check if user wants to log an exercise
-      const logRequest = parseLogRequest(userMessage);
-      if (logRequest && logRequest.exercise) {
-        // User wants to log an exercise - handle it directly
-        const { exercise, sets, reps, weight } = logRequest;
-        const today = getLocalDateString();
-        
-        // Calculate calories - pass exercise and params separately
-        const bodyWeightKg = userData?.profile?.bodyWeight || 70;
-        const durationMinutes = (sets * reps * 3) / 60; // Estimate ~3 seconds per rep
-        const calories = calculateExerciseCalories(exercise, {
-          bodyWeightKg,
-          durationMinutes,
-          weightKg: weight,
-          reps,
-          sets,
-        });
-
-        // Prepare log data
-        const logData = {
-          exerciseId: exercise.id,
-          exerciseName: exercise.name,
-          sets: sets,
-          reps: reps,
-          weight: weight,
-          duration: 0,
-          calories: typeof calories === 'object' ? calories.total : calories,
-          date: today,
-          muscles: exercise.muscles || {},
-        };
-
-        // Log the exercise
-        await logExercise(user.uid, logData);
-
-        // Check for PR if weight is set
-        let prMessage = "";
-        if (weight > 0) {
-          const prResult = await checkAndUpdatePR(user.uid, exercise.id, exercise.name, {
-            weight: weight,
-            reps: reps,
-            volume: weight * reps * sets,
-          });
-          
-          if (prResult?.newPR) {
-            prMessage = `\n\n🏆 **NEW PR!** You crushed it with ${weight}kg x ${reps} reps!`;
-          }
-        }
-        
-        // Get calorie value (might be object with .total or just a number)
-        const calorieValue = typeof calories === 'object' ? (calories.total || 0) : (calories || 0);
-        
-        // Create response message
-        let response = `✅ Logged **${exercise.name}**: ${sets} sets × ${reps} reps`;
-        if (weight > 0) {
-          response += ` @ ${weight}kg`;
-        }
-        response += `\n\n🔥 Burned approximately **${Math.round(calorieValue)} calories**!${prMessage}\n\nKeep pushing! 💪`;
-        
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: response },
-        ]);
-        
-        // Reload user data to reflect new logs
-        loadUserData();
-        setLoading(false);
-        return;
-      }
-
       const systemPrompt = generateSystemPrompt();
 
       // Build conversation history for context
@@ -1327,6 +963,7 @@ Based on this data, help the user with their fitness questions and provide perso
       }}
     >
       <div
+        className="coach-container"
         style={{
           maxWidth: "1400px",
           margin: "0 auto",
@@ -1380,16 +1017,46 @@ Based on this data, help the user with their fitness questions and provide perso
           transform: translateY(-2px);
         }
         @media (max-width: 600px) {
+          .coach-container {
+            padding: 0 12px !important;
+          }
           .message-bubble {
             max-width: 90%;
             padding: 14px 16px;
             font-size: 14px;
           }
           .coach-header {
-            padding: 16px 0 !important;
+            padding: 12px 0 !important;
           }
           .coach-input-area {
-            padding: 16px 0 !important;
+            padding: 12px 0 !important;
+          }
+          .coach-avatar {
+            width: 56px !important;
+            height: 56px !important;
+          }
+          .coach-avatar img {
+            width: 56px !important;
+            height: 56px !important;
+          }
+          .coach-title {
+            font-size: 20px !important;
+          }
+          .coach-toggle-btn {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+          }
+          .quick-action {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+          }
+          .msg-avatar {
+            width: 36px !important;
+            height: 36px !important;
+          }
+          .msg-avatar img {
+            width: 36px !important;
+            height: 36px !important;
           }
         }
       `}</style>
@@ -1416,6 +1083,7 @@ Based on this data, help the user with their fitness questions and provide perso
           >
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
               <div
+                className="coach-avatar"
                 style={{
                   width: "72px",
                   height: "72px",
@@ -1445,6 +1113,7 @@ Based on this data, help the user with their fitness questions and provide perso
               </div>
               <div>
                 <h1
+                  className="coach-title"
                   style={{
                     fontSize: "24px",
                     fontWeight: 700,
@@ -1490,6 +1159,7 @@ Based on this data, help the user with their fitness questions and provide perso
             >
               <button
                 onClick={() => switchCoach("sai")}
+                className="coach-toggle-btn"
                 style={{
                   padding: "8px 16px",
                   borderRadius: "8px",
@@ -1509,6 +1179,7 @@ Based on this data, help the user with their fitness questions and provide perso
               </button>
               <button
                 onClick={() => switchCoach("daisy")}
+                className="coach-toggle-btn"
                 style={{
                   padding: "8px 16px",
                   borderRadius: "8px",
@@ -1551,6 +1222,7 @@ Based on this data, help the user with their fitness questions and provide perso
             >
               {msg.role === "assistant" && (
                 <div
+                  className="msg-avatar"
                   style={{
                     width: "44px",
                     height: "44px",
@@ -1621,135 +1293,75 @@ Based on this data, help the user with their fitness questions and provide perso
                               marginBottom: "4px",
                             }}
                           >
-                            Save or log individual days:
+                            Save individual days:
                           </span>
                           {workoutDays.map((day, dayIndex) => (
-                            <div key={dayIndex} style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                              <button
-                                onClick={() => saveDayAsRoutine(day)}
-                                disabled={savingRoutine}
-                                style={{
-                                  padding: "10px 16px",
-                                  background: "rgba(255,255,255,0.05)",
-                                  border: `1px solid ${coach.color}`,
-                                  borderRadius: "10px",
-                                  color: "#fff",
-                                  fontSize: "13px",
-                                  fontWeight: 500,
-                                  cursor: savingRoutine
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                  opacity: savingRoutine ? 0.7 : 1,
-                                  transition: "all 0.2s",
-                                }}
+                            <button
+                              key={dayIndex}
+                              onClick={() => saveDayAsRoutine(day)}
+                              disabled={savingRoutine}
+                              style={{
+                                padding: "10px 16px",
+                                background: "rgba(255,255,255,0.05)",
+                                border: `1px solid ${coach.color}`,
+                                borderRadius: "10px",
+                                color: "#fff",
+                                fontSize: "13px",
+                                fontWeight: 500,
+                                cursor: savingRoutine
+                                  ? "not-allowed"
+                                  : "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                opacity: savingRoutine ? 0.7 : 1,
+                                transition: "all 0.2s",
+                              }}
+                            >
+                              <span
+                                className="material-icons"
+                                style={{ fontSize: "16px", color: coach.color }}
                               >
-                                <span
-                                  className="material-icons"
-                                  style={{ fontSize: "16px", color: coach.color }}
-                                >
-                                  {savingRoutine ? "hourglass_empty" : "bookmark_add"}
-                                </span>
-                                Save Day {day.dayNumber}
-                              </button>
-                              <button
-                                onClick={() => logWorkoutExercises(day)}
-                                disabled={loggingExercise}
-                                style={{
-                                  padding: "10px 16px",
-                                  background: "rgba(76, 175, 80, 0.15)",
-                                  border: "1px solid #4CAF50",
-                                  borderRadius: "10px",
-                                  color: "#4CAF50",
-                                  fontSize: "13px",
-                                  fontWeight: 500,
-                                  cursor: loggingExercise
-                                    ? "not-allowed"
-                                    : "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                  opacity: loggingExercise ? 0.7 : 1,
-                                  transition: "all 0.2s",
-                                }}
-                              >
-                                <span
-                                  className="material-icons"
-                                  style={{ fontSize: "16px" }}
-                                >
-                                  {loggingExercise ? "hourglass_empty" : "fitness_center"}
-                                </span>
-                                Log Day {day.dayNumber}
-                              </button>
-                            </div>
+                                {savingRoutine ? "hourglass_empty" : "add"}
+                              </span>
+                              Day {day.dayNumber}: {day.name} (
+                              {day.exercises.length} exercises)
+                            </button>
                           ))}
                         </div>
                       );
                     }
 
-                    // Single workout - show save and log buttons
-                    const singleDay = workoutDays[0];
+                    // Single workout - show regular save button
                     return (
-                      <div style={{ marginTop: "16px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                        <button
-                          onClick={() => saveAsRoutine(msg.content)}
-                          disabled={savingRoutine}
-                          style={{
-                            padding: "10px 16px",
-                            background: coach.gradient,
-                            border: "none",
-                            borderRadius: "10px",
-                            color: "#fff",
-                            fontSize: "13px",
-                            fontWeight: 600,
-                            cursor: savingRoutine ? "not-allowed" : "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "8px",
-                            opacity: savingRoutine ? 0.7 : 1,
-                            transition: "all 0.2s",
-                          }}
+                      <button
+                        onClick={() => saveAsRoutine(msg.content)}
+                        disabled={savingRoutine}
+                        style={{
+                          marginTop: "16px",
+                          padding: "10px 16px",
+                          background: coach.gradient,
+                          border: "none",
+                          borderRadius: "10px",
+                          color: "#fff",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          cursor: savingRoutine ? "not-allowed" : "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          opacity: savingRoutine ? 0.7 : 1,
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        <span
+                          className="material-icons"
+                          style={{ fontSize: "18px" }}
                         >
-                          <span
-                            className="material-icons"
-                            style={{ fontSize: "18px" }}
-                          >
-                            {savingRoutine ? "hourglass_empty" : "bookmark_add"}
-                          </span>
-                          {savingRoutine ? "Saving..." : "Save to Routines"}
-                        </button>
-                        {singleDay && singleDay.exercises.length > 0 && (
-                          <button
-                            onClick={() => logWorkoutExercises(singleDay)}
-                            disabled={loggingExercise}
-                            style={{
-                              padding: "10px 16px",
-                              background: "rgba(76, 175, 80, 0.15)",
-                              border: "1px solid #4CAF50",
-                              borderRadius: "10px",
-                              color: "#4CAF50",
-                              fontSize: "13px",
-                              fontWeight: 600,
-                              cursor: loggingExercise ? "not-allowed" : "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "8px",
-                              opacity: loggingExercise ? 0.7 : 1,
-                              transition: "all 0.2s",
-                            }}
-                          >
-                            <span
-                              className="material-icons"
-                              style={{ fontSize: "18px" }}
-                            >
-                              {loggingExercise ? "hourglass_empty" : "fitness_center"}
-                            </span>
-                            {loggingExercise ? "Logging..." : "Log Workout"}
-                          </button>
-                        )}
-                      </div>
+                          {savingRoutine ? "hourglass_empty" : "add_circle"}
+                        </span>
+                        {savingRoutine ? "Saving..." : "Save to My Routines"}
+                      </button>
                     );
                   })()}
               </div>
@@ -1761,6 +1373,7 @@ Based on this data, help the user with their fitness questions and provide perso
               style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}
             >
               <div
+                className="msg-avatar"
                 style={{
                   width: "44px",
                   height: "44px",
