@@ -888,12 +888,15 @@ Based on this data, help the user with their fitness questions and provide perso
       <div
         style={{
           minHeight: "100vh",
+          width: "100%",
           background: "linear-gradient(135deg, #0a0a0a 0%, #111 100%)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           gap: "24px",
+          padding: "20px",
+          boxSizing: "border-box",
         }}
       >
         <div

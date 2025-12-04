@@ -51,6 +51,17 @@ export default function Layout({ children }) {
           .header-logo h1 { font-size: 24px !important; }
           .header-logo .material-icons { font-size: 24px !important; }
           .footer-links { flex-direction: column; align-items: flex-start; }
+          .floating-coach-btn {
+            bottom: 80px !important;
+            right: 12px !important;
+          }
+          .floating-coach-btn img {
+            width: 60px !important;
+            height: 60px !important;
+          }
+          .coach-tooltip {
+            display: none !important;
+          }
         }
       `}</style>
 
