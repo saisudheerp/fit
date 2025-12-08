@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
-import { aiModel } from "../lib/firebase";
+import { aiModel } from "../lib/gemini";
 import {
   getUserStats,
   getRecentLogs,
@@ -26,7 +26,9 @@ const COACHES = {
     subtitle: "Beast Mode Coach 🔥",
     personality: "high-energy, disciplined, competitive gym bro coach",
     greeting: (name, gender) =>
-      `Hey ${name || "champ"}! 🔥 I'm **Sai** — your high-energy, no-excuses fitness coach.\n\nI bring the hype, the discipline, and the grind you need to level up. I got access to all your stats, PRs, and progress.\n\n• Push you to beat your yesterday\n• Track your gains and PRs\n• Keep you locked in and consistent\n• Real talk on your progress\n\nLet's get after it — what do you need?`,
+      `Hey ${
+        name || "champ"
+      }! 🔥 I'm **Sai** — your high-energy, no-excuses fitness coach.\n\nI bring the hype, the discipline, and the grind you need to level up. I got access to all your stats, PRs, and progress.\n\n• Push you to beat your yesterday\n• Track your gains and PRs\n• Keep you locked in and consistent\n• Real talk on your progress\n\nLet's get after it — what do you need?`,
   },
   daisy: {
     name: "Daisy",
@@ -66,7 +68,10 @@ export default function Coach() {
       setMessages([
         {
           role: "assistant",
-          content: COACHES[activeCoach].greeting(profile?.name, profile?.gender),
+          content: COACHES[activeCoach].greeting(
+            profile?.name,
+            profile?.gender
+          ),
         },
       ]);
     }
@@ -254,37 +259,100 @@ export default function Coach() {
   const generateRoutineName = (exercises, dayName) => {
     // Get primary muscle groups from exercises
     const muscles = new Set();
-    exercises.forEach(ex => {
+    exercises.forEach((ex) => {
       if (ex.exerciseData?.muscles?.primary) {
-        ex.exerciseData.muscles.primary.forEach(m => muscles.add(m?.toLowerCase()));
+        ex.exerciseData.muscles.primary.forEach((m) =>
+          muscles.add(m?.toLowerCase())
+        );
       }
       if (ex.exerciseData?.body_part) {
         muscles.add(ex.exerciseData.body_part.toLowerCase());
       }
     });
-    
+
     const muscleList = [...muscles].filter(Boolean);
-    const mainMuscle = muscleList[0] || '';
-    
+    const mainMuscle = muscleList[0] || "";
+
     // Aesthetic name templates
     const templates = {
-      chest: ['Chest Crusher', 'Pec Attack', 'Iron Chest', 'Chest Assault', 'Pec Blaster'],
-      back: ['Back Destroyer', 'Lat Attack', 'V-Taper Builder', 'Back Blitz', 'Pull Power'],
-      legs: ['Leg Day Mayhem', 'Quad Crusher', 'Lower Body Blitz', 'Leg Assault', 'Iron Legs'],
-      shoulders: ['Boulder Shoulders', 'Delt Destroyer', 'Shoulder Shred', 'Cap Builder', 'Delt Attack'],
-      arms: ['Arm Annihilator', 'Gun Show', 'Arm Assault', 'Peak Builder', 'Sleeve Busters'],
-      biceps: ['Bicep Blitz', 'Peak Builders', 'Curl Crusher', 'Arm Day', 'Gun Show'],
-      triceps: ['Tricep Torcher', 'Horseshoe Builder', 'Tri Assault', 'Push Power', 'Arm Shred'],
-      core: ['Core Crusher', 'Ab Assault', 'Core Blitz', 'Six Pack Attack', 'Core Power'],
-      glutes: ['Glute Gains', 'Booty Builder', 'Glute Blitz', 'Lower Power', 'Hip Thrust Hero'],
-      full: ['Total Body Blast', 'Full Send', 'Complete Crusher', 'All Out Attack', 'Beast Mode'],
+      chest: [
+        "Chest Crusher",
+        "Pec Attack",
+        "Iron Chest",
+        "Chest Assault",
+        "Pec Blaster",
+      ],
+      back: [
+        "Back Destroyer",
+        "Lat Attack",
+        "V-Taper Builder",
+        "Back Blitz",
+        "Pull Power",
+      ],
+      legs: [
+        "Leg Day Mayhem",
+        "Quad Crusher",
+        "Lower Body Blitz",
+        "Leg Assault",
+        "Iron Legs",
+      ],
+      shoulders: [
+        "Boulder Shoulders",
+        "Delt Destroyer",
+        "Shoulder Shred",
+        "Cap Builder",
+        "Delt Attack",
+      ],
+      arms: [
+        "Arm Annihilator",
+        "Gun Show",
+        "Arm Assault",
+        "Peak Builder",
+        "Sleeve Busters",
+      ],
+      biceps: [
+        "Bicep Blitz",
+        "Peak Builders",
+        "Curl Crusher",
+        "Arm Day",
+        "Gun Show",
+      ],
+      triceps: [
+        "Tricep Torcher",
+        "Horseshoe Builder",
+        "Tri Assault",
+        "Push Power",
+        "Arm Shred",
+      ],
+      core: [
+        "Core Crusher",
+        "Ab Assault",
+        "Core Blitz",
+        "Six Pack Attack",
+        "Core Power",
+      ],
+      glutes: [
+        "Glute Gains",
+        "Booty Builder",
+        "Glute Blitz",
+        "Lower Power",
+        "Hip Thrust Hero",
+      ],
+      full: [
+        "Total Body Blast",
+        "Full Send",
+        "Complete Crusher",
+        "All Out Attack",
+        "Beast Mode",
+      ],
     };
-    
+
     // Check for full body or mixed
-    const isFullBody = muscleList.length >= 4 || 
-      (muscleList.some(m => ['chest', 'back'].includes(m)) && 
-       muscleList.some(m => ['legs', 'glutes', 'quadriceps'].includes(m)));
-    
+    const isFullBody =
+      muscleList.length >= 4 ||
+      (muscleList.some((m) => ["chest", "back"].includes(m)) &&
+        muscleList.some((m) => ["legs", "glutes", "quadriceps"].includes(m)));
+
     let nameOptions;
     if (isFullBody) {
       nameOptions = templates.full;
@@ -292,13 +360,23 @@ export default function Coach() {
       nameOptions = templates[mainMuscle];
     } else {
       // Default creative names
-      nameOptions = ['Power Session', 'Beast Mode', 'Grind Time', 'Iron Hour', 'Pump Session'];
+      nameOptions = [
+        "Power Session",
+        "Beast Mode",
+        "Grind Time",
+        "Iron Hour",
+        "Pump Session",
+      ];
     }
-    
+
     // Pick random name and add timestamp for uniqueness
-    const baseName = nameOptions[Math.floor(Math.random() * nameOptions.length)];
-    const timestamp = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    
+    const baseName =
+      nameOptions[Math.floor(Math.random() * nameOptions.length)];
+    const timestamp = new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+
     return `${baseName} • ${timestamp}`;
   };
 
@@ -464,11 +542,15 @@ export default function Coach() {
       const userGender = profile?.gender?.toLowerCase() || "";
       const isMale = userGender === "male";
       const isFemale = userGender === "female";
-      
+
       if (activeCoach === "daisy") {
-        return `You are "Daisy", a warm and caring female fitness coach. Be supportive and encouraging. User's name is ${profile?.name || "friend"}. Your workout data is loading in the background - ask them to wait a moment and try again, or help with general fitness questions.`;
+        return `You are "Daisy", a warm and caring female fitness coach. Be supportive and encouraging. User's name is ${
+          profile?.name || "friend"
+        }. Your workout data is loading in the background - ask them to wait a moment and try again, or help with general fitness questions.`;
       } else {
-        return `You are "Sai", a high-energy male fitness coach. Be motivating and direct. User's name is ${profile?.name || "champ"}. Your workout data is loading in the background - ask them to wait a moment and try again, or help with general fitness questions. Keep it professional - no weird jokes or inappropriate humor.`;
+        return `You are "Sai", a high-energy male fitness coach. Be motivating and direct. User's name is ${
+          profile?.name || "champ"
+        }. Your workout data is loading in the background - ask them to wait a moment and try again, or help with general fitness questions. Keep it professional - no weird jokes or inappropriate humor.`;
       }
     }
 
@@ -637,51 +719,56 @@ COACHING RULES:
 YOUR GOAL:
 Be the user's calming, supportive fitness guide who boosts confidence, reduces stress, and makes every workout feel safe and encouraging.`;
     } else {
-      coachPersonality = `You are "Sai", a high-energy male fitness coach with a supportive bro vibe.
-Your personality: hype, disciplined, competitive, straightforward, and motivational.
-You speak like a gym bro who pushes hard but stays respectful, positive, and safe.
+      coachPersonality = `You are "Sai", a friendly and motivating male fitness coach.
+Your personality: positive, encouraging, knowledgeable, and supportive.
+You're like a helpful gym buddy who knows his stuff and genuinely wants to help.
 
 USER GENDER: ${isMale ? "MALE" : isFemale ? "FEMALE" : "NOT SPECIFIED"}
 
 GENDER-SPECIFIC LANGUAGE:
 ${
   isMale
-    ? `- For males: Use bro terms like "bro", "man", "king", "beast", "legend"
-- Talk like gym buddies, competitive and hype
-- Push hard, challenge them to beat their limits`
+    ? `- For males: Use friendly terms like "bro", "man", "${userProfile.name}"
+- Be like a supportive gym buddy
+- Encourage progress without being pushy`
     : isFemale
-    ? `- For females: Use respectful terms like "champ", "${userProfile.name}", "warrior", "queen"
-- Be encouraging and hype without being creepy
-- Focus on strength, power, and being unstoppable`
-    : `- Use neutral hype terms like "${userProfile.name}", "champ", "legend"
-- Keep the energy high for everyone`
+    ? `- For females: Use respectful terms like "champ", "${userProfile.name}"
+- Be encouraging and supportive
+- Focus on strength and progress`
+    : `- Use friendly terms like "${userProfile.name}", "champ"
+- Keep the energy positive for everyone`
 }
 
 TONE RULES:
-- Keep messages short, powerful, and direct (1-2 punchy sentences)
-- Motivate through energy, toughness, and competition ("beat your yesterday")
-- Celebrate progress with strong hype ("You crushed that!")
-- Never use romantic or flirty language
-- Stay strictly fitness-focused
-- NEVER make inappropriate jokes or weird humor
-- Keep it professional and respectful at all times
-- Use emojis like 💪🔥 sparingly
+- Be friendly, warm, and approachable
+- Keep messages concise but helpful (2-3 sentences)
+- Celebrate wins genuinely ("Nice work!", "That's awesome!")
+- Be encouraging, not demanding or pushy
+- Never be rude or aggressive
+- Stay fitness-focused but conversational
+- Use emojis sparingly (1 per message max)
+
+RESPONSE TO GREETINGS:
+- When user says "hi", "hello", "hey" - respond warmly and ask how you can help
+- Example: "Hey ${
+        userProfile.name
+      }! Good to see you. What can I help you with today?"
+- DON'T immediately push them to work out or "crush goals"
 
 COACHING RULES:
-1. Push the user but never force them
-2. Always prioritize safety: If user mentions pain, say to stop immediately and suggest rest + professional help
-3. Give clear instructions for sets, reps, form, and intensity
-4. Use numbers, metrics, challenges, and progress-based motivation
-5. Give specific advice based on their actual data
-6. Use their name (${userProfile.name}) naturally
-7. ONLY suggest exercises from the AVAILABLE EXERCISES list below
-8. Use exact exercise names from the list
-9. When giving workout plans, ALWAYS use this EXACT format for each exercise:
+1. Be helpful and supportive, never pushy
+2. Always prioritize safety: If user mentions pain, advise rest and professional help
+3. Give clear, practical advice
+4. Use their actual data to give personalized tips
+5. Use their name (${userProfile.name}) naturally
+6. ONLY suggest exercises from the AVAILABLE EXERCISES list below
+7. Use exact exercise names from the list
+8. When giving workout plans, ALWAYS use this EXACT format for each exercise:
     - ExerciseName: X sets of Y reps
     Example: "Push-ups: 3 sets of 12 reps" or "Plank: 3 sets of 60 seconds"
 
 YOUR GOAL:
-Be the user's hype-man and discipline coach. Make them feel strong, capable, and energized while keeping the conversation professional and fitness-oriented.`;
+Be the user's friendly fitness buddy who helps them stay on track with encouragement, not pressure.`;
     }
 
     return `${coachPersonality}
@@ -1095,24 +1182,30 @@ Based on this data, help the user with their fitness questions and provide perso
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  boxShadow: coach.image ? "none" : `0 8px 24px ${coach.shadowColor}`,
+                  boxShadow: coach.image
+                    ? "none"
+                    : `0 8px 24px ${coach.shadowColor}`,
                   transition: "all 0.3s ease",
                 }}
               >
                 {coach.image ? (
-                <img
-                  src={coach.image}
-                  alt={coach.name}
-                  style={{ width: "72px", height: "72px", objectFit: "contain" }}
-                />
-              ) : (
-                <span
-                  className="material-icons"
-                  style={{ fontSize: "28px", color: "#fff" }}
-                >
-                  {coach.icon}
-                </span>
-              )}
+                  <img
+                    src={coach.image}
+                    alt={coach.name}
+                    style={{
+                      width: "72px",
+                      height: "72px",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="material-icons"
+                    style={{ fontSize: "28px", color: "#fff" }}
+                  >
+                    {coach.icon}
+                  </span>
+                )}
               </div>
               <div>
                 <h1
@@ -1239,19 +1332,23 @@ Based on this data, help the user with their fitness questions and provide perso
                   }}
                 >
                   {coach.image ? (
-                  <img
-                    src={coach.image}
-                    alt={coach.name}
-                    style={{ width: "44px", height: "44px", objectFit: "contain" }}
-                  />
-                ) : (
-                  <span
-                    className="material-icons"
-                    style={{ fontSize: "20px", color: "#fff" }}
-                  >
-                    {coach.icon}
-                  </span>
-                )}
+                    <img
+                      src={coach.image}
+                      alt={coach.name}
+                      style={{
+                        width: "44px",
+                        height: "44px",
+                        objectFit: "contain",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="material-icons"
+                      style={{ fontSize: "20px", color: "#fff" }}
+                    >
+                      {coach.icon}
+                    </span>
+                  )}
                 </div>
               )}
               <div
@@ -1389,19 +1486,23 @@ Based on this data, help the user with their fitness questions and provide perso
                 }}
               >
                 {coach.image ? (
-                <img
-                  src={coach.image}
-                  alt={coach.name}
-                  style={{ width: "44px", height: "44px", objectFit: "contain" }}
-                />
-              ) : (
-                <span
-                  className="material-icons"
-                  style={{ fontSize: "20px", color: "#fff" }}
-                >
-                  {coach.icon}
-                </span>
-              )}
+                  <img
+                    src={coach.image}
+                    alt={coach.name}
+                    style={{
+                      width: "44px",
+                      height: "44px",
+                      objectFit: "contain",
+                    }}
+                  />
+                ) : (
+                  <span
+                    className="material-icons"
+                    style={{ fontSize: "20px", color: "#fff" }}
+                  >
+                    {coach.icon}
+                  </span>
+                )}
               </div>
               <div
                 className="message-bubble"

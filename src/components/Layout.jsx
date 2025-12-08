@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { signOut } from "../lib/firebase-auth";
 import warriorImg from "../assets/w.png";
+import nextRepLogo from "../assets/nextrep.svg";
 
 export default function Layout({ children }) {
   const location = useLocation();
@@ -102,36 +103,15 @@ export default function Layout({ children }) {
             }
             onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
           >
-            <div
+            <img
+              src={nextRepLogo}
+              alt="Next Rep"
               style={{
-                background: "linear-gradient(135deg, #fff 0%, #999 100%)",
-                borderRadius: "10px",
-                padding: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                height: "40px",
+                width: "auto",
+                filter: "invert(1)",
               }}
-            >
-              <span
-                className="material-icons"
-                style={{ fontSize: "28px", color: "#000" }}
-              >
-                fitness_center
-              </span>
-            </div>
-            <h1
-              style={{
-                fontFamily: "Bebas Neue, Impact, sans-serif",
-                fontSize: "32px",
-                letterSpacing: "0.1em",
-                background: "linear-gradient(135deg, #fff 0%, #999 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              FITTRACK
-            </h1>
+            />
           </Link>
 
           {/* Desktop Nav */}
@@ -354,10 +334,17 @@ export default function Layout({ children }) {
               fontSize: "13px",
             }}
           >
-            <span className="material-icons" style={{ fontSize: "16px" }}>
-              fitness_center
-            </span>
-            <span>FitTrack © 2025</span>
+            <img
+              src={nextRepLogo}
+              alt="Next Rep"
+              style={{
+                height: "20px",
+                width: "auto",
+                filter: "invert(1)",
+                opacity: 0.6,
+              }}
+            />
+            <span>Next Rep © 2025</span>
           </div>
           <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
             <a
@@ -414,13 +401,15 @@ export default function Layout({ children }) {
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = "scale(1.1)";
-            e.currentTarget.querySelector('.coach-tooltip').style.opacity = "1";
-            e.currentTarget.querySelector('.coach-tooltip').style.transform = "translateY(0)";
+            e.currentTarget.querySelector(".coach-tooltip").style.opacity = "1";
+            e.currentTarget.querySelector(".coach-tooltip").style.transform =
+              "translateY(0)";
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = "scale(1)";
-            e.currentTarget.querySelector('.coach-tooltip').style.opacity = "0";
-            e.currentTarget.querySelector('.coach-tooltip').style.transform = "translateY(8px)";
+            e.currentTarget.querySelector(".coach-tooltip").style.opacity = "0";
+            e.currentTarget.querySelector(".coach-tooltip").style.transform =
+              "translateY(8px)";
           }}
         >
           <span
@@ -437,29 +426,32 @@ export default function Layout({ children }) {
               opacity: 0,
               transform: "translateY(8px)",
               transition: "all 0.3s ease",
-              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(244, 63, 94, 0.3)",
+              boxShadow:
+                "0 8px 32px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(244, 63, 94, 0.3)",
               border: "1px solid rgba(244, 63, 94, 0.2)",
               display: "flex",
               alignItems: "center",
               gap: "8px",
             }}
           >
-            <span style={{
-              width: "8px",
-              height: "8px",
-              background: "#f43f5e",
-              borderRadius: "50%",
-              boxShadow: "0 0 8px #f43f5e",
-              animation: "pulse-dot 2s ease-in-out infinite",
-            }} />
+            <span
+              style={{
+                width: "8px",
+                height: "8px",
+                background: "#f43f5e",
+                borderRadius: "50%",
+                boxShadow: "0 0 8px #f43f5e",
+                animation: "pulse-dot 2s ease-in-out infinite",
+              }}
+            />
             Talk to AI Coach
           </span>
           <img
             src={warriorImg}
             alt="AI Coach"
-            style={{ 
-              width: "72px", 
-              height: "72px", 
+            style={{
+              width: "72px",
+              height: "72px",
               objectFit: "contain",
               filter: "drop-shadow(0 4px 12px rgba(244, 63, 94, 0.3))",
             }}

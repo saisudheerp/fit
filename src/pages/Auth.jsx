@@ -243,7 +243,7 @@ export default function Auth() {
               textShadow: "0 2px 10px rgba(0,0,0,0.3)",
             }}
           >
-            {isSignUp ? "Join FitTrack" : "Welcome back"}
+            {isSignUp ? "Join Next Rep" : "Welcome back"}
           </h1>
           <p
             style={{

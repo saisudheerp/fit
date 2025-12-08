@@ -2,7 +2,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -19,9 +18,5 @@ const app = initializeApp(firebaseConfig);
 // Initialize services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-
-// Initialize Firebase AI with Google AI backend
-const ai = getAI(app, { backend: new GoogleAIBackend() });
-export const aiModel = getGenerativeModel(ai, { model: "gemini-2.0-flash" });
 
 export default app;

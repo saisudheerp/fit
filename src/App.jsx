@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import Layout from "./components/Layout";
+import Landing from "./pages/Landing";
 import Dashboard from "./pages/Dashboard";
 import ExerciseLog from "./pages/ExerciseLog";
 import Routines from "./pages/Routines";
@@ -15,6 +16,53 @@ import Settings from "./pages/Settings";
 import Coach from "./pages/Coach";
 import Auth from "./pages/Auth";
 import ProfileSetup from "./pages/ProfileSetup";
+
+// Component to handle landing vs dashboard based on auth
+function HomeRoute() {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#0a0a0a",
+        }}
+      >
+        <div style={{ textAlign: "center", color: "#666" }}>
+          <span
+            className="material-icons"
+            style={{ fontSize: "64px", marginBottom: "16px", animation: "spin 1s linear infinite" }}
+          >
+            hourglass_empty
+          </span>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not logged in - show landing page
+  if (!user) {
+    return <Landing />;
+  }
+
+  // Logged in but no profile - redirect to setup
+  if (!profile || !profile.name || !profile.body_weight_kg) {
+    return <Navigate to="/setup" />;
+  }
+
+  // Logged in with profile - show dashboard
+  return (
+    <Layout>
+      <Dashboard />
+    </Layout>
+  );
+}
 
 function ProtectedRoute({ children, requireProfile = true }) {
   const { user, profile, loading } = useAuth();
@@ -44,7 +92,7 @@ function ProtectedRoute({ children, requireProfile = true }) {
   }
 
   if (!user) {
-    return <Navigate to="/auth" />;
+    return <Navigate to="/" />;
   }
 
   // Only redirect to setup if profile is required and incomplete
@@ -73,16 +121,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <Layout>
-                    <Dashboard />
-                  </Layout>
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/" element={<HomeRoute />} />
             <Route
               path="/log"
               element={
