@@ -20,9 +20,9 @@ const COACHES = {
     name: "Sai",
     icon: null,
     image: warriorImg,
-    gradient: "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)",
-    color: "#f43f5e",
-    shadowColor: "rgba(244, 63, 94, 0.3)",
+    gradient: "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
+    color: "#dc2626",
+    shadowColor: "rgba(220, 38, 38, 0.4)",
     subtitle: "Beast Mode Coach 🔥",
     personality: "high-energy, disciplined, competitive gym bro coach",
     greeting: (name, gender) =>
@@ -1014,31 +1014,66 @@ Based on this data, help the user with their fitness questions and provide perso
             </span>
           )}
         </div>
-        <div style={{ textAlign: "center" }}>
+        <div style={{ textAlign: "center", maxWidth: "400px" }}>
           <h2
             style={{
-              fontSize: "20px",
-              fontWeight: 600,
+              fontSize: "24px",
+              fontWeight: 700,
               color: "#fff",
-              margin: "0 0 8px 0",
+              margin: "0 0 12px 0",
             }}
           >
-            Loading {coach.name}...
+            {coach.name === "Sai" ? "Getting Your Stats Ready... 💪" : `${coach.name} is Preparing...`}
           </h2>
           <p
             style={{
-              fontSize: "14px",
+              fontSize: "15px",
               color: "#888",
-              margin: 0,
+              margin: "0 0 16px 0",
+              lineHeight: "1.6",
             }}
           >
-            Fetching your workout data
+            {coach.name === "Sai" 
+              ? "Loading your PRs, workout logs, and muscle analytics. Time to see what you're made of! 🔥"
+              : "Gathering your progress data and fitness journey insights..."}
           </p>
+          <div style={{
+            display: "flex",
+            gap: "8px",
+            justifyContent: "center",
+            marginTop: "20px"
+          }}>
+            <div style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: coach.color,
+              animation: "bounce 1.4s ease-in-out 0s infinite"
+            }} />
+            <div style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: coach.color,
+              animation: "bounce 1.4s ease-in-out 0.2s infinite"
+            }} />
+            <div style={{
+              width: "8px",
+              height: "8px",
+              borderRadius: "50%",
+              background: coach.color,
+              animation: "bounce 1.4s ease-in-out 0.4s infinite"
+            }} />
+          </div>
         </div>
         <style>{`
           @keyframes pulse {
             0%, 100% { transform: scale(1); opacity: 1; }
             50% { transform: scale(1.08); opacity: 0.9; }
+          }
+          @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
           }
         `}</style>
       </div>
@@ -1262,7 +1297,7 @@ Based on this data, help the user with their fitness questions and provide perso
                   border: "none",
                   background:
                     activeCoach === "sai"
-                      ? "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)"
+                      ? "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)"
                       : "transparent",
                   color: activeCoach === "sai" ? "#fff" : "#888",
                   fontSize: "13px",
