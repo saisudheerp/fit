@@ -410,6 +410,10 @@ export default function Landing() {
             padding: 12px 16px !important;
           }
 
+          header img {
+            height: 32px !important;
+          }
+
           header a, header .glow-btn {
             padding: 8px 16px !important;
             font-size: 13px !important;
@@ -421,7 +425,7 @@ export default function Landing() {
           }
 
           .hero-title {
-            font-size: 28px !important;
+            font-size: 42px !important;
             margin-bottom: 16px !important;
             line-height: 1.2 !important;
           }
@@ -436,6 +440,10 @@ export default function Landing() {
             padding: 8px 16px !important;
             margin-bottom: 20px !important;
             font-size: 11px !important;
+          }
+
+          .hero-content > div:nth-of-type(3) {
+            justify-content: center !important;
           }
 
           .hero-content a {
@@ -468,17 +476,58 @@ export default function Landing() {
           }
           
           .section-title {
-            font-size: 24px !important;
+            font-size: 36px !important;
             line-height: 1.2 !important;
             margin-bottom: 12px !important;
           }
           
           .workout-types-grid {
             grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+          }
+
+          .workout-types-grid > div {
+            padding: 20px 16px !important;
+          }
+
+          .workout-types-grid .material-icons {
+            font-size: 28px !important;
+          }
+
+          .workout-types-grid h3 {
+            font-size: 16px !important;
+          }
+
+          .workout-types-grid p {
+            font-size: 12px !important;
           }
 
           .muscle-grid {
             grid-template-columns: repeat(2, 1fr) !important;
+          }
+
+          #cta-section > div {
+            padding: 40px 24px !important;
+          }
+
+          #cta-section .material-icons {
+            font-size: 40px !important;
+            margin-bottom: 16px !important;
+          }
+
+          #cta-section h2 {
+            font-size: 28px !important;
+            margin-bottom: 16px !important;
+          }
+
+          #cta-section p {
+            font-size: 15px !important;
+            margin-bottom: 32px !important;
+          }
+
+          #cta-section a {
+            padding: 16px 32px !important;
+            font-size: 16px !important;
           }
           
           #features {
@@ -2493,7 +2542,7 @@ export default function Landing() {
 
       {/* CTA Section */}
       <section
-        id="cta"
+        id="cta-section"
         data-animate
         style={{
           padding: "100px 40px",
