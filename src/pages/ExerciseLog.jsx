@@ -10,6 +10,11 @@ import {
 import { calculateExerciseCalories } from "../lib/calorieEngine";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import {
+  showNotification,
+  getNotificationPreference,
+  notificationTemplates,
+} from "../utils/notifications";
 
 export default function ExerciseLog() {
   const { user, profile } = useAuth();
@@ -236,10 +241,22 @@ export default function ExerciseLog() {
         if (prResult.isNewPR) {
           setNewPRAlert(prResult);
           setTimeout(() => setNewPRAlert(null), 5000);
+
+          // Trigger PR notification
+          if (getNotificationPreference()) {
+            const prNotif = notificationTemplates.newPR(
+              selectedExercise.name,
+              `${weight}kg × ${reps} reps`
+            );
+            showNotification(prNotif.title, prNotif);
+          }
         }
       }
 
       toast.success("Exercise logged successfully!");
+      setResult(null);
+      setSelectedExercise(null);
+      setCurrentPR(null);
       setResult(null);
       setSelectedExercise(null);
       setCurrentPR(null);

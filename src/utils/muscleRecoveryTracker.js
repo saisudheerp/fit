@@ -191,3 +191,34 @@ export function getMusclesWithRedDots(workoutData) {
 
   return musclesWithDots;
 }
+
+/**
+ * Get muscles that have just recovered (within last 24 hours)
+ * Returns array of muscle names that are ready to train again
+ */
+export function getNewlyRecoveredMuscles(workoutData) {
+  const recoveredMuscles = [];
+  const today = new Date();
+
+  Object.keys(MUSCLE_GROUP_LIMITS).forEach(muscleKey => {
+    const limits = MUSCLE_GROUP_LIMITS[muscleKey];
+    const lastWorkout = getLastWorkoutDate(muscleKey, workoutData);
+
+    if (lastWorkout) {
+      const daysSinceLastWorkout = getDaysDifference(lastWorkout, today);
+      
+      // Check if muscle recovered exactly today (daysSince === restDays)
+      // This means it was in recovery yesterday but is ready today
+      if (daysSinceLastWorkout === limits.restDays) {
+        recoveredMuscles.push({
+          key: muscleKey,
+          name: limits.displayName,
+          lastWorkoutDate: lastWorkout,
+          recoveryDays: limits.restDays
+        });
+      }
+    }
+  });
+
+  return recoveredMuscles;
+}

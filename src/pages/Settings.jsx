@@ -18,6 +18,12 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import {
+  requestNotificationPermission,
+  getNotificationPermission,
+  saveNotificationPreference,
+  getNotificationPreference,
+} from "../utils/notifications";
 
 export default function Settings() {
   const { user, profile } = useAuth();
@@ -39,6 +45,7 @@ export default function Settings() {
   const [selectedPR, setSelectedPR] = useState(null);
   const [prHistory, setPrHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const allCategories = [
     "ALL",
@@ -61,6 +68,9 @@ export default function Settings() {
       setAge(profile.age || 25);
       setGender(profile.gender || "male");
     }
+
+    // Load notification preference
+    setNotificationsEnabled(getNotificationPreference());
   }, [profile]);
 
   useEffect(() => {
@@ -179,6 +189,38 @@ export default function Settings() {
       toast.error("Failed to save settings: " + error.message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleNotificationToggle = async () => {
+    const currentPermission = getNotificationPermission();
+
+    if (!notificationsEnabled) {
+      // User wants to enable notifications
+      if (currentPermission === 'granted') {
+        // Already have permission, just enable
+        setNotificationsEnabled(true);
+        saveNotificationPreference(true);
+        toast.success("🔔 Notifications enabled!");
+      } else if (currentPermission === 'default') {
+        // Need to request permission
+        const result = await requestNotificationPermission();
+        if (result.success) {
+          setNotificationsEnabled(true);
+          saveNotificationPreference(true);
+          toast.success("🔔 Notifications enabled!");
+        } else {
+          toast.error("❌ Notification permission denied");
+        }
+      } else {
+        // Permission denied, show instruction
+        toast.error("Please enable notifications in your browser settings first");
+      }
+    } else {
+      // User wants to disable notifications
+      setNotificationsEnabled(false);
+      saveNotificationPreference(false);
+      toast.success("🔕 Notifications disabled");
     }
   };
 
@@ -757,6 +799,161 @@ export default function Settings() {
                   })()}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Buttons - Moved here */}
+        <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              flex: 1,
+              padding: "16px",
+              background: saving
+                ? "#444"
+                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+              color: saving ? "#888" : "#fff",
+              border: "none",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              cursor: saving ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              transition: "all 0.2s",
+              boxShadow: saving
+                ? "none"
+                : "0 4px 12px rgba(102, 126, 234, 0.4)",
+            }}
+            onMouseEnter={(e) => {
+              if (!saving) {
+                e.target.style.transform = "translateY(-2px)";
+                e.target.style.boxShadow =
+                  "0 8px 20px rgba(102, 126, 234, 0.5)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!saving) {
+                e.target.style.transform = "translateY(0)";
+                e.target.style.boxShadow =
+                  "0 4px 12px rgba(102, 126, 234, 0.4)";
+              }
+            }}
+          >
+            <span className="material-icons">
+              {saving ? "hourglass_empty" : "save"}
+            </span>
+            {saving ? "Saving..." : "Save Settings"}
+          </button>
+
+          <button
+            style={{
+              flex: 1,
+              padding: "16px",
+              background: "transparent",
+              color: "#999",
+              border: "2px solid #2a2a2a",
+              borderRadius: "12px",
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.borderColor = "#fff";
+              e.target.style.color = "#fff";
+              e.target.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.borderColor = "#2a2a2a";
+              e.target.style.color = "#999";
+              e.target.style.transform = "translateY(0)";
+            }}
+          >
+            <span className="material-icons">refresh</span>
+            Reset
+          </button>
+        </div>
+
+        {/* Notifications Section */}
+        <div
+          className="settings-section"
+          style={{
+            background: "#111",
+            border: "1px solid #1f1f1f",
+            borderRadius: "20px",
+            padding: "32px",
+            marginBottom: "24px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ flex: 1 }}>
+              <h3
+                style={{
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  color: "#fff",
+                  marginBottom: "8px",
+                  fontFamily: "Bebas Neue, Impact, sans-serif",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                <span className="material-icons" style={{ fontSize: "24px", color: "#f43f5e" }}>
+                  notifications_active
+                </span>
+                Smart Notifications
+              </h3>
+              <p style={{ fontSize: "14px", color: "#999", lineHeight: 1.5 }}>
+                🎯 Get notified when you crush PRs, hit streaks & recover fully
+              </p>
+            </div>
+
+            {/* Toggle Switch */}
+            <div
+              onClick={handleNotificationToggle}
+              style={{
+                width: "60px",
+                height: "32px",
+                background: notificationsEnabled
+                  ? "linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)"
+                  : "#2a2a2a",
+                borderRadius: "16px",
+                position: "relative",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                boxShadow: notificationsEnabled
+                  ? "0 4px 12px rgba(244, 63, 94, 0.4)"
+                  : "none",
+              }}
+            >
+              <div
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  background: "#fff",
+                  borderRadius: "50%",
+                  position: "absolute",
+                  top: "4px",
+                  left: notificationsEnabled ? "32px" : "4px",
+                  transition: "all 0.3s ease",
+                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                }}
+              />
             </div>
           </div>
         </div>
@@ -1494,93 +1691,6 @@ export default function Settings() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Actions */}
-        <div
-          className="scale-in"
-          style={{ display: "flex", gap: "16px", animationDelay: "0.2s" }}
-        >
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{
-              flex: 1,
-              padding: "16px",
-              background: saving
-                ? "#666"
-                : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "#fff",
-              border: "none",
-              borderRadius: "12px",
-              fontSize: "14px",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              cursor: saving ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              transition: "all 0.2s",
-              boxShadow: saving
-                ? "none"
-                : "0 4px 12px rgba(102, 126, 234, 0.4)",
-            }}
-            onMouseEnter={(e) => {
-              if (!saving) {
-                e.target.style.transform = "translateY(-2px)";
-                e.target.style.boxShadow =
-                  "0 8px 20px rgba(102, 126, 234, 0.5)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!saving) {
-                e.target.style.transform = "translateY(0)";
-                e.target.style.boxShadow =
-                  "0 4px 12px rgba(102, 126, 234, 0.4)";
-              }
-            }}
-          >
-            <span className="material-icons">
-              {saving ? "hourglass_empty" : "save"}
-            </span>
-            {saving ? "Saving..." : "Save Settings"}
-          </button>
-
-          <button
-            style={{
-              flex: 1,
-              padding: "16px",
-              background: "transparent",
-              color: "#999",
-              border: "2px solid #2a2a2a",
-              borderRadius: "12px",
-              fontSize: "14px",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.borderColor = "#fff";
-              e.target.style.color = "#fff";
-              e.target.style.transform = "translateY(-2px)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.borderColor = "#2a2a2a";
-              e.target.style.color = "#999";
-              e.target.style.transform = "translateY(0)";
-            }}
-          >
-            <span className="material-icons">refresh</span>
-            Reset
-          </button>
         </div>
       </div>
     </div>

@@ -14,6 +14,12 @@ import {
 } from "../lib/firebase-database";
 import { Link } from "react-router-dom";
 import MuscleHeatmap from "../components/MuscleHeatmap";
+import NotificationBanner from "../components/NotificationBanner";
+import {
+  showNotification,
+  getNotificationPreference,
+  notificationTemplates,
+} from "../utils/notifications";
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
@@ -156,6 +162,15 @@ export default function Dashboard() {
         setWorkoutInProgress(null);
       }
 
+      // Check for pending routine and send notification
+      if (getNotificationPreference() && dayRoutine && !progressData) {
+        // User has a routine for today but hasn't started it
+        const routineNotif = notificationTemplates.workoutReminder(
+          dayRoutine.name
+        );
+        showNotification(routineNotif.title, routineNotif);
+      }
+
       // Load monthly data in background
       getMonthlyMuscleData(user.uid, selectedMonthOffset)
         .then((monthlyData) => {
@@ -237,7 +252,9 @@ export default function Dashboard() {
   ];
 
   return (
-    <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px" }}>
+    <>
+      <NotificationBanner />
+      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 24px" }}>
       <style>{`
         @media (max-width: 768px) {
           .dashboard-header h2 {
@@ -1176,6 +1193,7 @@ export default function Dashboard() {
         </Panel>
       </div>
     </div>
+    </>
   );
 }
 

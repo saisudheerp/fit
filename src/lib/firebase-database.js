@@ -1338,3 +1338,161 @@ export async function resetProgramDay(programId, dayNumber) {
     updatedAt: new Date(),
   });
 }
+
+// ============================================
+// WORKOUT TRACKING & MILESTONES
+// ============================================
+
+/**
+ * Get all unique workout dates for a user
+ * Returns array of date strings (YYYY-MM-DD)
+ */
+export async function getWorkoutDates(userId) {
+  const q = query(
+    collection(db, "exercise_logs"),
+    where("user_id", "==", userId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  const dates = new Set();
+
+  querySnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    if (data.date) {
+      dates.add(data.date);
+    }
+  });
+
+  return Array.from(dates).sort();
+}
+
+/**
+ * Calculate current workout streak (consecutive days)
+ * Returns { currentStreak, longestStreak, isNewStreak, milestoneReached }
+ */
+export async function calculateWorkoutStreak(userId) {
+  const dates = await getWorkoutDates(userId);
+
+  if (dates.length === 0) {
+    return { currentStreak: 0, longestStreak: 0, isNewStreak: false };
+  }
+
+  // Calculate current streak
+  let currentStreak = 0;
+  const today = getLocalDateString();
+  const yesterday = getLocalDateString(
+    new Date(Date.now() - 24 * 60 * 60 * 1000)
+  );
+
+  // Check if there's a workout today or yesterday
+  let checkDate = dates.includes(today) ? today : yesterday;
+  if (!dates.includes(checkDate)) {
+    // Streak is broken
+    currentStreak = 0;
+  } else {
+    // Count backwards from today/yesterday
+    let currentDate = new Date(checkDate);
+    for (let i = dates.length - 1; i >= 0; i--) {
+      const dateStr = getLocalDateString(currentDate);
+      if (dates.includes(dateStr)) {
+        currentStreak++;
+        currentDate = new Date(currentDate.getTime() - 24 * 60 * 60 * 1000);
+      } else {
+        break;
+      }
+    }
+  }
+
+  // Calculate longest streak
+  let longestStreak = 0;
+  let tempStreak = 1;
+
+  for (let i = 1; i < dates.length; i++) {
+    const prevDate = new Date(dates[i - 1]);
+    const currDate = new Date(dates[i]);
+    const diffDays = Math.floor(
+      (currDate - prevDate) / (24 * 60 * 60 * 1000)
+    );
+
+    if (diffDays === 1) {
+      tempStreak++;
+    } else {
+      longestStreak = Math.max(longestStreak, tempStreak);
+      tempStreak = 1;
+    }
+  }
+  longestStreak = Math.max(longestStreak, tempStreak);
+
+  // Check if today's workout extends the streak (new streak milestone)
+  const isNewStreak = dates[dates.length - 1] === today;
+
+  // Check for milestone (3, 7, 14, 30, 60, 100 days)
+  const milestones = [3, 7, 14, 30, 60, 100];
+  const milestoneReached = milestones.includes(currentStreak)
+    ? currentStreak
+    : null;
+
+  return {
+    currentStreak,
+    longestStreak,
+    isNewStreak,
+    milestoneReached,
+  };
+}
+
+/**
+ * Calculate total volume lifted (all time)
+ * Returns { totalVolume, milestoneReached }
+ */
+export async function calculateTotalVolume(userId) {
+  const q = query(
+    collection(db, "exercise_logs"),
+    where("user_id", "==", userId)
+  );
+
+  const querySnapshot = await getDocs(q);
+  let totalVolume = 0;
+  let lastVolume = 0;
+
+  querySnapshot.docs.forEach((doc) => {
+    const data = doc.data();
+    if (data.volume) {
+      lastVolume = data.volume;
+      totalVolume += data.volume;
+    }
+  });
+
+  // Check for milestones: 10k, 25k, 50k, 100k, 250k, 500k, 1M kg
+  const milestones = [
+    10000, 25000, 50000, 100000, 250000, 500000, 1000000,
+  ];
+  let milestoneReached = null;
+
+  // Check if we just crossed a milestone with the last exercise
+  const previousVolume = totalVolume - lastVolume;
+  for (const milestone of milestones) {
+    if (totalVolume >= milestone && previousVolume < milestone) {
+      milestoneReached = milestone;
+      break;
+    }
+  }
+
+  return { totalVolume, milestoneReached };
+}
+
+/**
+ * Get workout count
+ * Returns { totalWorkouts, milestoneReached }
+ */
+export async function getWorkoutCount(userId) {
+  const dates = await getWorkoutDates(userId);
+  const totalWorkouts = dates.length;
+
+  // Check for milestones: 1, 10, 25, 50, 100, 250, 500 workouts
+  const milestones = [1, 10, 25, 50, 100, 250, 500];
+  const milestoneReached = milestones.includes(totalWorkouts)
+    ? totalWorkouts
+    : null;
+
+  return { totalWorkouts, milestoneReached };
+}

@@ -21,6 +21,7 @@ export default function Landing() {
   const [scrollY, setScrollY] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [visibleSections, setVisibleSections] = useState({});
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     setLoaded(true);
@@ -29,9 +30,13 @@ export default function Landing() {
     const handleMouseMove = (e) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
 
     window.addEventListener("scroll", handleScroll);
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("resize", handleResize);
 
     // Intersection Observer for scroll animations
     const observer = new IntersectionObserver(
@@ -58,6 +63,7 @@ export default function Landing() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("resize", handleResize);
       observer.disconnect();
     };
   }, []);
@@ -451,10 +457,16 @@ export default function Landing() {
             font-size: 14px !important;
           }
 
-          .stats-grid {
+          .stats-grid,
+          div.stats-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 8px !important;
             margin-bottom: 0 !important;
+          }
+          
+          div[class="stats-grid"],
+          div[class="stats-grid"][style] {
+            grid-template-columns: repeat(2, 1fr) !important;
           }
 
           .stats-grid > div {
@@ -480,9 +492,19 @@ export default function Landing() {
             line-height: 1.2 !important;
           }
           
-          .workout-types-grid {
+          .workout-types-grid,
+          div.workout-types-grid {
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
+          }
+          
+          div[class="workout-types-grid"],
+          div[class="workout-types-grid"][style] {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          
+          div[class="workout-types-grid"] {
+            grid-template-columns: repeat(2, 1fr) !important;
           }
 
           .workout-types-grid .glass-card {
@@ -514,12 +536,15 @@ export default function Landing() {
           }
 
           #cta-section {
+            display: block !important;
             padding: 60px 16px !important;
           }
 
           #cta-section > div {
+            display: block !important;
             padding: 40px 20px !important;
             border-radius: 20px !important;
+            max-width: 100% !important;
           }
 
           #cta-section > div > div > .material-icons {
@@ -956,7 +981,7 @@ export default function Landing() {
             className="stats-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+              gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
               gap: "16px",
               animation: loaded ? "fadeIn 1s ease 0.6s both" : "none",
             }}
@@ -2425,7 +2450,7 @@ export default function Landing() {
             className="workout-types-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+              gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
               gap: "20px",
             }}
           >
@@ -2563,7 +2588,7 @@ export default function Landing() {
         id="cta-section"
         data-animate
         style={{
-          padding: "100px 40px",
+          padding: isMobile ? "60px 24px" : "100px 40px",
           position: "relative",
           zIndex: 10,
           ...getAnimationStyle("cta", "scale"),
@@ -2574,10 +2599,10 @@ export default function Landing() {
             maxWidth: "900px",
             margin: "0 auto",
             textAlign: "center",
-            padding: "80px 60px",
+            padding: isMobile ? "48px 24px" : "80px 60px",
             background:
               "linear-gradient(135deg, rgba(244, 63, 94, 0.08) 0%, rgba(139, 92, 246, 0.08) 100%)",
-            borderRadius: "40px",
+            borderRadius: isMobile ? "24px" : "40px",
             border: "1px solid rgba(255,255,255,0.08)",
             position: "relative",
             overflow: "hidden",
