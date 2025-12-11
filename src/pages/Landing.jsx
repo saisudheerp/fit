@@ -442,7 +442,7 @@ export default function Landing() {
             font-size: 11px !important;
           }
 
-          .hero-content > div:nth-of-type(3) {
+          .hero-content > div {
             justify-content: center !important;
           }
 
@@ -475,10 +475,9 @@ export default function Landing() {
             font-size: 10px !important;
           }
           
-          .section-title {
+          h2.section-title {
             font-size: 36px !important;
             line-height: 1.2 !important;
-            margin-bottom: 12px !important;
           }
           
           .workout-types-grid {
@@ -486,16 +485,24 @@ export default function Landing() {
             gap: 12px !important;
           }
 
-          .workout-types-grid > div {
+          .workout-types-grid .glass-card {
             padding: 20px 16px !important;
+            border-radius: 16px !important;
+          }
+
+          .workout-types-grid .glass-card > div {
+            width: 48px !important;
+            height: 48px !important;
+            margin-bottom: 12px !important;
           }
 
           .workout-types-grid .material-icons {
-            font-size: 28px !important;
+            font-size: 24px !important;
           }
 
           .workout-types-grid h3 {
             font-size: 16px !important;
+            margin-bottom: 4px !important;
           }
 
           .workout-types-grid p {
@@ -506,28 +513,33 @@ export default function Landing() {
             grid-template-columns: repeat(2, 1fr) !important;
           }
 
-          #cta-section > div {
-            padding: 40px 24px !important;
+          #cta-section {
+            padding: 60px 16px !important;
           }
 
-          #cta-section .material-icons {
+          #cta-section > div {
+            padding: 40px 20px !important;
+            border-radius: 20px !important;
+          }
+
+          #cta-section > div > div > .material-icons {
             font-size: 40px !important;
             margin-bottom: 16px !important;
           }
 
-          #cta-section h2 {
+          #cta-section > div > div > h2 {
             font-size: 28px !important;
-            margin-bottom: 16px !important;
+            margin-bottom: 12px !important;
           }
 
-          #cta-section p {
+          #cta-section > div > div > p {
             font-size: 15px !important;
-            margin-bottom: 32px !important;
+            margin-bottom: 28px !important;
           }
 
-          #cta-section a {
-            padding: 16px 32px !important;
-            font-size: 16px !important;
+          #cta-section > div > div > a {
+            padding: 14px 28px !important;
+            font-size: 15px !important;
           }
           
           #features {
@@ -538,8 +550,14 @@ export default function Landing() {
             margin-bottom: 60px !important;
           }
 
+          #features-header .section-title {
+            font-size: 36px !important;
+            line-height: 1.2 !important;
+            margin-bottom: 12px !important;
+          }
+
           #features-header h2 {
-            font-size: 24px !important;
+            font-size: 36px !important;
             line-height: 1.3 !important;
           }
 
