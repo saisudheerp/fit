@@ -35,7 +35,11 @@ function HomeRoute() {
         <div style={{ textAlign: "center", color: "#666" }}>
           <span
             className="material-icons"
-            style={{ fontSize: "64px", marginBottom: "16px", animation: "spin 1s linear infinite" }}
+            style={{
+              fontSize: "64px",
+              marginBottom: "16px",
+              animation: "spin 1s linear infinite",
+            }}
           >
             hourglass_empty
           </span>
@@ -121,7 +125,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            <Route path="/" element={<HomeRoute />} />
+        <Route path="/" element={<HomeRoute />} />
             <Route
               path="/log"
               element={

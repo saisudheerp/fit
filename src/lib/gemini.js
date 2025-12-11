@@ -1,16 +1,14 @@
 // Gemini AI Integration using Google AI API directly
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+const GEMINI_BASE_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models";
 
 // Models in order of preference (will fallback if rate limited)
-const MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.0-flash",
-];
+const MODELS = ["gemini-2.0-flash", "gemini-2.5-flash"];
 
 async function callGeminiAPI(model, prompt) {
   const url = `${GEMINI_BASE_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`;
-  
+
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -68,15 +66,22 @@ export async function generateContent(prompt) {
       // If rate limited (429) or server error, try next model
       if (response.status === 429 || response.status >= 500) {
         const errorData = await response.json();
-        console.warn(`${model} unavailable (${response.status}), trying fallback...`, errorData.error?.message);
-        lastError = new Error(errorData.error?.message || `Model ${model} rate limited`);
+        console.warn(
+          `${model} unavailable (${response.status}), trying fallback...`,
+          errorData.error?.message
+        );
+        lastError = new Error(
+          errorData.error?.message || `Model ${model} rate limited`
+        );
         continue;
       }
 
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Gemini API error:", errorData);
-        throw new Error(errorData.error?.message || "Failed to generate content");
+        throw new Error(
+          errorData.error?.message || "Failed to generate content"
+        );
       }
 
       const data = await response.json();
@@ -96,7 +101,7 @@ export async function generateContent(prompt) {
       console.error(`Error with model ${model}:`, error);
       lastError = error;
       // Continue to next model only if it's a network/fetch error
-      if (error.name === 'TypeError') {
+      if (error.name === "TypeError") {
         continue;
       }
       throw error;

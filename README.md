@@ -1,85 +1,153 @@
-# FitTrack 💪
+# Next Rep 💪
 
-A fitness tracking app to help you build and follow workout routines, track your progress, and hit your personal records.
+A modern fitness tracking app to help you build workout routines, track progress, and crush your personal records.
 
 ## Features
 
-### 🤖 AI Coach - Sai
+### 🤖 AI Coaches
 
-- **Personal AI Assistant**: Meet Sai, your AI fitness coach who knows all your workout data
-- **Personalized Insights**: Get advice based on YOUR actual workout history and PRs
-- **Workout Analysis**: Ask about your training patterns, muscle balance, and progress
-- **Smart Suggestions**: Receive tips tailored to your fitness level and goals
-- **Chat Interface**: Natural conversation - just ask Sai anything about your fitness
+**Sai - Beast Mode Coach**
+
+- High-energy, disciplined coaching style
+- Pushes you to beat your personal bests
+- Knows all your workout data, PRs, and progress
+- Helps create workout routines based on your goals
+- Answers fitness questions with real talk
+
+**Daisy - Supportive Coach**
+
+- Warm, caring, and uplifting approach
+- Tracks progress and celebrates your wins
+- Builds balanced workout routines
+- Keeps you consistent without pressure
+- Gentle guidance for your fitness journey
 
 ### 🏋️ Workout Routines
 
-- **4 Types of Routines**: Choose from Push/Pull/Legs, Upper/Lower, Full Body, or Custom routines
-- **Day-by-Day Progression**: Follow structured workout plans that progress automatically
-- **Skip Day Option**: Missed a workout? Skip to the next day without losing progress
-- **Rest Day Tracking**: The app knows when you need rest and shows your next workout day
+- **4 Routine Types**: Push/Pull/Legs, Upper/Lower, Full Body, or Custom
+- **Day-by-Day Structure**: Follow structured plans with automatic progression
+- **Skip Days**: Missed a workout? Skip to the next day
+- **Rest Day Tracking**: Shows when you need rest and your next workout
+- **Routine Management**: Edit, duplicate, or delete routines anytime
 
 ### 📊 Dashboard
 
-- **Weekly Overview**: See your workout activity for the current week at a glance
-- **Muscle Heatmap**: Visual display of which muscles you've trained most
-- **Active Program Display**: Always know what routine you're currently following
-- **Quick Stats**: View your workout streak, total workouts, and more
+- **Weekly Overview**: Visual calendar showing this week's workout activity
+- **Muscle Heatmap**: See which muscle groups you've trained recently
+- **Active Program**: Displays your current routine and progress
+- **Quick Stats**: Total workouts, streak count, and weekly summary
+- **Recent Activity**: Last logged workouts and exercises
 
-### 🏆 Personal Records
+### 🏆 Personal Records (PRs)
 
-- **Automatic PR Detection**: The app tracks when you hit new personal records
-- **PR Categories**: Filter PRs by Chest, Back, Shoulders, Legs, Arms, and Core
-- **Progress Charts**: See your strength gains over time with visual charts
-- **Search PRs**: Quickly find records for specific exercises
+- **Automatic Detection**: App tracks when you hit new personal records
+- **Filter by Muscle**: View PRs by Chest, Back, Shoulders, Legs, Arms, Core
+- **Progress History**: See all your strength gains over time
+- **Search Function**: Find records for specific exercises
+- **PR Badges**: Visual indicators for recent achievements
 
-### 📝 Exercise Logging
+### 📝 Workout Logging
 
+- **Exercise Database**: 100+ exercises organized by muscle group
 - **Set Tracking**: Log weight, reps, and sets for each exercise
-- **Rest Timer**: Built-in timer between sets
-- **Exercise History**: View your past performance on any exercise
-- **Notes**: Add notes to remember form cues or equipment settings
+- **Rest Timer**: Built-in countdown timer between sets
+- **Exercise History**: View past performance on any exercise
+- **Custom Exercises**: Add your own exercises to the database
+- **Notes**: Add form cues or equipment settings
 
 ### ⚙️ Settings
 
-- **Profile Management**: Update your name and body weight
-- **Unit Preferences**: Switch between kg and lbs
-- **Data Export**: Export your workout data
-- **Account Management**: Sign out or manage your account
+- **Profile**: Update name, body weight, and personal info
+- **Unit Preference**: Switch between kg and lbs
+- **Account Management**: Sign out option
+- **Theme**: Dark mode interface (default)
 
-### 📱 Mobile Friendly
+### 📱 Responsive Design
 
-- **Responsive Design**: Works great on phones, tablets, and desktops
-- **Touch Optimized**: Easy to use during workouts with large tap targets
-- **Quick Actions**: Swipe and tap gestures for fast logging
+- Works on mobile, tablet, and desktop
+- Touch-optimized for gym use
+- Clean, modern interface
+- Fast navigation between pages
 
 ## Tech Stack
 
-- **Frontend**: React + Vite
-- **Styling**: Tailwind CSS + Custom CSS
+- **Frontend**: React 19 + Vite
+- **Styling**: Tailwind CSS
 - **Database**: Firebase Firestore
-- **Auth**: Firebase Authentication (Email + Google Sign-In)
-- **AI**: Firebase AI (Gemini 2.0 Flash via Google AI backend)
+- **Authentication**: Firebase Auth (Email + Google Sign-In)
+- **AI**: Google Gemini API (gemini-1.5-flash)
 - **Charts**: Recharts
+- **Routing**: React Router
 - **Hosting**: Vercel
 
 ## Getting Started
 
-1. Clone the repo
-2. Run `npm install`
-3. Create a Firebase project and add your config to `.env`
-4. Enable the AI in your Firebase project (Firebase console > Build > AI)
-5. Run `npm run dev`
+1. Clone the repository
+
+```bash
+git clone <your-repo-url>
+cd fit
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Create a `.env` file in the root directory with your Firebase and Gemini API credentials
+
+4. Run the development server
+
+```bash
+npm run dev
+```
 
 ## Environment Variables
 
-```
-VITE_FIREBASE_API_KEY=your_key
-VITE_FIREBASE_AUTH_DOMAIN=your_domain
+Create a `.env` file with:
+
+```env
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
 VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 VITE_FIREBASE_APP_ID=your_app_id
+VITE_GEMINI_API_KEY=your_gemini_api_key
+```
+
+**Get API Keys:**
+
+- Firebase: https://console.firebase.google.com/
+- Gemini AI: https://aistudio.google.com/app/apikey
+
+## Firebase Setup
+
+1. Create a Firebase project
+2. Enable Authentication (Email/Password and Google)
+3. Create a Firestore database
+4. Add your web app and copy the config
+5. Set up Firestore security rules (see `firestore.rules`)
+
+## Project Structure
+
+```
+src/
+├── assets/          # Images and static files
+├── components/      # Reusable components
+├── contexts/        # React contexts (Auth, Toast)
+├── lib/            # Firebase and Gemini API setup
+├── pages/          # Main app pages
+│   ├── Dashboard.jsx
+│   ├── Coach.jsx
+│   ├── PRs.jsx
+│   ├── Routines.jsx
+│   ├── Settings.jsx
+│   ├── Landing.jsx
+│   └── Log.jsx
+├── App.jsx         # Main app component
+└── main.jsx        # Entry point
 ```
 
 ## License

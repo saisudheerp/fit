@@ -13,6 +13,8 @@ import {
   getExercises,
   createRoutine,
 } from "../lib/firebase-database";
+import { formatRecoveryForAI, analyzeAllMuscles } from "../utils/recoveryAnalysis";
+import { MUSCLE_GROUP_LIMITS } from "../data/muscleGroupLimits";
 import warriorImg from "../assets/w.png";
 
 const COACHES = {
@@ -795,6 +797,22 @@ CALORIE HISTORY (Calories Burned):
 - ${currentMonthName}: ${currentMonthCalories} kcal
 - ${lastMonthName}: ${lastMonthCalories} kcal
 
+MUSCLE RECOVERY GUIDELINES (Science-Based):
+${Object.entries(MUSCLE_GROUP_LIMITS).map(([muscle, limits]) => 
+  `- ${limits.displayName}: ${limits.restDays} day${limits.restDays > 1 ? 's' : ''} rest needed, max ${limits.maxPerWeek}× per week`
+).join('\n')}
+
+CURRENT RECOVERY STATUS:
+${formatRecoveryForAI(recentLogs)}
+
+IMPORTANT RECOVERY RULES:
+1. ALWAYS check recovery status before suggesting workouts
+2. WARN user if muscles haven't recovered (need more rest days)
+3. WARN user if they've exceeded weekly frequency limits
+4. Suggest ALTERNATIVE muscle groups if target muscles need rest
+5. Emphasize that recovery is when muscles grow
+6. If user insists on training unrecovered muscles, warn about injury risk
+
 PERSONAL RECORDS (Top 10):
 ${topPRs.join("\n") || "No PRs yet"}
 
@@ -811,7 +829,7 @@ ${routines.map((r) => r.name).join(", ") || "No saved routines"}
 AVAILABLE EXERCISES IN THE APP (Only suggest from this list):
 ${availableExercises}
 
-Based on this data, help the user with their fitness questions and provide personalized insights. Remember to ONLY recommend exercises from the available list above.`;
+Based on this data, help the user with their fitness questions and provide personalized insights. Remember to ONLY recommend exercises from the available list above and ALWAYS respect recovery periods.`;
   };
 
   const sendMessage = async () => {
@@ -1023,7 +1041,9 @@ Based on this data, help the user with their fitness questions and provide perso
               margin: "0 0 12px 0",
             }}
           >
-            {coach.name === "Sai" ? "Getting Your Stats Ready... 💪" : `${coach.name} is Preparing...`}
+            {coach.name === "Sai"
+              ? "Getting Your Stats Ready... 💪"
+              : `${coach.name} is Preparing...`}
           </h2>
           <p
             style={{
@@ -1033,37 +1053,45 @@ Based on this data, help the user with their fitness questions and provide perso
               lineHeight: "1.6",
             }}
           >
-            {coach.name === "Sai" 
+            {coach.name === "Sai"
               ? "Loading your PRs, workout logs, and muscle analytics. Time to see what you're made of! 🔥"
               : "Gathering your progress data and fitness journey insights..."}
           </p>
-          <div style={{
-            display: "flex",
-            gap: "8px",
-            justifyContent: "center",
-            marginTop: "20px"
-          }}>
-            <div style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: coach.color,
-              animation: "bounce 1.4s ease-in-out 0s infinite"
-            }} />
-            <div style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: coach.color,
-              animation: "bounce 1.4s ease-in-out 0.2s infinite"
-            }} />
-            <div style={{
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: coach.color,
-              animation: "bounce 1.4s ease-in-out 0.4s infinite"
-            }} />
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              justifyContent: "center",
+              marginTop: "20px",
+            }}
+          >
+            <div
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: coach.color,
+                animation: "bounce 1.4s ease-in-out 0s infinite",
+              }}
+            />
+            <div
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: coach.color,
+                animation: "bounce 1.4s ease-in-out 0.2s infinite",
+              }}
+            />
+            <div
+              style={{
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: coach.color,
+                animation: "bounce 1.4s ease-in-out 0.4s infinite",
+              }}
+            />
           </div>
         </div>
         <style>{`

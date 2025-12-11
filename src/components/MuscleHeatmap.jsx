@@ -11,6 +11,11 @@ import quadsIcon from "../assets/quads.png";
 import hamstringsIcon from "../assets/hamstrings.png";
 import calvesIcon from "../assets/calves.png";
 import cardioIcon from "../assets/cardio.png";
+import { 
+  shouldShowRedDot, 
+  getMuscleRecoveryInfo,
+  getMusclesWithRedDots 
+} from "../utils/muscleRecoveryTracker";
 
 export default function MuscleHeatmap({
   weeklyData,
@@ -24,6 +29,9 @@ export default function MuscleHeatmap({
   const [timePeriod, setTimePeriod] = useState("weekly"); // 'weekly' or 'monthly'
   const [selectedMonthOffset, setSelectedMonthOffset] = useState(0); // 0 = current, -1 = previous, etc.
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [musclesWithRedDots, setMusclesWithRedDots] = useState({});
+  const [selectedMuscle, setSelectedMuscle] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   // Detect mobile screen
   useEffect(() => {
@@ -186,6 +194,10 @@ export default function MuscleHeatmap({
     setCardioCount(cardioTotal);
     setTotalCalories(caloriesTotal);
     setTotalWorkouts(totalWorkouts);
+
+    // Calculate which muscles should show red dots
+    const redDots = getMusclesWithRedDots(dataToProcess);
+    setMusclesWithRedDots(redDots);
   }, [weeklyData, monthlyData, timePeriod]);
 
   // Get intensity level (0-5) based on exercise count
@@ -220,9 +232,32 @@ export default function MuscleHeatmap({
     }
   };
 
+  const handleMuscleClick = (muscleKey) => {
+    const dataToProcess = timePeriod === "weekly" ? weeklyData : monthlyData;
+    const today = new Date();
+    const recoveryInfo = getMuscleRecoveryInfo(muscleKey, today, dataToProcess);
+    setSelectedMuscle({ key: muscleKey, ...recoveryInfo });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedMuscle(null);
+  };
+
   return (
     <div style={{ padding: "20px 0" }}>
       <style>{`
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
+        }
         @media (max-width: 768px) {
           .muscle-heatmap-grid {
             grid-template-columns: repeat(3, 1fr) !important;
@@ -368,6 +403,7 @@ export default function MuscleHeatmap({
             <div
               key={muscle.key}
               className="muscle-card"
+              onClick={() => handleMuscleClick(muscle.key)}
               style={{
                 ...(isMobile
                   ? {}
@@ -403,6 +439,25 @@ export default function MuscleHeatmap({
                 e.currentTarget.style.zIndex = "1";
               }}
             >
+              {/* Red notification dot for recovering muscles */}
+              {musclesWithRedDots[muscle.key] && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "6px",
+                    right: "6px",
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    background: "#ef4444",
+                    border: "2px solid #fff",
+                    boxShadow: "0 2px 8px rgba(239, 68, 68, 0.6)",
+                    animation: "pulse 2s ease-in-out infinite",
+                    zIndex: 10,
+                  }}
+                />
+              )}
+
               {/* Muscle icon */}
               <img
                 src={muscle.icon}
@@ -582,6 +637,151 @@ export default function MuscleHeatmap({
           </div>
         </div>
       </div>
+
+      {/* Recovery Info Modal */}
+      {showModal && selectedMuscle && (
+        <div
+          onClick={closeModal}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%)",
+              border: "2px solid #333",
+              borderRadius: "20px",
+              padding: "32px",
+              maxWidth: "400px",
+              width: "100%",
+              position: "relative",
+            }}
+          >
+            {/* Close button */}
+            <button
+              onClick={closeModal}
+              style={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                background: "none",
+                border: "none",
+                color: "#999",
+                cursor: "pointer",
+                fontSize: "24px",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span className="material-icons">close</span>
+            </button>
+
+            {/* Muscle Name */}
+            <h2
+              style={{
+                fontSize: "28px",
+                fontWeight: 700,
+                color: "#fff",
+                marginBottom: "24px",
+                fontFamily: "Bebas Neue",
+                letterSpacing: "0.05em",
+              }}
+            >
+              {selectedMuscle.muscleName}
+            </h2>
+
+            {/* Recovery Status */}
+            {selectedMuscle.isRecovering && (
+              <div
+                style={{
+                  background: "rgba(239, 68, 68, 0.1)",
+                  border: "2px solid rgba(239, 68, 68, 0.3)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "20px",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#ef4444",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    marginBottom: "8px",
+                  }}
+                >
+                  🔴 Still Recovering
+                </div>
+                <div style={{ color: "#999", fontSize: "12px" }}>
+                  Recovery period: {selectedMuscle.restDays} days
+                </div>
+              </div>
+            )}
+
+            {/* Workouts Today */}
+            <div
+              style={{
+                background: "#1a1a1a",
+                border: "2px solid #333",
+                borderRadius: "12px",
+                padding: "20px",
+                marginBottom: "16px",
+              }}
+            >
+              <div style={{ color: "#666", fontSize: "12px", marginBottom: "8px" }}>
+                Workouts Today
+              </div>
+              <div
+                style={{
+                  fontSize: "36px",
+                  fontWeight: 700,
+                  color: "#4ECDC4",
+                  fontFamily: "Bebas Neue",
+                }}
+              >
+                {selectedMuscle.workoutsToday}
+              </div>
+            </div>
+
+            {/* Next Workout Day */}
+            <div
+              style={{
+                background: "#1a1a1a",
+                border: "2px solid #333",
+                borderRadius: "12px",
+                padding: "20px",
+              }}
+            >
+              <div style={{ color: "#666", fontSize: "12px", marginBottom: "8px" }}>
+                Next Workout Day
+              </div>
+              <div
+                style={{
+                  fontSize: "28px",
+                  fontWeight: 700,
+                  color: selectedMuscle.isRecovering ? "#ef4444" : "#10b981",
+                  fontFamily: "Bebas Neue",
+                  letterSpacing: "0.05em",
+                }}
+              >
+                {selectedMuscle.nextWorkoutDay}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
